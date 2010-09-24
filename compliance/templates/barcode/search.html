@@ -1,0 +1,21 @@
+{% extends "barcode/base.html" %}
+{% block header %}
+</head>
+{% endblock %}
+
+{% block content %}
+
+{% if error_message %}
+  <h2>{{ error_message }}</h2>
+{% endif %}
+  <br>
+  <form name="searchform" method="post" action="" enctype="multipart/form-data">
+  <table width = "100%">
+    <tr>
+      <th>Barcode Checksum:</th>
+      <td><input type = "text" name = "searchsum"></td>
+      <td><input type = "submit" value = "Search"></td>
+    </tr>
+  </table>
+  </form>
+{% endblock %}

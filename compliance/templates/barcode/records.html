@@ -1,0 +1,51 @@
+{% extends "barcode/base.html" %}
+{% block header %}
+<script type="text/javascript" src="/site_media/js/checklist.js"></script>
+</head>
+{% endblock %}
+
+{% block content %}
+
+{% if not latest_record_list %}
+   <p><b>No records are available.</b></p>
+{% else %}
+    <br>
+    <form name="resultsform" method="post" action="" enctype="multipart/form-data">   
+    <table width = "100%" border="1">
+      <tr align="left">
+        <td align="center"><input type="checkbox" name="selectall"
+                    title="Select/Deselect All Records" 
+                    onclick="toggleall(this.form,'recordcheck','selectall')" />
+        </td>
+        <td></td>
+        <td><input type="submit" name="submit" value="Delete Selected Records"
+                    onclick="buildlist(this.form,'recordcheck','recordlist')" />
+        </td>
+      </tr>
+      <tr align="left">
+        <td></td>
+        <th>Id/Checksum</th>
+        <th>Information</th>
+      </tr>
+    {% for record in latest_record_list %}
+      <tr valign="top">
+        <td align="center"><input type="checkbox" name="recordcheck" value="{{ record.id }}" /></td>
+        <td><a href="/barcode/{{ record.id }}/detail">{{ record.id }}</a>
+            {% if record.checksum %}<br>{{ record.checksum }}{% endif %} 
+        </td>
+        <td>
+            <i>Company Name:</i>{{ record.company }}<br>
+            <i>FOSS Website:</i> {{ record.website }}<br>
+            <i>Product Name:</i> {{ record.product }}<br>
+            <i>Product Version-Release:</i> {{ record.version }}-{{ record.release }}<br>
+            <i>Entry Date:</i> {{ record.record_date|date:"M d, Y H:i:s" }}&nbsp;&nbsp;
+            <i>User:</i> {{ record.user }}
+        </td>
+      </tr>
+    {% endfor %}
+    </table>
+    <input type="hidden", name="recordlist", value="" />
+    </form>
+{% endif %}
+
+{% endblock %}

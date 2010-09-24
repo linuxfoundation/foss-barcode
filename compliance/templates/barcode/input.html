@@ -1,0 +1,221 @@
+{% extends "barcode/base.html" %}
+{% block header %}
+  <!-- for the file browser -->
+  <style type="text/css" media="screen">@import "/site_media/css/jqueryFileTree.css";</style>
+  <style type="text/css">@import "/site_media/css/containers.css";</style>
+  <script type="text/javascript" src="/site_media/js/jquery-1.4.2.min.js"></script>
+  <script type="text/javascript" src="/site_media/js/jqueryFileTree.js"></script>
+  <script type="text/javascript" src="/site_media/js/visibility.js"></script>
+</head>
+{% endblock %}
+
+{% block content %}
+
+<div id="title">&nbsp;{% include "barcode/noscript.html" %}</div>
+<div id="job_status" class="executor"></div>
+
+<form name="entryform" method="post" action="" enctype="multipart/form-data">
+
+<div class="container" id="entry_form">
+<table align="left">
+  <tr align="left">
+    <td align="right"><b>{{ recordform.company.label }}:</b>{{ recordform.company.errors }}</td>
+    <td>{{ recordform.company }}</td>
+    <td align="center"><b>SPDX File(s)<br>(optional)</b>{{ recordform.spdx_files.errors }}</td>
+    <td><input type="button" name="spdxfilename" value="Select File(s)"
+              title="Open a File/Directory Selector"
+              onclick="toggle_visibility('target_select');set_destination('spdx_files');toggle_enabled('patchfilename');"/></td>
+  </tr>
+  <tr align="left">
+    <td align="right"><b>{{ recordform.website.label }}:</b>{{ recordform.company.errors }}</td>
+    <td>{{ recordform.website }}</td>
+    <td colspan="2" rowspan="5">{{ recordform.spdx_files }}</td>
+  </tr>
+  <tr align="left">
+    <td align="right"><b>{{ recordform.product.label }}:</b>{{ recordform.product.errors }}</td>
+    <td>{{ recordform.product }}</td>
+  </tr>
+  <tr align="left">
+    <td align="right"><b>{{ recordform.version.label }}:</b>{{ recordform.version.errors }}</td>
+    <td>{{ recordform.version }}</td>
+  </tr>
+  <tr align="left">
+    <td align="right"><b>{{ recordform.release.label }}:</b>{{ recordform.release.errors }}</td>
+    <td>{{ recordform.release }}</td>
+  </tr>
+  <tr align="left">
+    <td align="right"><b>{{ recordform.user.label }}:</b></td>
+    <td>{{ recordform.user }}</td>
+  </tr>
+  <tr align="left">   
+    <td align="right"><b>{{ recordform.checksum.label }}:</b>{{ recordform.checksum.errors }}</td>
+    <td>{{ recordform.checksum }}</td>
+    <td align="center" colspan="2"><input style="width: 200px" type="submit" name="submit" value="Create Checksum/Barcode" /></td>
+  </tr>      
+</table>
+<br><br>
+<div class="foss_table">
+<table border="1" width="555" cellspacing="1" style='table-layout:fixed' id="foss_list">
+    <col width=80>
+    <col width=40>
+    <col width=120>
+    <col width=40>
+<!--
+<table border="1" id="foss_list">
+-->
+  <tr>
+    <th>FOSS Component</th>
+    <th>Version</th>
+    <th>Patch(es)<br>(optional)</th>
+    <td></td>
+  </tr>
+  <tr>
+    <!-- needed to control the width here, so hand tweaked the form fields -->
+    <td><input type="text" name="foss_component" size="17"></td>
+    <td><input type="text" name="foss_version" size="7"></td>
+    <td align="center" colspan="2"><input type="button" name="addfoss" 
+                                        value="Add Component" 
+                                        onclick="add_foss_row('foss_list')"/></td>
+  </tr>
+<!-- TODO - loop and fill this from SPDX, plus user can manually add bits, buttons to add patches -->
+</table>
+</div>
+<input type="hidden", name="foss_components", id="foss_components", value="" />
+<input type="hidden", name="foss_versions", id="foss_versions", value="" />
+</div>
+	
+<div class="container" id="target_select" style="display: none;"> 
+	<div id="target" class="browser"></div> 
+</div>
+</form>
+
+<div class="cfooter">
+<hr>
+<b>Subscribe to the <a href="https://lists.linux-foundation.org/mailman/listinfo/foss-barcode-dev">mailing list</a></b><br>
+<b>Get latest version from <a href="http://git.linuxfoundation.org/?p=foss-barcode.git;a=summary">git</a></b><br>
+<b>Report bugs and request features at <a href="http://bugs.linuxfoundation.org/enter_bug.cgi?product=Compliance">bugzilla</a></b><br>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script language="JavaScript">
+    var path_dest = "spdxfilename";
+    $(document).ready( function() {
+        $('#target').fileTree({
+            root: '/',
+            script: '/barcode/dirlist/',
+            loadMessage: 'waiting to load'
+            }, function(file) {
+                filenametoentry(file);
+        });
+    });
+    function setdefaults() {
+        document.getElementById("job_status").style.display = 'none';
+        document.entryform.checksum.disabled = true;
+        {% if reload_running %}
+            document.getElementById("entry_form").style.visibility = 'hidden';
+            document.getElementById("job_status").style.display = 'block';
+            document.getElementById("job_status").innerHTML = "Getting job status...<br /><br />";
+            setTimeout("reload_status();", 5000);
+        {% else %}
+            reload_status();
+        {% endif %}
+    }
+    function set_destination(dest) {
+        path_dest = dest;
+    }
+    function toggle_enabled(button) {
+        var e = document.getElementsByName(button)[0];
+        if (e.disabled == true)
+            e.disabled = false;
+        else
+            e.disabled = true;     
+    }
+    function filenametoentry(filename) {
+        lastchar = filename.slice(-1);
+        // only files, no dirs
+        if (lastchar != '/') {
+            //if ( path_dest == "spdx_files" ) {
+                document.getElementsByName(path_dest)[0].value += filename + "\n";
+            //} else {
+            //    document.getElementById(path_dest).innerHTML += filename + "<BR>";
+            //}
+        }
+    }
+    function add_foss_row(id){
+        foss_name = document.getElementsByName("foss_component")[0];
+        foss_version = document.getElementsByName("foss_version")[0];
+        if (foss_name.value == "" || foss_version.value == "")
+            return;
+        var tbody = document.getElementById(id).getElementsByTagName("TBODY")[0];
+        var rindex = document.getElementById(id).rows.length - 2;
+        var id_tag = "patch_files" + rindex;
+        var row = document.createElement("TR");
+        
+        var td1 = document.createElement("TD");
+        td1.setAttribute("valign", "top");
+        td1.appendChild(document.createTextNode(foss_name.value));
+        document.getElementById("foss_components").value += foss_name.value + ",";
+
+        var td2 = document.createElement("TD");
+        td2.setAttribute("valign", "top");
+        td2.appendChild (document.createTextNode(foss_version.value));
+        document.getElementById("foss_versions").value += foss_version.value + ",";
+
+        var td3 = document.createElement("TD");        
+        var ch3 = document.createElement("textarea");
+        ch3.setAttribute("type", "textarea");
+        ch3.setAttribute("name",id_tag);
+        td3.appendChild(ch3);   
+
+        var td4 = document.createElement("TD");
+        var ch4 = document.createElement("input");
+        ch4.setAttribute("type", "button");
+        ch4.setAttribute("value", "Select" + "\n" + "Patch(es)");
+        ch4.setAttribute("onclick", "toggle_visibility('target_select');set_destination('" + id_tag + "')");
+        ch4.setAttribute("name","patchfilename");
+        ch4.setAttribute("title", "Open a File/Directory Selector");
+        td4.appendChild(ch4);
+
+        row.appendChild(td1);
+        row.appendChild(td2);
+        row.appendChild(td3);
+        row.appendChild(td4);
+        tbody.appendChild(row);
+
+        foss_name.value = "";
+        foss_version.value = "";
+    }
+    function reload_status() {
+      testid = ""
+      xmlhttp = new XMLHttpRequest();
+      xmlhttp.open("GET", "/barcode/taskstatus/", false);
+      xmlhttp.send();
+      response = xmlhttp.responseText;
+      if (response == "None") {
+        document.getElementById("entry_form").style.visibility = 'visible';
+        document.getElementById("job_status").innerHTML = "";
+        document.getElementById("job_status").style.display = 'none';
+        document.getElementById("title").innerHTML = "<b>Create FOSS Barcode:</b>";
+      } else {
+        document.getElementById("entry_form").style.visibility = 'hidden';
+        document.getElementById("title").innerHTML = "<b>Running task:</b>";
+        jdiv = document.getElementById("job_status");
+        jdiv.innerHTML = response;
+        jdiv.scrollTop = jdiv.scrollHeight;
+        setTimeout("reload_status();", 1000);
+      }
+      if (response.indexOf("Test Id=") != -1) {
+        ss = response.slice(response.indexOf("Test Id=")+8);
+        bs = ss.indexOf("<br");
+        testid = ss.slice(0,bs);
+      }
+      if (response.indexOf("Test Complete") != -1 && testid != "") {
+        window.location = "/barcode/" + testid + "/detail/";
+      }
+    }
+</script>
+
+{% endblock %}
+

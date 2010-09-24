@@ -1,0 +1,39 @@
+{% include "barcode/header.html" %}
+
+  <!-- sets up the divs to control the styling of the main page body -->
+  <style type="text/css">@import "/site_media/css/bodystyle.css";</style>
+
+  <!-- sets up the styles for the progress bar -->
+  <style type="text/css">@import "/site_media/css/barstyle.css";</style>
+
+{% block header %} {% endblock %}
+
+<body onload="setdefaults();">
+
+<div id="header">
+  {% include "barcode/banner.html" %}
+  <ul>
+    <li {% if tab_input %}id="current"{% endif %}><a href="/barcode/input">Enter<br>Data</a></li>
+    <li {% if tab_records %}id="current"{% endif %}><a href="/barcode/records">Review<br>Records</a></li>
+    <li {% if tab_search %}id="current"{% endif %}><a href="/barcode/search">Search<br>Records</a></li>
+    <li><a href="/barcode/documentation">Documentation<br>&nbsp;</a></li>
+  </ul>
+</div>
+
+<div id="lmargin">&nbsp;</div>
+<div id="main">
+{% block content %} {% endblock %}
+</div> <!-- end of main -->
+<div id="rmargin"></div>
+
+</body>
+
+{% block scripts %}
+<script type="text/javascript">
+
+function setdefaults()
+{
+}
+
+</script>
+{% endblock %}

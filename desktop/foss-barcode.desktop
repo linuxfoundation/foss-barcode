@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=FOSS Barcode Tool
+GenericName=FOSS Barcode Tool
+Comment=Create a barcode from a FOSS-based project inventory
+Exec=/opt/linuxfoundation/bin/foss-barcode.py start
+Icon=/opt/linuxfoundation/share/icons/hicolor/16x16/apps/lf_small.png
+Terminal=false
+TryExec=/opt/linuxfoundation/bin/foss-barcode.py
+Type=Application
+MimeType=
+Categories=Development

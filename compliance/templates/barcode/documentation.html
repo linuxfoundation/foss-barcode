@@ -1,0 +1,29 @@
+{% include "barcode/header.html" %}
+  <!-- sets up the divs to control the styling of the main page body -->
+  <style type="text/css">@import "/site_media/css/docstyle.css";</style>
+</head>
+
+<body>
+
+<div id="header">
+  {% include "barcode/banner.html" %}
+  <ul>
+    <li><a href="/barcode/input">Enter<br>Data</a></li>
+    <li><a href="/barcode/records">Review<br>Records</a></li>
+    <li><a href="/barcode/records">Search<br>Records</a></li>
+    <li id="current"><a href="/barcode/documentation">Documentation<br>&nbsp;</a></li>
+  </ul>
+</div>
+
+<div>
+  <center>
+    <b>{{ name }} version {{ version }}.</b>
+    <h3>FIXME FIXME FIXME - dep-checker docs right now</h3>
+  </center>
+</div>
+
+{% autoescape off %}
+{{ gui_docs }}
+{% endautoescape %}
+
+

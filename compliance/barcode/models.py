@@ -1,0 +1,57 @@
+from django.db import models
+from django.forms import ModelForm, forms, Form
+from django import forms
+import os
+import re
+
+# Create your models here.
+
+# setup some defaults/choices
+rchoices = tuple(enumerate(range(0, 100)))
+RECURSION_CHOICES = rchoices[1:]
+# fails under apache/wsgi
+try:
+    DEFAULT_USER = os.environ['USER']
+except:
+    DEFAULT_USER = 'nobody'
+
+class Barcode_Record(models.Model):
+    company = models.CharField('Company Name', max_length=200)
+    website = models.CharField('FOSS Website', max_length=200, blank=True)
+    record_date = models.DateTimeField('Test Date', auto_now=True)
+    user = models.CharField('User Name (optional)', max_length=200, blank=True, default = DEFAULT_USER)
+    product = models.CharField('Product Name', max_length=200)
+    version = models.CharField('Product Version', max_length=20)
+    release = models.CharField('Product Release', max_length=20)
+    checksum = models.CharField('Checksum', max_length=200, blank=True)
+    def __unicode__(self):
+        return self.product
+
+class SPDX_Files(models.Model):
+    brecord = models.ForeignKey(Barcode_Record)
+    path = models.CharField(max_length=400)
+    def __unicode__(self):
+        return self.path
+
+class FOSS_Components(models.Model):
+    brecord = models.ForeignKey(Barcode_Record)
+    package = models.CharField(max_length=200)
+    version = models.CharField(max_length=20)
+    def __unicode__(self):
+        return self.package
+
+class Patch_Files(models.Model):
+    frecord = models.ForeignKey(FOSS_Components)
+    path = models.CharField(max_length=400)
+    def __unicode__(self):
+        return self.path
+
+class RecordForm(ModelForm):   
+    class Meta:
+        model = Barcode_Record
+
+    spdx_files = forms.CharField(widget=forms.Textarea, required=False)
+    foss_component = forms.CharField(max_length=100, required=False)
+    foss_version = forms.CharField(max_length=100, required=False)
+
+

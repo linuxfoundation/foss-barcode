@@ -1,0 +1,12 @@
+#lmargin {
+    float: left; 
+    width: 1%;
+}
+#main {
+    float: left; 
+    width: 98%; 
+}
+#rmargin {
+    float: left; 
+    width: 1%;
+}
