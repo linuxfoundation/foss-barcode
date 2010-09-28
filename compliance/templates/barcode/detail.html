@@ -37,7 +37,7 @@
       <td align = "center"><b>Checksum: </b> {{ record.checksum }}</td>
     </tr>
   </table>
-  <div class="container">
+  <div class="halfdiv">
     <table border = "1" width = "100%">
       <tr><th colspan = "3">FOSS Components/Patches</th></tr>
       <tr>
@@ -56,8 +56,8 @@
     {% endfor %}
     </table>
   </div>
-  <div class="container" width = "100%">
-    <table border = "1" >
+  <div class="halfdiv">
+    <table border = "1" width = "100%">
       <tr><th>SPDX File(s)</th></tr>
       {% for row in spdx %}
       <tr valign = "top">

@@ -13,6 +13,13 @@
     height: 140px
 }
 
+.halfdiv {
+    float: left;
+    margin: 5px;
+    padding: 5px;
+    min-width: 45%;
+}
+
 .foss_table textarea {
     width: 220px;
     height: 40px;
