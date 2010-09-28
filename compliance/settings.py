@@ -68,18 +68,17 @@ USE_I18N = False
 # Project root.
 PROJECT_ROOT = get_project_root()
 
-# Command-line client.
-CLI_COMMAND = os.path.join(PROJECT_ROOT, 'bin/readelf.py')
-
 # Writable file setup; use different settings for userdir or normal mode.
 if use_userdir():
     USERDIR_ROOT = get_userdir()
     DATABASE_NAME = os.path.join(USERDIR_ROOT, "barcode.sqlite")
     STATE_ROOT = USERDIR_ROOT
+    USERDATA_ROOT = os.path.join(USERDIR_ROOT, "user_data")
 else:
     USERDIR_ROOT = ''
     DATABASE_NAME = os.path.join(get_project_root(), 'compliance', 'barcode.sqlite')
     STATE_ROOT = os.path.join(PROJECT_ROOT, 'compliance')
+    USERDATA_ROOT = os.path.join(PROJECT_ROOT, "compliance", "user_data")
 
 # Absolute path to the directory that holds media.
 # Example: "/home/media/media.lawrence.com/"

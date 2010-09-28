@@ -33,7 +33,7 @@
       </td>
     </tr>
     <tr>
-      <th align = "center">Checksum: {{ record.checksum }}</b></th>
+      <td align = "center"><b>Checksum: </b> {{ record.checksum }}</td>
     </tr>
   </table>
   <div class="container">
@@ -57,7 +57,7 @@
   </div>
   <div class="container" width = "100%">
     <table border = "1" >
-      <tr><th>SPDX Files</th></tr>
+      <tr><th>SPDX File(s)</th></tr>
       {% for row in spdx %}
       <tr valign = "top">
         <td>{{ row.path }}</td>

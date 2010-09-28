@@ -6,6 +6,10 @@
 
 {% block content %}
 
+{% if error_message %}
+   <span class="red"><b>{{ error_message }}</b></span>
+{% endif %}
+
 {% if not latest_record_list %}
    <p><b>No records are available.</b></p>
 {% else %}

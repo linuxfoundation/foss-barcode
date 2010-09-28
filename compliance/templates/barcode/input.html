@@ -14,6 +14,10 @@
 <div id="title">&nbsp;{% include "barcode/noscript.html" %}</div>
 <div id="job_status" class="executor"></div>
 
+{% if error_message %}
+    <span class="red"><b>{{ error_message }}</b></span>
+{% endif %}
+
 <form name="entryform" method="post" action="" enctype="multipart/form-data">
 
 <div class="container" id="entry_form">

@@ -53,8 +53,8 @@ def setup_userdir():
     if not os.path.exists(settings.USERDIR_ROOT):
         os.mkdir(settings.USERDIR_ROOT)
         shutil.copyfile(os.path.join(settings.PROJECT_ROOT, 
-                                     "compliance", "compliance"),
-                        os.path.join(settings.USERDIR_ROOT, "compliance"))
+                                     "compliance", "barcode.sqlite"),
+                        os.path.join(settings.USERDIR_ROOT, "barcode.sqlite"))
 
 def start_server(run_browser, interface=None):
     pid_path = os.path.join(settings.STATE_ROOT, "server.pid")
@@ -92,7 +92,7 @@ def start_server(run_browser, interface=None):
 
         os.close(0)
 
-        manager_args = ["dep-checker", "runserver"]
+        manager_args = ["foss-barcode", "runserver"]
         if interface:
             manager_args.append(interface)
 
