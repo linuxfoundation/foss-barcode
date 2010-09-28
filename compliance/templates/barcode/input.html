@@ -12,10 +12,11 @@
 {% block content %}
 
 <div id="title">&nbsp;{% include "barcode/noscript.html" %}</div>
-<div id="job_status" class="executor"></div>
 
 {% if error_message %}
+    {% autoescape off %}
     <span class="red"><b>{{ error_message }}</b></span>
+    {% endautoescape %}
 {% endif %}
 
 <form name="entryform" method="post" action="" enctype="multipart/form-data">
@@ -51,9 +52,8 @@
     <td align="right"><b>{{ recordform.user.label }}:</b></td>
     <td>{{ recordform.user }}</td>
   </tr>
-  <tr align="left">   
-    <td align="right"><b>{{ recordform.checksum.label }}:</b>{{ recordform.checksum.errors }}</td>
-    <td>{{ recordform.checksum }}</td>
+  <tr align="left">
+    <td></td><td></td>   
     <td align="center" colspan="2"><input style="width: 200px" type="submit" name="submit" value="Create Checksum/Barcode" /></td>
   </tr>      
 </table>
@@ -64,9 +64,6 @@
     <col width=40>
     <col width=120>
     <col width=40>
-<!--
-<table border="1" id="foss_list">
--->
   <tr>
     <th>FOSS Component</th>
     <th>Version</th>
@@ -115,16 +112,6 @@
         });
     });
     function setdefaults() {
-        document.getElementById("job_status").style.display = 'none';
-        document.entryform.checksum.disabled = true;
-        {% if reload_running %}
-            document.getElementById("entry_form").style.visibility = 'hidden';
-            document.getElementById("job_status").style.display = 'block';
-            document.getElementById("job_status").innerHTML = "Getting job status...<br /><br />";
-            setTimeout("reload_status();", 5000);
-        {% else %}
-            reload_status();
-        {% endif %}
     }
     function set_destination(dest) {
         path_dest = dest;
@@ -140,11 +127,7 @@
         lastchar = filename.slice(-1);
         // only files, no dirs
         if (lastchar != '/') {
-            //if ( path_dest == "spdx_files" ) {
                 document.getElementsByName(path_dest)[0].value += filename + "\n";
-            //} else {
-            //    document.getElementById(path_dest).innerHTML += filename + "<BR>";
-            //}
         }
     }
     function add_foss_row(id){
@@ -190,34 +173,6 @@
 
         foss_name.value = "";
         foss_version.value = "";
-    }
-    function reload_status() {
-      testid = ""
-      xmlhttp = new XMLHttpRequest();
-      xmlhttp.open("GET", "/barcode/taskstatus/", false);
-      xmlhttp.send();
-      response = xmlhttp.responseText;
-      if (response == "None") {
-        document.getElementById("entry_form").style.visibility = 'visible';
-        document.getElementById("job_status").innerHTML = "";
-        document.getElementById("job_status").style.display = 'none';
-        document.getElementById("title").innerHTML = "<b>Create FOSS Barcode:</b>";
-      } else {
-        document.getElementById("entry_form").style.visibility = 'hidden';
-        document.getElementById("title").innerHTML = "<b>Running task:</b>";
-        jdiv = document.getElementById("job_status");
-        jdiv.innerHTML = response;
-        jdiv.scrollTop = jdiv.scrollHeight;
-        setTimeout("reload_status();", 1000);
-      }
-      if (response.indexOf("Test Id=") != -1) {
-        ss = response.slice(response.indexOf("Test Id=")+8);
-        bs = ss.indexOf("<br");
-        testid = ss.slice(0,bs);
-      }
-      if (response.indexOf("Test Complete") != -1 && testid != "") {
-        window.location = "/barcode/" + testid + "/detail/";
-      }
     }
 </script>
 

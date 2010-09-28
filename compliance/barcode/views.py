@@ -64,48 +64,7 @@ def records(request):
 def input(request):
 
     error_message = ''
-
-    # This is the task to be executed.
-    def get_deps_task():
-        sys.stdout.write("FIXME" + ".\n")
-        sys.stdout.flush()
-        # run the back end with given parameters and push the data into the database
-        errmsg = None
-        lastfile = ''
-        parentid = 0
-        libparentid = 0
-        sys.stdout.write("FIXME...\n")
-        sys.stdout.flush()
-        proc = subprocess.Popen(cli_command.split(), bufsize=bufsize, stdout=subprocess.PIPE)
-        for data in iter(proc.stdout.readline,''):
-            errmsg, lastfile, parentid, libparentid = process_results(data, testid, lastfile, parentid, libparentid)
-            # if we got an error, delete the test entry
-            if errmsg:
-                delete_test_record(testid)
-                sys.stdout.write("MSGADD: <b>Error: " + errmsg + "</b>\n")
-                sys.stdout.flush()   
-                time.sleep(30)
-                return
-
-            try:
-                (rlevel, item) = data.strip().split(",")[:2]
-                sys.stdout.write("MSGADD: %s (%s)\n" % (item, rlevel))
-            except:
-                sys.stdout.write("MSGADD: " + data)
-            sys.stdout.flush()
-
-        if not errmsg:
-            mark_test_done(testid)
-            update_license_bindings()
-            sys.stdout.write("MSGADD: Test Id=" + str(testid) + "\n")
-            sys.stdout.flush()   
-            sys.stdout.write('MSGADD: Test Complete, click <a href="/barcode/' + str(testid) + '/detail/">here</a> to view results\n')
-            sys.stdout.flush()
-            # FIXME - the redirect doesn't happen without a delay here
-            time.sleep(5)
-       
-    infomsg = None
-    tm = task.TaskManager()
+    error_message = check_for_system_apps()
 
     if request.method == 'POST': # If the form has been submitted...
         recordform = RecordForm(request.POST) # A form bound to the POST data
@@ -173,18 +132,13 @@ def input(request):
 
             return HttpResponseRedirect('/barcode/' + str(recordid) + '/detail/')
 
-        else:
-            print "missing data..."
-            print recordform.errors
-
     else:
         recordform = RecordForm() # An unbound form
 
     return render_to_response('barcode/input.html', {
                               'error_message': error_message,
                               'recordform': recordform,
-                              'tab_input': True,
-                              'reload_running': tm.is_running(),
+                              'tab_input': True
     })
 
 ### these are all basically documentation support
@@ -259,6 +213,22 @@ def dirlist(request):
 
 ### utility functions
 
+# check for the system utilities we need
+# FIXME - what if "which" isn't present?
+def check_for_system_apps():
+    errmsg = ''
+    apps_needed = ['tar', 'md5sum', 'barcode', 'pstopnm', 'pnmtopng']
+    for app in apps_needed:
+        result = os.system("which " + app)
+        if result:
+            errmsg += "Could not find system app " + app + "...<br>"
+
+    if errmsg:
+        errmsg += "Application will fail to generate barcodes without these apps<br>"
+        errmsg += "Please use your system package manager to install them<br>"
+
+    return errmsg
+
 # build up an archive
 def record_to_checksum(recid):
     # create an xml file of the database data
@@ -305,10 +275,9 @@ def checksum_to_barcode(recid, checksum):
 
 # to remove a record
 def delete_record(recid):
-    errmsg = None
+    errmsg = ''
     q = Barcode_Record.objects.filter(id = recid)
     checksum = q[0].checksum
-    print checksum
     q.delete()
     try:
         shutil.rmtree(os.path.join(settings.USERDATA_ROOT,str(recid)))
@@ -316,9 +285,9 @@ def delete_record(recid):
             try:
                 os.unlink(os.path.join(settings.STATIC_DOC_ROOT, "images", "barcodes", checksum + ".png"))
             except:
-                errmsg = "Failed to delete barcode image..." 
+                errmsg += "Failed to delete barcode image...<br>" 
     except:
-        errmsg = "Failed to delete user data..."
+        errmsg += "Failed to delete user data...<br>"
     return errmsg
 
 # delete table records requested by id from one of the input forms
