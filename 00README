@@ -26,7 +26,7 @@ To run the gui/server (as user compliance for installed package):
    /opt/linuxfoundation/bin/foss-barcode.py start (for running installed)
    
 To run the application in place, you *must* first run "make" to create the
-database and docs, as well as populate the db with the static data:
+database and docs:
    make
    bin/foss-barcode.py start (for running in-place)
 
