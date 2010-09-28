@@ -29,7 +29,8 @@
     </tr>    
     <tr>
       <td align = "center">
-        <img src="/site_media/images/barcodes/{{ record.checksum }}.png">
+        <img src="/site_media/user_data/{{ record.id }}/{{ record.checksum }}.png"><br>
+        <a href="/site_media/user_data/{{ record.id }}/{{ record.checksum }}.ps">Download Postscript</a>
       </td>
     </tr>
     <tr>
@@ -60,7 +61,7 @@
       <tr><th>SPDX File(s)</th></tr>
       {% for row in spdx %}
       <tr valign = "top">
-        <td>{{ row.path }}</td>
+        <td><a href="/site_media/user_data/{{ record.id }}/spdx_files/{{ row.local_path }}">{{ row.path }}</a></td>
       </tr>
     {% endfor %}
     </table>

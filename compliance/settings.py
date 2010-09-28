@@ -85,6 +85,8 @@ else:
 MEDIA_ROOT = '' 
 
 STATIC_DOC_ROOT = os.path.join(PROJECT_ROOT, 'compliance/media')
+# FIXME - if we go this route (for clickable links), drop the previous defs
+USERDATA_ROOT = os.path.join(PROJECT_ROOT, 'compliance/media/user_data')
 
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash if there is a path component (optional in other cases).

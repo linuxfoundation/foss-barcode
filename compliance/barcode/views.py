@@ -25,7 +25,11 @@ def detail(request, record_id):
     foss = render_detail(record_id)
     record_list = Barcode_Record.objects.filter(id = record_id)
     record = record_list[0]
-    spdx = SPDX_Files.objects.filter(brecord = record_id)
+    spdx = []
+    spdx_list = SPDX_Files.objects.filter(brecord = record_id)
+    for s in spdx_list:
+        local_path = os.path.basename(s.path)
+        spdx.append({'path': s.path, 'local_path': local_path})
     return render_to_response('barcode/detail.html', {'record': record, 'spdx': spdx, 'foss': foss, 'tab_results': True})
 
 # record search page
@@ -73,6 +77,8 @@ def input(request):
             recorddata.save()
             recordid = recorddata.id
             data_dest = os.path.join(settings.USERDATA_ROOT,str(recordid))
+            spdx_dest = os.path.join(data_dest, "spdx_files")
+            patch_dest = os.path.join(data_dest, "patches")
             try:
                 os.mkdir(data_dest)
             except:
@@ -81,15 +87,20 @@ def input(request):
             # if we have spdx files, store their paths and save them
             if recordform.cleaned_data['spdx_files'] != "":
                 spdx_list = recordform.cleaned_data['spdx_files'].split("\n")
+                if spdx_list:
+                    try:
+                        os.mkdir(spdx_dest)
+                    except:
+                        error_message = "Failed to create " + spdx_dest + "<br>"
                 for spdx in spdx_list:
                     if spdx != "":
                         spdx = spdx[:-1]
                         spdxdata = SPDX_Files(brecord_id = recordid, path = spdx)
                         spdxdata.save()
                         try:
-                            shutil.copy(spdx, data_dest)
+                            shutil.copy(spdx, spdx_dest)
                         except:
-                            error_message += "Failed to copy " + str(spdx) + "to " + data_dest + "<br>"
+                            error_message += "Failed to copy " + str(spdx) + "to " + spdx_dest + "<br>"
 
             # if we have foss components, store them also, and the patches
             foss_components = request.POST.get('foss_components', '')
@@ -105,8 +116,12 @@ def input(request):
                         fossid = fossdata.id
                     # check for patches
                     patch_files = request.POST.get('patch_files' + str(i), '')
-                    print patch_files
                     if patch_files != "":
+                        try:
+                            os.mkdir(patch_dest)
+                        except:
+                            error_message = "Failed to create " + patch_dest + "<br>"
+
                         patches = patch_files.split("\n")
                         for patch in patches:
                             patch = patch[:-1]
@@ -114,9 +129,9 @@ def input(request):
                                 patchdata = Patch_Files(frecord_id = fossid, path = patch)
                                 patchdata.save()
                                 try:
-                                    shutil.copy(patch, data_dest)
+                                    shutil.copy(patch, patch_dest)
                                 except:
-                                    error_message += "Failed to copy " + str(patch) + "to " + data_dest + "<br>"
+                                    error_message += "Failed to copy " + str(patch) + "to " + patch_dest + "<br>"
                     i = i + 1
 
             # generate the checksum/barcode
@@ -264,8 +279,9 @@ def record_to_checksum(recid):
 
 # create eps and png files from a checksum
 def checksum_to_barcode(recid, checksum):
-    ps_file = os.path.join(settings.USERDATA_ROOT, str(recid), checksum + ".ps") 
-    png_file = os.path.join(settings.STATIC_DOC_ROOT, "images", "barcodes", checksum + ".png")
+    # FIXME - can any user write the file to here?
+    ps_file = os.path.join(settings.USERDATA_ROOT, str(recid), checksum + ".ps")
+    png_file = os.path.join(settings.USERDATA_ROOT, str(recid), checksum + ".png")
 
     result = os.system("barcode -b " + checksum + " -e 128 -m '0,0' -E > " + ps_file)
     if result == 0:
@@ -281,11 +297,6 @@ def delete_record(recid):
     q.delete()
     try:
         shutil.rmtree(os.path.join(settings.USERDATA_ROOT,str(recid)))
-        if checksum:
-            try:
-                os.unlink(os.path.join(settings.STATIC_DOC_ROOT, "images", "barcodes", checksum + ".png"))
-            except:
-                errmsg += "Failed to delete barcode image...<br>" 
     except:
         errmsg += "Failed to delete user data...<br>"
     return errmsg
@@ -309,7 +320,7 @@ def render_detail(id):
         patch_list = Patch_Files.objects.filter(frecord = fossid)
         patches = ""
         for p in patch_list:
-            patches += p.path + "<br>"
+            patches += '<a href="/site_media/user_data/' + str(id) + "/patches/" + os.path.basename(p.path) + '">' + p.path + "</a><br>"
         foss.append({'component': f.package, 'version': f.version, 'patches': patches})
     return foss
 
