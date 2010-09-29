@@ -252,7 +252,7 @@ def dirlist(request):
 # FIXME - what if "which" isn't present?
 def check_for_system_apps():
     errmsg = ''
-    apps_needed = ['tar', 'md5sum', 'barcode', 'pstopnm', 'pnmtopng']
+    apps_needed = ['find', 'cat', 'md5sum', 'barcode', 'pstopnm', 'pnmtopng']
     for app in apps_needed:
         result = os.system("which " + app + "> /dev/null")
         if result:
@@ -264,31 +264,47 @@ def check_for_system_apps():
 
     return errmsg
 
+# strip 'pk' entry from serialized data
+def strip_pk(data):
+    data = re.sub('pk=".*?" ','', data)
+    return data
+
 # build up an archive
 def record_to_checksum(recid):
     # create an xml file of the database data
     # FIXME - this could be cleaned up a bit, just QandD for now
     # FIXME - record has "pk" in it, so the same user date gets a different checksum
     from django.core import serializers
-    data = serializers.serialize("xml", Barcode_Record.objects.filter(id = recid), 
-                                  fields=('company','website', 'product', 'version', 'release', 'checksum'))
-    data += serializers.serialize("xml", SPDX_Files.objects.filter(brecord = recid), fields=('path'))
-    data += serializers.serialize("xml", FOSS_Components.objects.filter(brecord = recid), 
-                                  fields=('package', 'version'))
-    foss_list = FOSS_Components.objects.filter(brecord = recid)
-    for f in foss_list:
-        fossid = f.id
-        data += serializers.serialize("xml", Patch_Files.objects.filter(frecord = fossid), fields=('path'))
+    data = strip_pk(serializers.serialize("xml", Barcode_Record.objects.filter(id = recid), 
+                                  fields=('company','website', 'product', 'version', 'release', 'checksum')))
+    has_spdx = SPDX_Files.objects.filter(brecord = recid).count()
+    print has_spdx
+    if has_spdx:
+        data += strip_pk(serializers.serialize("xml", SPDX_Files.objects.filter(brecord = recid), fields=('path')))
+    has_foss = FOSS_Components.objects.filter(brecord = recid).count()
+    if has_foss:
+        data += strip_pk(serializers.serialize("xml", FOSS_Components.objects.filter(brecord = recid), 
+                                               fields=('package', 'version')))
+        foss_list = FOSS_Components.objects.filter(brecord = recid)
+        for f in foss_list:
+            fossid = f.id
+            has_patches = Patch_Files.objects.filter(frecord = fossid).count()
+            if has_patches:
+                data += strip_pk(serializers.serialize("xml", Patch_Files.objects.filter(frecord = fossid), 
+                                                       fields=('path')))
     
     # write the xml to a temporary file
     working_dir = os.path.join(settings.USERDATA_ROOT, str(recid))
-    outf = os.path.join(working_dir, str(recid) + ".xml")
+    outf = os.path.join(working_dir, "barcode_data.xml")
     outh = open(outf, "w")
     outh.write(data)
     outh.close
 
-    # tar the whole thing up
-    checksum = os.popen("tar -C " + working_dir + " -cf - . | md5sum -").readline()
+    # tar the whole thing up - no workie - not repeatable
+    #checksum = os.popen("tar -C " + working_dir + " -cf - . | md5sum -").readline()
+    # cat everything into md5sum
+    checksum = os.popen("find " + working_dir + " -type f -exec cat {} + | md5sum -").readline()
+ 
     # just the number, not the filename
     checksum = checksum[:32]
     # remove the record file
