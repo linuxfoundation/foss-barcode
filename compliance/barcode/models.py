@@ -37,6 +37,8 @@ class FOSS_Components(models.Model):
     brecord = models.ForeignKey(Barcode_Record)
     package = models.CharField(max_length=200)
     version = models.CharField(max_length=20)
+    license = models.CharField(max_length=40)
+    url = models.CharField(max_length=200)
     def __unicode__(self):
         return self.package
 
@@ -51,7 +53,8 @@ class RecordForm(ModelForm):
         model = Barcode_Record
 
     spdx_files = forms.CharField(widget=forms.Textarea, required=False)
-    foss_component = forms.CharField(max_length=100, required=False)
-    foss_version = forms.CharField(max_length=100, required=False)
-
+    foss_component = forms.CharField(max_length=200, required=False)
+    foss_version = forms.CharField(max_length=20, required=False)
+    foss_license = forms.CharField(max_length=40, required=False)
+    foss_url = forms.CharField(max_length=200, required=False)
 

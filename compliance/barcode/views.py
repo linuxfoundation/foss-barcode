@@ -69,9 +69,26 @@ def input(request):
 
     error_message = ''
     error_message = check_for_system_apps()
+    foss_components = ''
+    foss_versions = ''
+    foss_licenses = ''
+    foss_urls = ''
+    foss_patches = ''
 
     if request.method == 'POST': # If the form has been submitted...
         recordform = RecordForm(request.POST) # A form bound to the POST data
+        # we need these whether it's valid or not to repopulate on a bad submit        
+        foss_components = request.POST.get('foss_components', '')
+        foss_versions = request.POST.get('foss_versions', '')
+        foss_licenses = request.POST.get('foss_licenses', '')
+        foss_urls = request.POST.get('foss_urls', '')
+        # patches are each in their own text area
+        if foss_components != '':
+            components = foss_components.split(",")
+            for i in range(0, len(components)-1):
+                foss_patches += request.POST.get('patch_files' + str(i), '') + ","
+
+        # back to "normal" processing
         if recordform.is_valid(): # All validation rules pass
             recorddata = recordform.save(commit=False)       
             recorddata.save()
@@ -103,15 +120,17 @@ def input(request):
                             error_message += "Failed to copy " + str(spdx) + "to " + spdx_dest + "<br>"
 
             # if we have foss components, store them also, and the patches
-            foss_components = request.POST.get('foss_components', '')
-            foss_versions = request.POST.get('foss_versions', '')
             if foss_components != '':
                 components = foss_components.split(",")
                 versions = foss_versions.split(",")
+                licenses = foss_licenses.split(",")
+                urls = foss_urls.split(",")
                 i = 0
                 for foss in components:
                     if foss != "":
-                        fossdata = FOSS_Components(brecord_id = recordid, package = foss, version = versions[i])
+                        fossdata = FOSS_Components(brecord_id = recordid, 
+                                                   package = foss, version = versions[i],
+                                                   license = licenses[i], url = urls[i])
                         fossdata.save()
                         fossid = fossdata.id
                     # check for patches
@@ -151,9 +170,10 @@ def input(request):
         recordform = RecordForm() # An unbound form
 
     return render_to_response('barcode/input.html', {
-                              'error_message': error_message,
-                              'recordform': recordform,
-                              'tab_input': True
+                              'error_message': error_message, 'recordform': recordform,
+                              'foss_components': foss_components, 'foss_versions': foss_versions,
+                              'foss_licenses': foss_licenses, 'foss_urls': foss_urls,
+                              'foss_patches': foss_patches, 'tab_input': True
     })
 
 ### these are all basically documentation support
@@ -234,9 +254,9 @@ def check_for_system_apps():
     errmsg = ''
     apps_needed = ['tar', 'md5sum', 'barcode', 'pstopnm', 'pnmtopng']
     for app in apps_needed:
-        result = os.system("which " + app)
+        result = os.system("which " + app + "> /dev/null")
         if result:
-            errmsg += "Could not find system app " + app + "...<br>"
+            errmsg += "Could not find system app '<i>" + app + "</i>'...<br>"
 
     if errmsg:
         errmsg += "Application will fail to generate barcodes without these apps<br>"
@@ -321,6 +341,6 @@ def render_detail(id):
         patches = ""
         for p in patch_list:
             patches += '<a href="/site_media/user_data/' + str(id) + "/patches/" + os.path.basename(p.path) + '">' + p.path + "</a><br>"
-        foss.append({'component': f.package, 'version': f.version, 'patches': patches})
+        foss.append({'component': f.package, 'version': f.version, 'license': f.license, 'url': f.url, 'patches': patches})
     return foss
 

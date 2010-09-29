@@ -16,7 +16,7 @@
   <br>
   <table width = "100%" border = "1">
     <tr>
-      <td rowspan="3">
+      <td rowspan = "3">
         <b>Company Name: </b>{{ record.company }}<br>
         <b>FOSS Website: </b><a href="{{ record.website }}" target="_blank">{{ record.website }}</a><br>
         <b>Product Name: </b>{{ record.product }}<br>
@@ -39,16 +39,20 @@
   </table>
   <div class="halfdiv">
     <table border = "1" width = "100%">
-      <tr><th colspan = "3">FOSS Components/Patches</th></tr>
+      <tr><th colspan = "5">FOSS Components/Patches</th></tr>
       <tr>
         <th>Component</th>
         <th>Version</th>
+        <th>License</th>
+        <th>Download URL</th>
         <th>Patch(es)</th>
       </tr>
       {% for row in foss %}
       <tr valign = "top">
         <td>{{ row.component }}</td>
         <td>{{ row.version }}</td>
+        <td>{{ row.license }}</td>
+        <td><a href="{{ row.url }}" target="_blank">{{ row.url }}</a></td>
         {% autoescape off %}
         <td>{{ row.patches }}</td>
         {% endautoescape %}

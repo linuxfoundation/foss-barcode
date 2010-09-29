@@ -22,19 +22,19 @@
 <form name="entryform" method="post" action="" enctype="multipart/form-data">
 
 <div class="container" id="entry_form">
-<table align="left">
+<table align="left" width="100%">
   <tr align="left">
     <td align="right"><b>{{ recordform.company.label }}:</b>{{ recordform.company.errors }}</td>
     <td>{{ recordform.company }}</td>
     <td align="center"><b>SPDX File(s)<br>(optional)</b>{{ recordform.spdx_files.errors }}</td>
-    <td><input type="button" name="spdxfilename" value="Select File(s)"
+    <td align="center"><input type="button" name="spdxfilename" value="Select File(s)"
               title="Open a File/Directory Selector"
               onclick="toggle_visibility('target_select');set_destination('spdx_files');toggle_enabled('patchfilename');"/></td>
   </tr>
   <tr align="left">
     <td align="right"><b>{{ recordform.website.label }}:</b>{{ recordform.company.errors }}</td>
     <td>{{ recordform.website }}</td>
-    <td colspan="2" rowspan="5">{{ recordform.spdx_files }}</td>
+    <td align="center" colspan="2" rowspan="5">{{ recordform.spdx_files }}</td>
   </tr>
   <tr align="left">
     <td align="right"><b>{{ recordform.product.label }}:</b>{{ recordform.product.errors }}</td>
@@ -59,30 +59,39 @@
 </table>
 <br><br>
 <div class="foss_table">
-<table border="1" width="555" cellspacing="1" style='table-layout:fixed' id="foss_list">
-    <col width=80>
-    <col width=40>
+<table border="1" width="700" cellspacing="1" style='table-layout:fixed' id="foss_list">
+    <col width=125>
+    <col width=60>
+    <col width=60>
+    <col width=145>
     <col width=120>
-    <col width=40>
+    <col width=70>
   <tr>
     <th>FOSS Component</th>
     <th>Version</th>
-    <th>Patch(es)<br>(optional)</th>
+    <th>License</th>
+    <th>Original<br>Download URL</th>
+    <th>Patches<br>(if applicable)</th>
     <td></td>
   </tr>
   <tr>
-    <!-- needed to control the width here, so hand tweaked the form fields -->
-    <td><input type="text" name="foss_component" size="17"></td>
-    <td><input type="text" name="foss_version" size="7"></td>
+    <!-- needed to control the width here, so hand tweaked size in javascript -->
+    <td>{{ recordform.foss_component }}</td>
+    <td>{{ recordform.foss_version }}</td>
+    <td>{{ recordform.foss_license }}</td>
+    <td>{{ recordform.foss_url }}</td>
     <td align="center" colspan="2"><input type="button" name="addfoss" 
                                         value="Add Component" 
-                                        onclick="add_foss_row('foss_list')"/></td>
+                                        onclick="get_foss_values();add_foss_row('foss_list', 'add')"/></td>
   </tr>
 <!-- TODO - loop and fill this from SPDX, plus user can manually add bits, buttons to add patches -->
 </table>
 </div>
-<input type="hidden", name="foss_components", id="foss_components", value="" />
-<input type="hidden", name="foss_versions", id="foss_versions", value="" />
+<input type="hidden", name="foss_components", id="foss_components", value="{{ foss_components }}">
+<input type="hidden", name="foss_versions", id="foss_versions", value="{{ foss_versions }}">
+<input type="hidden", name="foss_licenses", id="foss_licenses", value="{{ foss_licenses }}">
+<input type="hidden", name="foss_urls", id="foss_urls", value="{{ foss_urls }}">
+<input type="hidden", name="foss_patches", id="foss_patches", value="{{ foss_patches }}">
 </div>
 	
 <div class="container" id="target_select" style="display: none;"> 
@@ -102,6 +111,11 @@
 {% block scripts %}
 <script language="JavaScript">
     var path_dest = "spdxfilename";
+    var foss_name = "";
+    var foss_version = "";
+    var foss_license = "";
+    var foss_url = "";
+
     $(document).ready( function() {
         $('#target').fileTree({
             root: '/',
@@ -112,6 +126,28 @@
         });
     });
     function setdefaults() {
+        // layout tweaks for the foss_list table
+        document.getElementsByName("foss_component")[0].size = 16;
+        document.getElementsByName("foss_version")[0].size = 6;
+        document.getElementsByName("foss_license")[0].size = 6;
+        document.getElementsByName("foss_url")[0].size = 19;
+        // if the user submitted with missing data, we lose the FOSS table content, repopulate
+        if (document.getElementById("foss_components").value != "") {
+            var fossn = document.getElementById("foss_components").value.split(",");
+            var fossv = document.getElementById("foss_versions").value.split(",");
+            var fossl = document.getElementById("foss_licenses").value.split(",");
+            var fossu = document.getElementById("foss_urls").value.split(",");
+            var fossp = document.getElementById("foss_patches").value.split(",");
+            for (i = 0; i < fossn.length - 1; i++) {
+                foss_name = fossn[i];
+                foss_version = fossv[i];
+                foss_license = fossl[i];
+                foss_url = fossu[i];
+                add_foss_row("foss_list", "reload");
+                id_tag = "patch_files" + i;
+                document.getElementsByName(id_tag)[0].value = fossp[i];
+            }
+        }
     }
     function set_destination(dest) {
         path_dest = dest;
@@ -130,9 +166,14 @@
                 document.getElementsByName(path_dest)[0].value += filename + "\n";
         }
     }
-    function add_foss_row(id){
-        foss_name = document.getElementsByName("foss_component")[0];
-        foss_version = document.getElementsByName("foss_version")[0];
+    function get_foss_values() {
+        foss_name = document.getElementsByName("foss_component")[0].value;
+        foss_version = document.getElementsByName("foss_version")[0].value;
+        foss_license = document.getElementsByName("foss_license")[0].value;
+        foss_url = document.getElementsByName("foss_url")[0].value;       
+    }
+    function add_foss_row(id, mode){
+   
         if (foss_name.value == "" || foss_version.value == "")
             return;
         var tbody = document.getElementById(id).getElementsByTagName("TBODY")[0];
@@ -142,37 +183,62 @@
         
         var td1 = document.createElement("TD");
         td1.setAttribute("valign", "top");
-        td1.appendChild(document.createTextNode(foss_name.value));
-        document.getElementById("foss_components").value += foss_name.value + ",";
+        td1.appendChild(document.createTextNode(foss_name));
+        row.appendChild(td1);
 
         var td2 = document.createElement("TD");
         td2.setAttribute("valign", "top");
-        td2.appendChild (document.createTextNode(foss_version.value));
-        document.getElementById("foss_versions").value += foss_version.value + ",";
+        td2.appendChild (document.createTextNode(foss_version));
+        row.appendChild(td2);
 
-        var td3 = document.createElement("TD");        
-        var ch3 = document.createElement("textarea");
-        ch3.setAttribute("type", "textarea");
-        ch3.setAttribute("name",id_tag);
-        td3.appendChild(ch3);   
+        var td3 = document.createElement("TD");
+        td3.setAttribute("valign", "top");
+        td3.appendChild (document.createTextNode(foss_license));
+        row.appendChild(td3);
 
         var td4 = document.createElement("TD");
-        var ch4 = document.createElement("input");
-        ch4.setAttribute("type", "button");
-        ch4.setAttribute("value", "Select" + "\n" + "Patch(es)");
-        ch4.setAttribute("onclick", "toggle_visibility('target_select');set_destination('" + id_tag + "')");
-        ch4.setAttribute("name","patchfilename");
-        ch4.setAttribute("title", "Open a File/Directory Selector");
-        td4.appendChild(ch4);
-
-        row.appendChild(td1);
-        row.appendChild(td2);
-        row.appendChild(td3);
+        td4.setAttribute("valign", "top");
+        td4.appendChild (document.createTextNode(foss_url));
         row.appendChild(td4);
+
+        var td5 = document.createElement("TD");        
+        var ch5 = document.createElement("textarea");
+        ch5.setAttribute("type", "textarea");
+        ch5.setAttribute("name",id_tag);
+        td5.appendChild(ch5);   
+        row.appendChild(td5);
+
+        var td6 = document.createElement("TD");
+        td6.setAttribute("align", "center");
+        var ch6 = document.createElement("input");
+        ch6.setAttribute("type", "button");
+        ch6.setAttribute("value", "Select" + "\n" + "Patch(es)");
+        ch6.setAttribute("onclick", "toggle_visibility('target_select');set_destination('" + id_tag + "')");
+        ch6.setAttribute("name","patchfilename");
+        ch6.setAttribute("title", "Open a File/Directory Selector");
+        td6.appendChild(ch6);
+        row.appendChild(td6);
+        
         tbody.appendChild(row);
 
-        foss_name.value = "";
-        foss_version.value = "";
+        // only set the hidden fields for a clean add, not a form reload
+        if (mode == "add") {
+            document.getElementById("foss_components").value += foss_name + ",";
+            document.getElementById("foss_versions").value += foss_version + ",";
+            document.getElementById("foss_licenses").value += foss_license + ",";
+            document.getElementById("foss_urls").value += foss_url + ",";
+            // clean the input fields
+            document.getElementsByName("foss_component")[0].value = "";
+            document.getElementsByName("foss_version")[0].value = "";
+            document.getElementsByName("foss_license")[0].value = "";
+            document.getElementsByName("foss_url")[0].value = "";   
+        }
+
+        // cleanup the global vars
+        foss_name = "";
+        foss_version = "";
+        foss_license = "";
+        foss_url = "";
     }
 </script>
 
