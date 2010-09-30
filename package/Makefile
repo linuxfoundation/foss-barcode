@@ -1,6 +1,6 @@
 PACKAGE=foss-barcode
 # version defined in site_settings.py
-VERSION=$(shell grep gui_version ../compliance/linkage/site_settings.py | awk '{print $$3}' | sed 's|"||g')
+VERSION=$(shell grep gui_version ../compliance/barcode/site_settings.py | awk '{print $$3}' | sed 's|"||g')
 RELEASE=3
 
 # we can optionally bundle django
