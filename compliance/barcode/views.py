@@ -295,6 +295,18 @@ def record_to_checksum(recid):
     
     # write the xml to a temporary file
     working_dir = os.path.join(settings.USERDATA_ROOT, str(recid))
+    if os.path.exists(settings.USERDATA_ROOT) == 0:
+        try:
+            os.mkdir(settings.USERDATA_ROOT)
+        except:
+            error_message = "Failed to create " + settings.USERDATA_ROOT + "<br>"
+    
+    if os.path.exists(working_dir) == 0:
+        try:
+            os.mkdir(working_dir)
+        except:
+            error_message = "Failed to create " + working_dir + "<br>"
+
     outf = os.path.join(working_dir, "barcode_data.xml")
     outh = open(outf, "w")
     outh.write(data)
