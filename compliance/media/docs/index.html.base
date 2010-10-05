@@ -2,7 +2,7 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-  <title>Dependency Checker Tool</title>
+  <title>FOSS Barcode Tool</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <style type="text/css">@import "../css/docstyle.css";</style>
 </head>
@@ -25,14 +25,10 @@
       <li><a href="#layout">System Layout</a></li>
       <li><a href="#server">Server</a></li>
     </ul>
-    <li><a href="#cli">Command Line</a></li>
     <li><a href="#gui">Accessing the GUI</a></li>
     <li><a href="#gui-use">Using the GUI</a></li>
     <li><a href="#admin">Admin Interface</a></li>
     <li><a href="#database">Database Schema</a></li>
-      <ul>
-        <li><a href="#data_import">Importing License Data</a></li>
-      </ul>
     <li><a href="#backend">How it Works</a></li>
     <li><a href="#limitations">Limitations</a></li>
   </ul>
@@ -48,26 +44,22 @@
 <div id="overview">
 <b>Overview</b>
 <p>
-The Dependency Checker is a tool to explore both dynamic and static linkage 
-dependencies of binaries and libraries built with FOSS components. Once dependencies are 
-identified, the GUI can provide an easy to interpret visual indication of possible license 
-issues, based on in-house license policies.</p> 
-
-<p>The system consists of two pieces, a command-line program "readelf.py" and a GUI frontend that 
-runs in a web browser.</p>
+The FOSS Barcode Tool is a tool to that generates a checksum and an identifying barcode for
+a product composed of FOSS Components. The user compiles a set of data describing the product, SPDX files,
+and FOSS components/patches and the tool generates a unique signature of this dataset.</p>
 
 <p>You can view the development source from 
-<a href="http://git.linuxfoundation.org/?p=dep-checker.git;a=summary">git</a>, 
+<a href="http://git.linuxfoundation.org/?p=foss-barcode.git;a=summary">git</a>, 
 or check it out using standard git commands:
 <pre>
-git clone http://git.linuxfoundation.org/dep-checker.git
+git clone http://git.linuxfoundation.org/foss-barcode.git
 </pre>
 </p>
 <p>Bugs can be filed under the 
 <a href="http://bugs.linuxfoundation.org/enter_bug.cgi?product=Compliance">Compliance</a>
 product.</p>
 <p>There is also a 
-<a href="https://lists.linux-foundation.org/mailman/listinfo/dep-checker-dev">mail list</a>
+<a href="https://lists.linux-foundation.org/mailman/listinfo/foss-barcode-dev">mail list</a>
 for discussion of the tool.</p>
 </div>
 
@@ -78,8 +70,8 @@ for discussion of the tool.</p>
 <div id="requirements">
 <b>System Requirements:</b>
 
-<p>The command-line program and the GUI require python. It also runs the OS commands: 
-<i>file, ldd, objdump and readelf</i>, so these should be present on your system.
+<p>The GUI requires python. It also runs the OS commands: 
+<i>find, cat, barcode, md5sum, pstopnm, and pnmtopng</i>, so these should be present on your system.
 The GUI requires <a href="http://www.djangoproject.com">Django</a>, along with sqlite 
 support for the results database. A web browser is also needed to interact with the GUI.
 If your distribution does not provide Django, you can follow these 
@@ -99,7 +91,7 @@ system does not provide django, or it's named differently, you may need to insta
 --nodeps:
 
 <pre>
-rpm -Uvh dep-checker-0.0.5-1.noarch.rpm --nodeps
+rpm -Uvh foss-barcode-0.0.1-1.noarch.rpm --nodeps
 </pre>
 
 <p><b>Note:</b> If you had to use --nodeps, then you <em>must</em> make sure django is installed
@@ -119,18 +111,18 @@ provide .deb packaging.</p>
 <p>You can also checkout the project from git and run it in place:
 
 <pre>
-git clone http://git.linuxfoundation.org/dep-checker.git
-cd dep-checker
+git clone http://git.linuxfoundation.org/foss-barcode.git
+cd foss-barcode
 </pre>
 
 Alternately, you can get the latest tarball from the 
-<a href="http://git.linuxfoundation.org/?p=dep-checker.git;a=summary">git</a> web page by
+<a href="http://git.linuxfoundation.org/?p=foss-barcode.git;a=summary">git</a> web page by
 clicking on the <i>snapshot</i> link in the upper right-hand part of the page.</p>
 
 <p>Once you have the tarball, unpack it (example, the numbers of your download may differ):</p>
 <pre>
-tar -xf dep-checker-3af829ae0cc5aba33192c000ef0365ef6bced843.tar.gz
-cd dep-checker
+tar -xf foss-barcode-3af829ae0cc5aba33192c000ef0365ef6bced843.tar.gz
+cd foss-barcode
 </pre>
 
 Create the application database and the documentation (you will need w3m to create 
@@ -141,23 +133,23 @@ make
 </pre>
 
 If you don't have root permissions on the machine to install Django, you can install it in-place 
-with the dep-checker install:
+with the foss-barcode install:
 
 <pre>
 tar -xf Django-x.x.x.tar-gz
-cp -ar Django-x.x.x/django dep-checker/compliance
-cd dep-checker/bin
+cp -ar Django-x.x.x/django foss-barcode/compliance
+cd foss-barcode/bin
 ln -s ../compliance/django .
 </pre>
 
 Run the server and the gui should show up in a browser window:
 <pre>
-./bin/dep-checker.py start
+./bin/foss-barcode.py start
 </pre>
 
 To kill the django server, you can run:
 <pre>
-./bin/dep-checker.py stop
+./bin/foss-barcode.py stop
 </pre></p>
 
 </div>
@@ -169,7 +161,7 @@ To kill the django server, you can run:
 The application installs under the <i>/opt/linuxfoundation</i> namespace:
 
 <ul>
-<li><b>bin</b> - command line program and wrapper script to launch gui</li>
+<li><b>bin</b> - wrapper script to launch gui</li>
 <li><b>compliance</b> - gui application tree and results database</li>
 <li><b>doc</b> - License file</li>
 <li><b>share</b> - Desktop menu files and icons</li>
@@ -182,10 +174,10 @@ Under the compliance tree, is a typical django project layout:
 <li><b>__init__.py, manage.py, settings.py, urls.py</b> - generated by django at project 
     creation, <i>settings.py</i> does have some configurable settings. None of the others should 
     be altered.</li>
-<li><b>linkage</b> - dep-checker GUI code</li>
+<li><b>linkage</b> - foss-barcode GUI code</li>
 <li><b>media</b> - static html elements such as images, css, javascript files. Documentation 
     is also in this directory.</li>
-<li><b>templates/linkage</b> - the dep-checker html tree</li>
+<li><b>templates/linkage</b> - the foss-barcode html tree</li>
 </ul>
 </div>
 
@@ -197,13 +189,13 @@ script that su's to the compliance user, starts the server and attempts to open 
 page to the GUI:
 
 <pre>
-/opt/linuxfoundation/bin/dep-checker.py start
+/opt/linuxfoundation/bin/foss-barcode.py start
 </pre>
 
 To stop the server run:
 
 <pre>
-/opt/linuxfoundation/bin/dep-checker.py stop
+/opt/linuxfoundation/bin/foss-barcode.py stop
 </pre>
 </p>
 
@@ -220,120 +212,12 @@ You can terminate the server from this console by hitting ctrl-C
 </p>
 </div>
 
-<div id="cli">
-<b>Running the command line program:</b>
-
-<p>The command line program is called <i>readelf.py</i>, and it resides in 
-<i>/opt/linuxfoundation/bin</i>:
-
-<pre>
-Usage: readelf.py [options] &lt;file/dir tree to examine&gt; [recursion depth]
-
-Options:
-  -c                   output in csv format
-  -d                   write the output into the results database
-  -s DIR               directory tree to search
-  --comments=COMMENTS  test comments (when writing to database)
-  --project=PROJECT    project name (when writing to database)
-  --no-static          don't look for static dependencies
-  --version            show program's version number and exit
-  -h, --help           show this help message and exit
-</pre>
-
-The <i>-c</i> option is primarily used to pass data to the GUI. The format without this
-argument is more human-readable if you are using the command line directly.
-
-<p>
-The <i>-s</i> option expects a directory as an argument. If you specify this option, the
-program will attempt to drill down through the directory mentioned to find only files
-with the name specified by the next argument to analyse:
-
-<pre>
-/opt/linuxfoundation/bin/readelf.py -s /foo bar
-</pre>
-
-The program will search everything under <i>/foo</i>, for ELF files named <i>bar</i>
-</p>
-
-<p>Specifying only a directory will search and report on <i>every</i> ELF file in that
-directory tree:
-
-<pre>
-/opt/linuxfoundation/bin/readelf.py /foo
-</pre>
-
-Specifying only a file will attempt to test only the specified file:
-
-<pre>
-/opt/linuxfoundation/bin/readelf.py /foo/bar/baz
-</pre>
-
-The recursion level is an optional argument, that will attempt to not only report the
-<i>direct</i> dependencies, but also report the dependencies of each library used by
-the target file:
-
-<pre>
-/opt/linuxfoundation/bin/readelf.py /foo/bar/baz 4
-</pre>
-
-This would attempt to recurse down 4 levels from the target file, giving output something 
-like this:
-
-<pre>
-[1]/foo/bar/baz:
-  libtermcap.so.2
-  [2]/lib/libtermcap.so.2.0.8:
-    libc.so.6
-    [3]/lib/i686/libc-2.10.1.so:
-      ld-linux.so.2
-[1]/foo/bar/baz:
-  libdl.so.2
-  [2]/lib/libdl-2.10.1.so:
-    libc.so.6
-    [3]/lib/i686/libc-2.10.1.so:
-      ld-linux.so.2
-  [2]/lib/libdl-2.10.1.so:
-    ld-linux.so.2
-[1]/foo/bar/baz:
-  libc.so.6
-  [2]/lib/i686/libc-2.10.1.so:
-    ld-linux.so.2
-</pre>
-
-You will note that even though we asked for a recursion level of 4, the test stopped at 
-level 3, as the program detects when no further recursion is possible.
-</p>
-
-<p>Static library dependencies will appear with <i>(static)</i> appended to the SONAME:
-
-<pre>
-libncurses.so.5 (static)
-</pre></p>
-
-<p>The <i>--no-static</i> option suppresses trying to resolve staticly linked dependencies.</p>
-
-<p>The <i>-d</i>, <i>--project</i>, and <i>--comments</i> are for using the command line program
-to feed results into the database used by the gui. Setting <i>-d</i> forces <i>-c</i> and
-compiles the collected results into a list that is fed to the compliance database, where it
-will show up with the results of tests executed from the gui. The <i>--project</i> and 
-<i>--comments</i> are optional, as they are from the <b>Check Dependencies</b> tab. Multi-word
-strings should be enclosed in quotes. Here is an example:</p>
-
-<pre>
-/opt/linuxfoundation/bin/readelf.py -d --project=test --comments='this is a test' /usr/bin/foo
-</pre>
-
-<p>All the other options, such as searching, recursion, and disabling static checking are also
-available in this mode, and the program will still output error conditions and the data to stdout.</p>
-
-</div>
-
 <div id="gui">
 <b>Accessing the GUI:</b>
 <p>
 If a browser does not open by launching the menu item, you can access the GUI 
 (once the server is started): at 
-<a href="http://127.0.0.1:8000/linkage" target="_blank">http://127.0.0.1:8000/linkage</a>.
+<a href="http://127.0.0.1:8000/barcode" target="_blank">http://127.0.0.1:8000/linkage</a>.
 </p>
 </div>
 
@@ -344,40 +228,33 @@ If a browser does not open by launching the menu item, you can access the GUI
 program:
 
 <ul>
-<li><a href="#Test"><b>Check Dependencies</b></a> - Test entry, initiate form</li>
-<li><a href="#Results"><b>Review Results</b></a> - Tabular list of existing test results</li>
-<li><a href="#Licenses"><b>Licenses</b></a> - License/alias entry tab</li>
-<li><a href="#License Bindings"><b>License Bindings</b></a> - Define license bindings for targets (test files) and libraries</li>
-<li><a href="#License Policies"><b>License Policies</b></a> - Define sets of target/dependency license policies, to be flagged during testing</li>
-<li><a href="#Settings"><b>Settings</b></a> - View and change other settings, and reload the static database</li>
+<li><a href="#Enter Data"><b>Enter Data</b></a> - Data entry form</li>
+<li><a href="#Review Records"><b>Review Records</b></a> - Tabular list of existing records</li>
+<li><a href="#Search Records"><b>Search Records</b></a> - Search for records by checksum tab</li>
 <li><b>Documentation</b> - This documentation</li>
 </ul>
 
-The final page, which isn't visible in the tabs, is the test results detail page, 
-brought up by either running a test, or clicking on the link in the results page.
+The final page, which isn't visible in the tabs, is the record detail page, 
+brought up by either generating a barcode, or clicking on the link in the results page.
 </p>
 
-<div id="Test">
-<b>Check Dependencies:</b>
+<div id="Enter Data">
+<b>Enter Data:</b>
 
-<p>A test sequence would typical start at the <b>Check Dependencies</b> page, where you enter 
-the test criteria. This setup parallels the operation of the command line program, where you
-select whether to search for a file under a directory, test a whole directory, or just 
-a single file. There is also a drop-down to select the recursion level. You can disable
-checking for static dependencies via a checkbox.</p>
+<p>This tab is where you enter the information that defines the "product". This includes Company Name, 
+FOSS Website (optional), Product Name, Product Version, and Product Release. The date and username are
+also recorded, simply for record keeping. They do not contribute to the checksum.</p>
 
-<p>The <i>user</i> field is pre-populated with the <i>compliance</i> user, but can be
-overridden. The <i>project</i> and <i>comments</i> fields are optional for your use in
-tracking tests.</p>
+<p>There are additional option components that can be entered or loaded to further define the product. 
+These include SPDX files as well as a tabular list of FOSS Components and possible patches. If files
+are loaded using the file selection navigator, they are stored in the system under user_data for review later
+in the detailed reporting. Multiple files can be loaded for either SPDX files or FOSS component patches.
+For FOSS components, the name of the component and the version are required as a minumum for an entry.</p>
 
-<p>Once you enter the test criteria, click on the <b>Run Dependency Check</b> button. After the test
-runs you will be presented with the detailed test results in tabular form. Depending on
-the number of files to be tested and the recursion level, the test can take a few minutes,
-so be patient.</p>
-
-<p>Until there are licenses and bindings defined, the results detail will show <i>TBD</i> for
-both the target and dependency licenses. Now that there is data in the system, you can go back
-and define these relationships and update the test data.</p>
+<p>Once you enter the data, click on the <b>Create Checksum/Barcode</b> button. After the data
+is compiled you will be presented with the detailed record results in tabular form, with a graphical
+image of the barcode. The <i>Download Postscript</i> link will download an .eps file of the bardcode
+image for product packaging. Websites and uploaded files should be clickable links for further information.</p>
 
 <p>There is a <i>Print Results</i> button on the detail page that should open the browser print
 dialog to print to a physical printer or to a file. Some parts of the GUI are hidden in the
@@ -385,100 +262,20 @@ printed output so that only the test results show up in the printed report.</p>
 
 </div>
 
-<div id="Results">
-<b>Review Results:</b>
+<div id="Review Records">
+<b>Review Records:</b>
 
-<p>The test results should also be accessible from the <b>Review Results</b> page. This is a tabular
-list of all the test runs, sorted by test id/date. The far-right column has the information
-entered from the <b>Check Dependencies</b> tab. Clicking on the link for the target file or directory will 
-open the detail tab. If you want to delete test results, you can select the checkboxes and 
-delete them from here, using the <i>Delete Selected Tests</i> button.</p>
+<p>The data records should also be accessible from the <b>Review Records</b> page. This is a tabular
+list of all the data entries, sorted by id/date. The far-right column has a summary of the information
+entered from the <b>Enter Data</b> tab. Clicking on the link for the id will 
+open the detail tab. If you want to delete records, you can select the checkboxes and 
+delete them from here, using the <i>Delete Selected Records</i> button.</p>
 </div>
 
-<div id="Licenses">
-<b>Licenses:</b>
+<div id="Search Records">
+<b>Search Records:</b>
 
-<p>The <b>License</b> tab lets you enter license/version info. You enter the license name 
-<i>(example: GPL)</i> in the left-hand field and the version <i>(example: 3.0)</i> in the
-right-hand field. Like the <b>Review Results</b> tab, you can select and delete licenses using 
-the checkboxes and the <i>Delete Selected Licenses</i> button. The license-version combination 
-will be concatenated in the report to look like: <i>GPL 3.0</i>.</p>
-<p>This tab also contains the entry form to map the license/version info used by the application
-to any possible string variations provided by imported data from other sources. You can 
-select a license/version from the system and then provide up to 9 alternate names (aliases)
-that will be considered equivalent when examining test results for policy violations. Additional
-aliases can be added to an existing list by simply selecting the license, entering just the new
-alias and clicking "Add" again.</p>
-
-</div>
-
-<div id="License Bindings">
-<b>License Bindings:</b>
-
-<p>The <b>License Bindings</b> tab lets you define the license binding for the <i>target</i> files,
-that is, the files that are being tested for dependencies. The same type of bindings can be done
-for the dependency libraries.</p>
-
-<p>The drop down under <i>Target</i> will show all files having test data. The drop-down 
-under <i>License</i> will show all the licenses defined in the <b>License</b> tab. If there 
-is no test-data or no licenses, the drop-downs will be empty. If there is test data in the 
-system, you can update the license information for current data using the 
-<i>Update Target Test Data</i> button.</p>
-
-<p>The drop down under <i>Library</i> will show all libraries in the test data. 
-The drop-down under <i>License</i> will show all the licenses defined in the <b>License</b> 
-tab. The <i>License</i> selector does not differentiate between static and dynamic versions, 
-both will be treated the same. If there is no test-data or no licenses, the drop-downs will 
-be empty. If there is test data in the system, you can update the license information for 
-current data using the <i>Update Library Test Data</i> button.</p>
-
-</div>
-
-<div id="License Policies">
-<b>License Policies:</b>
-
-<p>The <b>License Policies</b> tab lets you define pairing of target/library licenses that could
-have potential issues. You select the <i>Target License</i> and <i>Library License</i> from the
-drop-downs and then select the relationship, either Static, Dynamic, or both. You can also
-set the state or either <i>Approve</i> or <i>Disapprove</i>. When a test is run, violations of 
-these policy settings will show up the the report detail printed in red with a red flag after 
-the License name. License pairings that are approved will have normal black text, and 
-unknown/undefined pairings will be highlighted in orange with an orange flag. Like the other 
-tabs, you can select and delete policies using the checkboxes and the 
-<i>Delete Selected Policies</i> button.</p>
-
-<p>In the screenshot below, you can see an example of a flagged policy violation. The application
-<i>myapp</i> has been compiled against <i>libmylib.so</i>. The licenses: <i>L1 2.0</i> and 
-<i>L2 1.3</i> have been defined in the policy screen as being an issue. When the test data is 
-displayed, this relationship is flagged as being problematic:</p>
-
-<p><img src="policy_flag.png" height="51px" width="805px" alt="policy_flag.png"></p>
-
-<p>If the target (file) or library is using a license naming convention that is not defined
-in the application licenses tab, but has a naming convention defined as equivalent in the 
-aliases table, the license violation will look like:</p>
-
-<pre>
-alias name (real name) [graphical flag]
-</pre>
-
-</div>
-
-<div id="Settings">
-<b>Settings:</b>
-
-<p>The <b>Settings</b> tab lets you change the static data used to
-detect static libraries in use by the program being tested.</p>
-
-<p>The symbol data used for static detection is based on the libraries 
-currently installed on the test system.  You can reload the data by 
-activating the <i>Reload Static Data</i> button at the top of the page.</p>
-
-<p>By default, system libraries from the normal system paths are loaded
-into the database for static symbol detection.  The list of paths to search
-is provided in a large edit box, one per line; you can add or remove paths
-from this list, and activate the <i>Save Changes</i> button to save those
-search paths.</p>
+<p>The <b>Search Records</b> tab lets you enter a checksum and lookup the data detail for that value.</p>
 
 </div>
 
@@ -499,234 +296,85 @@ existing records, except in the case of wishing to add license information to re
 <div id="database">
 <b>Database Schema:</b>
 
-<p>The database for the application is in the file <i>compliance</i> in the compliance 
+<p>The database for the application is in the file <i>barcode.sqlite</i> in the compliance 
 directory. It is an sqlite3 database file. Tables used by the application are as follows
 (arranged more or less as they are integrated into the application tabs):</p>
 
 <ul>
-<li><b>linkage_test</b> - table containing the information entered from the <b>Test</b> tab. Each
-test has an <i>id</i> used to track the test and the relationships to the file and lib 
-tables, although the id is not shown in the gui, only the date/time.</li>
+<li><b>barcode_record</b> - table containing the information entered from the <b>Enter Data</b> tab. Each
+record has an <i>id</i> used to track the record and the relationships to the spdx, components and patch 
+tables.</li>
   <ul>
-    <li>id - test id, used for linking to the file and lib tables (primary key)</li>
-    <li>do_search - boolean value used to determine whether to search a directory tree 
-                    for a particular filename</li>
-    <li>disable_static - boolean value used to determine whether to test for static
-                         dependencies</li>
-    <li>test_done - boolean value used to suppressed test from the results page before it is
-                    completed</li>
-    <li>recursion - recursion level for dependency checking, default is 1</li>
-    <li>target - target file or directory</li>
-    <li>target_dir - target directory when searching for a file by name</li>
-    <li>test_date - test date/time</li>
-    <li>user - username entered on the test form</li>
-    <li>project - project name entered on the test form</li>
-    <li>comments - free-form comments field from the test form</li>
+    <li>id - record id, used for linking to the spdx and components tables (primary key)</li>
+    <li>company - Company Name</li>
+    <li>website - Company FOSS Website</li>
+    <li>record_date - Date/time record was created</li>
+    <li>user - Username who created the record</li>
+    <li>product - Product name</li>
+    <li>version - Product Verson</li>
+    <li>release - Product Release</li>
+    <li>checksum - Generated Checksum</li>
   </ul>
-<li><b>linkage_file</b> - <i>target</i> files examined during a test run. Linked to the 
-<i>test</i> table via <i>test_id</i>.</li>          
+<li><b>spdx_files</b> - list of upload SPDX files. Linked to the <i>record</i> table via <i>brecord_id</i>.</li>          
   <ul>
-    <li>id - record id, not exposed in the gui (primary key)</li>
-    <li>test_id - reference to <i>id</i> from the <i>test</i> table</li>
-    <li>file - file name/path. In the recursive case, can be a library path.</li>
-    <li>license - file license</li>
-    <li>level - recursion level. Top-level file tested would be level 1. True paths to the
-                dependent libraries on the system under test would show up here as higher
-                levels when doing recursive testing (these files are not exposed in the GUI).</li>
-    <li>parent_id - When doing recursion, each <i>child</i> file has a parent. This field
-                    captures that relationship.</li>
-    <li>checked_static - flag to indicate whether static checking was done on this file</li>
+    <li>id - primary key</li>
+    <li>brecord_id - link to the top-level record entry</li>
+    <li>path - original path to the uploaded file</li>
   </ul>
-<li><b>linkage_lib</b> - library dependencies of the files from the <i>files</i> table.</li>           
+<li><b>foss_components</b> - entered list of FOSS components, versions, etc. Linked to the <i>record</i> table 
+via <i>brecord_id</i>.</li>           
   <ul>
-    <li>id - record id, not exposed in the gui (primary key)</li>
-    <li>test_id - reference to <i>id</i> from the <i>test</i> table</li>
-    <li>file_id - reference to <i>id</i> from the <i>file</i> table</li>
-    <li>library - library SONAME</li>
-    <li>static - flag to indicate whether the library is static or dynamic</li>
-    <li>license - library license</li>
-    <li>level - recursion level</li>
-    <li>parent_id - When doing recursion, each <i>child</i> library has a parent. This field
-                    captures that relationship.</li>
+    <li>id - primary key</li>
+    <li>brecord_id - link to the top-level record entry</li>
+    <li>package - FOSS component name (e.g. glibc)</li>
+    <li>version - FOSS componenent version</li>
+    <li>license - FOSS componenent license (e.g. GPLv2)</li>
+    <li>url - upstream URL where FOSS component can be obtained</li>
+
   </ul>
-<li><b>linkage_license</b> - This table is not linked to any of the test data tables, but
-is used to populate the target/library licenses and license policy drop-downs, which in turn
-fills in the license data for a test and flags policy issues.</li>
+<li><b>patch_files</b> - List of uploaded patch files. Linked to the <i>foss_components</i> table via
+<i>frecord_id</i>.</li>
   <ul>
-    <li>id - record id, not exposed in the gui (primary key)</li>
-    <li>longname - long version of license string (e.g. GNU Public License)</li>
-    <li>license - abbreviated license string (e.g. GPL)</li>
-    <li>version - license version number (e.g. 3.0)</li>
-  </ul>
-<li><b>linkage_aliases</b> - This table is not linked to any of the test data tables, but
-is used to map possible license string variations from outside sources to the names defined
-in the license policies. There is a many-to-one relationship between license and alias, with
-each alias entry needing to be unique.</li>
-  <ul>
-    <li>id - record id, not exposed in the gui (primary key)</li>
-    <li>license - concatenation of license/version in the same form generated from the <i>license</i> table</li>
-    <li>alias - any acceptable variation that is considered equivalent (e.g. GPLv3, GPL3)</li>
-  </ul>
-<li><b>linkage_filelicense</b> - <i>target</i> file/license bindings. These are not linked to
-any other table, but the information, if present, is used to fill in the license field in the
-<i>file</i> table after a test run, or you can manually update the data from the <b>Target 
-Licenses</b> tab.</li>   
-  <ul>
-    <li>id - record id, not exposed in the gui (primary key)</li>
-    <li>file - file name/path, selected from the <i>file</i> table</li>
-    <li>license - selected concatenation of license/version from the <i>license</i> table</li>
-  </ul>
-<li><b>linkage_liblicense</b> - library/license bindings. These are not linked to
-any other table, but the information, if present, is used to fill in the license field in the
-<i>lib</i> table after a test run, or you can manually update the data from the <b>Library 
-Licenses</b> tab.</li>    
-  <ul>
-    <li>id - record id, not exposed in the gui (primary key)</li>
-    <li>library - library SONAME, selected from the <i>lib</i> table</li>
-    <li>license - selected concatenation of license/version from the <i>license</i> table</li>
-  </ul>
-<li><b>linkage_policy</b></li>
-  <ul>
-    <li>id - record id, not exposed in the gui (primary key)</li>
-    <li>tlicense - target license selected from the concatenation of license/version from the <i>license</i> table</li>
-    <li>dlicense - library license selected from the concatenation of license/version from the <i>license</i> table</li>
-    <li>relationship - relationship string, either 'Static', 'Dynamic', or 'Both'</li>
-    <li>rank - problem ranking - currently not used</li>
-    <li>status - character flag for Approved (A) or Disapproved (D)</li>
-    <li>edit_date - date/time the policy was entered</li>
-  </ul>
-<li><b>linkage_staticsymbol</b></li>
-  <ul>
-    <li>id - record id, not exposed in the gui (primary key)</li>
-    <li>symbol - symbol name. symbols extracted from the target under test will match this entry to get possible library sources</li>
-    <li>libraryname - Library SONAME that provides this symbol</li>
+    <li>id - primary key</li>
+    <li>frecord_id - link to the foss_components record entry</li>
+    <li>path - original path to the uploaded file</li>
   </ul>
 </ul>
-
-</div>
-
-<div id="data_import">
-<b>Importing License Data:</b>
-
-<p>Because <i>linkage_license</i>, <i>linkage_aliases</i>, <i>linkage_filelicense</i>, <i>linkage_liblicense</i>, and
-<i>linkage_policy</i> are more or less independent of the test data, one could easily load these
-tables from other data sources, using sqlite3, as long as the existing table schemas are honored.
-To illustrate, let's walk through an example of importing a file library/license mappings from
-another source.</p>
-
-<p>Say have a csv file of library,license data like this:
-
-<pre>
-libfoo.so.6,LPGLv3
-libbar.so.2,BSD1
-libbaz.so.4,APACHE 2
-</pre>
-
-We can easily process this into SQL statements we can load into dep-checker using whatever
-script language you're comfortable with. With the shell and awk, perhaps something like this:
-
-<pre>
-awk -F,  '{print "INSERT INTO linkage_liblicense (library, license) VALUES (\"" $1 "\",\"" $2 "\");"}' < liblicenses.csv > liblicenses.sql
-cd dep-checker compliance
-sqlite3 compliance < liblicenses.sql
-</pre>
-
-And if we look at the database now:
-
-<pre>
-sqlite3 compliance 
-SQLite version 3.6.23.1
-Enter ".help" for instructions
-Enter SQL statements terminated with a ";"
-sqlite> select * from linkage_liblicense;
-1|libfoo.so.6|LPGLv3
-2|libbar.so.2|BSD1
-3|libbaz.so.4|APACHE 2
-</pre>
-
-So our data is loaded, but we have a slight problem in that the license naming conventions from
-our data file don't match the format used in dep-checker to feed into our license polices. In 
-dep-checker, <tt>"LGPLv3"</tt> would be <tt>"LGPL 3.0"</tt>, <tt>"BSD1"</tt> would be 
-<tt>"BSD 1.0"</tt> and <tt>"APACHE 2"</tt> might be <tt>"Apache 2.0"</tt>. We can correct
-this either by define alias mappings in the <b>Licenses</b> tab or with some additional SQL
-(assuming we know the "correct" naming defined in dep-checker):
-
-<pre>
-INSERT INTO linkage_aliases (license, alias) VALUES ('LGPL 3.0', 'LGPLv3');
-INSERT INTO linkage_aliases (license, alias) VALUES ('BSD 1.0', 'BSD1');
-INSERT INTO linkage_aliases (license, alias) VALUES ('Apache 2.0', 'APACHE 2');
-</pre>
-
-If you have a large number of alias mappings to perform, SQL may be the way to go, otherwise they
-can be assigned under <b>Aliases</b> in the <b>Licenses</b> tab where you'l be assured of the
-correct mappings, as only "known" licenses will be available in the drop-down.</p>
-
-<p>A similar process could be used to load license associations for target files.</p>
-
-<p>Once the license data is loaded, the functions <tt>update_file_bindings()</tt> and 
-<tt>update_lib_bindings()</tt> in views.py would apply this information to existing test data,
-which can also be done from the gui <b>Target Licenses</b> and <b>Library Licenses</b> tabs by
-clicking the <b>Update Test Data</b> button.</p>
-
 </div>
 
 <div id="backend">
 <b>How it Works:</b>
 
-<p>As mentioned earlier, the command line program, readelf.py does all the actual file search and
-analysis. For discovering dependencies, it uses <i>readelf</i>, <i>ldd</i>, and <i>file</i>, using the
-following methodology:
+<p>what the program does is write all the user inputs to a temporary <tt>barcode_data.xml</tt> file, and along with
+the other (optional) uploaded files in a subdirectory named with the record id, feed these through md5sum to get 
+a checksum:
 
-<ul>
-  <li>Search for file?</li>
-    <ul>
-      <li>Yes - start search at top of directory tree specified, for the file name in question</li>
-      <li>No - start processing specified file or walk the whole specified directory tree</li>
-    </ul>
-  <li>File found - elf file? (using "file")</li>
-    <ul>
-      <li>No - return "not an elf file", continue processing more files or exit</li>
-      <li>Yes - check whether static or dynamically linked</li>
-        <ul>
-          <li>Dynamic - run "readelf -d" on the file and capture all the SONAMES tagged as NEEDED, followup with static analysis</li>            
-            <ul>
-              <li>Recursive analysis?</li>
-                <ul>
-                  <li>Yes - run "ldd" on the test file to get the paths to the libraries associated with the SONAME, repeat the analysis on each of these libraries, and in turn their dependencies, stopping when we either reach the desired recursion level or glibc/ld-linux and no further recursion is possible</li>
-                  <li>No - output the results and exit or process the next file</li>
-                </ul>
-            </ul>
-          <li>Static</li>
-            <ul>
-              <li>run "readelf -s" on the file and capture all the functions from the symbol list</li>
-              <li>run "readelf -wi" on the file and capture all the functions from the debug info</li>
-              <li>isolate the functions that have no debug info, these are considered as coming from another library</li>
-              <li>look up possible sources of the function from the database and report</li>
-            </ul>            
-        </ul>
-    </ul>
-</ul>
+<pre>
+find . -type f -exec cat {} | md5sum -
+</pre>
+
+This checksum is then used to generate the barcode, using the command line <i>barcode</i> application:
+
+<pre>
+barcode -b &lt;checksum&gt; -e 128 -m '0,0' -E &gt; &lt;checksum&gt;.ps
+</pre>
+
+and converted to a bitmap for display on the detail page:
+
+<pre>
+pstopnm -xsize 500 -portrait -stdout &lt;checksum&gt;.ps | pnmtopng &gt; &lt;checksum&gt;.png
+</pre>
+
+The xml file is discarded after the checksum generation, as the data remains in the database.
+</p>
+
 </div>
 
 <div id="limitations">
 <b>Limitations:</b>
 
-<p>There are certain limitations in the analysis of binaries/libraries for static/dynamic
-dependencies.</p>
+<p>Currently the application does not attempt to parse imported SPDX files.</p>
 
-<p>In the static case, the symbol table is created either on the build server
-(packaged version), or the user's machine (run in-place from git). The content of the table
-will be largely driven by the libraries present on the system, and may not completely reflect
-the system where the target files have been built.</p>
-
-<p>Also, the same symbol can come from one than one library, and the tool can only provide the
-possible sources of the symbol in question. Some deeper investigation of the actual build system
-may be required to identify the actual static linkage.</p>
-
-<p>For the dynamic case, the level one dependencies are pretty clear-cut, but for the recursive
-case one can get a slightly different set of dependencies when drilling down into the system
-libraries, depending on how the system libraries themselves are built.</p>
- 
 </div>
 
 <!-- content beyond here is generated by the Makefile -->

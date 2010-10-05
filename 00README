@@ -1,26 +1,24 @@
 Layout/Concept
 
-Relies on system commands "barcode", "tar", "md5sum"
+Relies on system commands "barcode", "cat", "find", "md5sum", "pstopnm", "pnmtopng"
 
 gui all lives under "compliance", uses django so you need python-django or
-  equivalent.  Recent versions of the cli also rely on django.
+  equivalent
 
 By default, typing "make" in the top-level will create the SQLite
-  database both apps need.
+  database the app needs, and the documentation.
  
 barcode: bulk of the gui code
   models.py is the database/form models
   views.py is the data/form processing code
 
-media: css/images/docs
+media: css/images/docs/js/user_data
 
 templates: html pages using django's "template" language for data/form
 	   handling (these also have some javascript glue)
 
 The web app can be run "in-place"; otherwise, it expects to be run
-from /opt/linuxfoundation/compliance.  Similarly, readelf.py can be
-run in-place, but otherwise expects to be called from
-/opt/linuxfoundation/bin.
+from /opt/linuxfoundation/compliance.
 
 To run the gui/server (as user compliance for installed package):
    /opt/linuxfoundation/bin/foss-barcode.py start (for running installed)
