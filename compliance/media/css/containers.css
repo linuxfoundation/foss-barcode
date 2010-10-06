@@ -20,9 +20,21 @@
     min-width: 45%;
 }
 
+.foss_table {
+    clear: both;
+}
+
 .foss_table textarea {
     width: 130px;
     height: 40px;
+}
+
+.foss_table input {
+    width: 95%;
+}
+
+.foss_table td {
+    padx: 5px;
 }
 
 .cfooter {

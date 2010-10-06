@@ -57,7 +57,12 @@
     <td align="center" colspan="2"><input style="width: 200px" type="submit" name="submit" value="Create Checksum/Barcode" /></td>
   </tr>      
 </table>
-<br><br>
+</div> <!-- entry_form -->
+
+<div class="container" id="target_select" style="display: none;"> 
+	<div id="target" class="browser"></div> 
+</div>
+
 <div class="foss_table">
 <table border="1" width="700" cellspacing="1" style='table-layout:fixed' id="foss_list">
     <col width=125>
@@ -75,7 +80,7 @@
     <td></td>
   </tr>
   <tr>
-    <!-- needed to control the width here, so hand tweaked size in javascript -->
+    <!-- needed to control the width here, so hand tweaked size in css -->
     <td>{{ recordform.foss_component }}</td>
     <td>{{ recordform.foss_version }}</td>
     <td>{{ recordform.foss_license }}</td>
@@ -86,17 +91,14 @@
   </tr>
 <!-- TODO - loop and fill this from SPDX, plus user can manually add bits, buttons to add patches -->
 </table>
-</div>
+</div> <!-- foss_table -->
+
 <input type="hidden", name="foss_components", id="foss_components", value="{{ foss_components }}">
 <input type="hidden", name="foss_versions", id="foss_versions", value="{{ foss_versions }}">
 <input type="hidden", name="foss_licenses", id="foss_licenses", value="{{ foss_licenses }}">
 <input type="hidden", name="foss_urls", id="foss_urls", value="{{ foss_urls }}">
 <input type="hidden", name="foss_patches", id="foss_patches", value="{{ foss_patches }}">
-</div>
-	
-<div class="container" id="target_select" style="display: none;"> 
-	<div id="target" class="browser"></div> 
-</div>
+
 </form>
 
 <div class="cfooter">
@@ -126,11 +128,6 @@
         });
     });
     function setdefaults() {
-        // layout tweaks for the foss_list table
-        document.getElementsByName("foss_component")[0].size = 16;
-        document.getElementsByName("foss_version")[0].size = 6;
-        document.getElementsByName("foss_license")[0].size = 6;
-        document.getElementsByName("foss_url")[0].size = 19;
         // if the user submitted with missing data, we lose the FOSS table content, repopulate
         if (document.getElementById("foss_components").value != "") {
             var fossn = document.getElementById("foss_components").value.split(",");
