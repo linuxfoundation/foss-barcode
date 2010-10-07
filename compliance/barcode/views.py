@@ -257,6 +257,8 @@ def check_for_system_apps():
         result = os.system("which " + app + "> /dev/null")
         if result:
             errmsg += "Could not find system app '<i>" + app + "</i>'...<br>"
+            if app == "barcode":
+                errmsg += "(See the documentation for building '<i>" + app + "</i>' from source)<br>"
 
     if errmsg:
         errmsg += "Application will fail to generate barcodes without these apps<br>"

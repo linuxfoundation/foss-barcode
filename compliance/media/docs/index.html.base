@@ -77,6 +77,19 @@ support for the results database. A web browser is also needed to interact with 
 If your distribution does not provide Django, you can follow these 
 <a href="http://docs.djangoproject.com/en/dev/intro/install/">installation instructions</a>.</p>
 
+<p>If your distribution does not provide <i>barcode</i>, it can be built from source:
+<pre>
+wget ftp://mirrors.kernel.org/gnu/barcode/barcode-0.98.tar.gz
+tar -xzf barcode-0.98.tar.gz
+cd barcode-0.98
+./configure
+make
+make install (using sudo or as root)
+</pre>
+The only package I found I needed outside of a regular development toolchain (gcc, make, etc.), was texinfo,
+for the command <i>makeinfo</i>.  The rest of the commands used by the back end should be reasonably common 
+on most distributions.</p>
+
 </div>
 
 <div id="install">
