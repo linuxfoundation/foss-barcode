@@ -44,8 +44,9 @@
             <i>FOSS Website:</i> {{ record.website }}<br>
             <i>Product Name:</i> {{ record.product }}<br>
             <i>Product Version-Release:</i> {{ record.version }}-{{ record.release }}<br>
-            <i>Entry Date:</i> {{ record.record_date|date:"M d, Y H:i:s" }}&nbsp;&nbsp;
-            <i>User:</i> {{ record.user }}
+            <i>Entry Date:</i> {{ record.record_date|date:"M d, Y H:i:s" }}<br>
+            <i>Compliance Contact Name:</i> {{ record.contact }}<br>
+            <i>Compliance Contact Email:</i> {{ record.email }}<br>
         </td>
       </tr>
     {% endfor %}

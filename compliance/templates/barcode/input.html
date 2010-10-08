@@ -26,7 +26,7 @@
   <tr align="left">
     <td align="right"><b>{{ recordform.company.label }}:</b>{{ recordform.company.errors }}</td>
     <td>{{ recordform.company }}</td>
-    <td align="center"><b>SPDX File(s)<br>(optional)</b>{{ recordform.spdx_files.errors }}</td>
+    <td align="center"><b>SPDX</b><sup>TM</sup><b> File(s)<br>(optional)</b>{{ recordform.spdx_files.errors }}</td>
     <td align="center"><input type="button" name="spdxfilename" value="Select File(s)"
               title="Open a File/Directory Selector"
               onclick="toggle_visibility('target_select');set_destination('spdx_files');toggle_enabled('patchfilename');"/></td>
@@ -49,11 +49,12 @@
     <td>{{ recordform.release }}</td>
   </tr>
   <tr align="left">
-    <td align="right"><b>{{ recordform.user.label }}:</b></td>
-    <td>{{ recordform.user }}</td>
+    <td align="right"><b>{{ recordform.contact.label }}:</b></td>
+    <td>{{ recordform.contact }}</td>
   </tr>
   <tr align="left">
-    <td></td><td></td>   
+    <td align="right"><b>{{ recordform.email.label }}:</b>{{ recordform.email.errors }}</td>
+    <td>{{ recordform.email }}</td>   
     <td align="center" colspan="2"><input style="width: 200px" type="submit" name="submit" value="Create Checksum/Barcode" /></td>
   </tr>      
 </table>

@@ -6,20 +6,12 @@ import re
 
 # Create your models here.
 
-# setup some defaults/choices
-rchoices = tuple(enumerate(range(0, 100)))
-RECURSION_CHOICES = rchoices[1:]
-# fails under apache/wsgi
-try:
-    DEFAULT_USER = os.environ['USER']
-except:
-    DEFAULT_USER = 'nobody'
-
 class Barcode_Record(models.Model):
     company = models.CharField('Company Name', max_length=200)
-    website = models.CharField('FOSS Website', max_length=200, blank=True)
+    website = models.CharField('FOSS Website (optional)', max_length=200, blank=True)
     record_date = models.DateTimeField('Test Date', auto_now=True)
-    user = models.CharField('User Name (optional)', max_length=200, blank=True, default = DEFAULT_USER)
+    contact = models.CharField('Compliance Contact Name (optional)', max_length=200, blank=True)
+    email = models.CharField('Compliance Contact Email', max_length=200)
     product = models.CharField('Product Name', max_length=200)
     version = models.CharField('Product Version', max_length=20)
     release = models.CharField('Product Release', max_length=20)

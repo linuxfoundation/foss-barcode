@@ -45,7 +45,7 @@
 <b>Overview</b>
 <p>
 The FOSS Barcode Tool is a tool to that generates a checksum and an identifying barcode for
-a product composed of FOSS Components. The user compiles a set of data describing the product, SPDX files,
+a product composed of FOSS Components. The user compiles a set of data describing the product, SPDX<sup>TM</sup> files,
 and FOSS components/patches and the tool generates a unique signature of this dataset.</p>
 
 <p>You can view the development source from 
@@ -86,7 +86,7 @@ cd barcode-0.98
 make
 make install (using sudo or as root)
 </pre>
-The only package I found I needed outside of a regular development toolchain (gcc, make, etc.), was texinfo,
+The only package I found I needed outside of a regular development toolchain (gcc, make, etc.), to build barcode, was texinfo,
 for the command <i>makeinfo</i>.  The rest of the commands used by the back end should be reasonably common 
 on most distributions.</p>
 
@@ -255,13 +255,14 @@ brought up by either generating a barcode, or clicking on the link in the result
 <b>Enter Data:</b>
 
 <p>This tab is where you enter the information that defines the "product". This includes Company Name, 
-FOSS Website (optional), Product Name, Product Version, and Product Release. The date and username are
-also recorded, simply for record keeping. They do not contribute to the checksum.</p>
+FOSS Website (optional), Product Name, Product Version, Product Release, as well as the Compliance
+Contact Name (optional) and Email. The date is also recorded, simply for record keeping. It does not 
+contribute to the checksum.</p>
 
 <p>There are additional option components that can be entered or loaded to further define the product. 
-These include SPDX files as well as a tabular list of FOSS Components and possible patches. If files
+These include SPDX<sup>TM</sup> files as well as a tabular list of FOSS Components and possible patches. If files
 are loaded using the file selection navigator, they are stored in the system under user_data for review later
-in the detailed reporting. Multiple files can be loaded for either SPDX files or FOSS component patches.
+in the detailed reporting. Multiple files can be loaded for either SPDX<sup>TM</sup> files or FOSS component patches.
 For FOSS components, the name of the component and the version are required as a minumum for an entry.</p>
 
 <p>Once you enter the data, click on the <b>Create Checksum/Barcode</b> button. After the data
@@ -322,13 +323,14 @@ tables.</li>
     <li>company - Company Name</li>
     <li>website - Company FOSS Website</li>
     <li>record_date - Date/time record was created</li>
-    <li>user - Username who created the record</li>
+    <li>contact - Compliance Contact</li>
+    <li>email - Compliance Contact Email</li>
     <li>product - Product name</li>
     <li>version - Product Verson</li>
     <li>release - Product Release</li>
     <li>checksum - Generated Checksum</li>
   </ul>
-<li><b>spdx_files</b> - list of upload SPDX files. Linked to the <i>record</i> table via <i>brecord_id</i>.</li>          
+<li><b>spdx_files</b> - list of uploaded SPDX<sup>TM</sup> files. Linked to the <i>record</i> table via <i>brecord_id</i>.</li>          
   <ul>
     <li>id - primary key</li>
     <li>brecord_id - link to the top-level record entry</li>
@@ -386,7 +388,7 @@ The xml file is discarded after the checksum generation, as the data remains in 
 <div id="limitations">
 <b>Limitations:</b>
 
-<p>Currently the application does not attempt to parse imported SPDX files.</p>
+<p>Currently the application does not attempt to parse imported SPDX<sup>TM</sup> files.</p>
 
 </div>
 

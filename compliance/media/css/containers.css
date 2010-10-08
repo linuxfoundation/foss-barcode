@@ -13,11 +13,19 @@
     height: 140px
 }
 
+.container sup {
+  font-size: 50%;
+}
+
 .halfdiv {
     float: left;
     margin: 5px;
     padding: 5px;
     min-width: 45%;
+}
+
+.halfdiv sup {
+  font-size: 50%;
 }
 
 .foss_table {

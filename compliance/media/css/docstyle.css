@@ -41,6 +41,10 @@
     font-size: smaller;
     overflow: auto; 
 }
+#main sup {
+  font-size: xx-small;
+}
+
 /* same as main, but offset 22% down for embedded in the gui, don't shrink fonts */
 #main_e {
     position: fixed; 

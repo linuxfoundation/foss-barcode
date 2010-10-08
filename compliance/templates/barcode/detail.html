@@ -16,12 +16,14 @@
   <br>
   <table width = "100%" border = "1">
     <tr>
-      <td rowspan = "3" width = "30%">
+      <td rowspan = "3" width = "40%">
         <b>Company Name: </b>{{ record.company }}<br>
         <b>FOSS Website: </b><a href="{{ record.website }}" target="_blank">{{ record.website }}</a><br>
         <b>Product Name: </b>{{ record.product }}<br>
         <b>Product Version/Release: </b>{{ record.version }}-{{ record.release }}<br>
-        <b>Date: </b>{{ record.record_date|date:"M d, Y H:i:s" }}&nbsp;&nbsp;<b>User: </b>{{ record.user }}<br>
+        <b>Date: </b>{{ record.record_date|date:"M d, Y H:i:s" }}<br>
+        <b>Compliance Contact Name: </b>{{ record.contact }}<br>
+        <b>Compliance Contact Email: </b>{{ record.email }}<br>
       </td>
       <td align = "center" id = "noprint">
         <input type="button" name="doprint" value="Print Results" onClick="javascript:window.print()">
@@ -62,7 +64,7 @@
   </div>
   <div class="halfdiv">
     <table border = "1" width = "100%">
-      <tr><th>SPDX File(s)</th></tr>
+      <tr><td align="center"><b>SPDX</b><sup>TM</sup><b> File(s)</b></td></tr>
       {% for row in spdx %}
       <tr valign = "top">
         <td><a href="/site_media/user_data/{{ record.id }}/spdx_files/{{ row.local_path }}">{{ row.path }}</a></td>
