@@ -59,6 +59,14 @@ def setup_userdir():
                                      "fossbarcode", "barcode.sqlite"),
                         os.path.join(settings.USERDIR_ROOT, "barcode.sqlite"))
 
+    if not os.path.exists(os.path.join(settings.USERDIR_ROOT, "media")):
+        os.mkdir(os.path.join(settings.USERDIR_ROOT, "media"))
+    # we need to link back to the real media subdirs (except user_data)
+    for dirlink in ( 'css', 'docs', 'images', 'js' ):
+        if not os.path.exists(os.path.join(settings.USERDIR_ROOT, "media", dirlink)):
+            os.symlink(os.path.join(settings.PROJECT_ROOT, "fossbarcode", "media", dirlink),
+                         os.path.join(settings.USERDIR_ROOT, "media", dirlink))
+
 def start_server(run_browser, interface=None):
     pid_path = os.path.join(settings.STATE_ROOT, "server.pid")
     if os.path.exists(pid_path):

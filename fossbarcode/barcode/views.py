@@ -335,6 +335,9 @@ def checksum_to_barcode(recid, checksum):
 
     result = os.system("barcode -b " + checksum + " -e 128 -m '0,0' -E > " + ps_file)
     if result == 0:
+	# image conversion tries to use root's settings, if started as root
+	os.putenv('TMP', '/tmp')
+	os.putenv('TMPDIR', '/tmp')
         result = os.system("pstopnm -xsize 500 -portrait -stdout " + ps_file + " | pnmtopng > " + png_file)
         
     return result

@@ -24,14 +24,20 @@ def get_userdir():
 def use_userdir():
     if os.getuid() == 0 or os.environ["LOGNAME"] == "compliance":
         return False
-    project_root = get_project_root()
-    if os.access(os.path.join(project_root, "fossbarcode"), os.W_OK):
-        return False
+    # for a regular user, always use userdir
+    #project_root = get_project_root()
+    #if os.access(os.path.join(project_root, "fossbarcode"), os.W_OK):
+    #    return False
 
     return True
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
+
+# Application path settings.
+
+SITE_ROOT = os.path.dirname(__file__)
+STATIC_DOC_ROOT = os.path.join(SITE_ROOT, "media")
 
 ADMINS = (
     # ('Your Name', 'your_email@domain.com'),
@@ -40,6 +46,7 @@ ADMINS = (
 MANAGERS = ADMINS
 
 DATABASE_ENGINE = 'sqlite3'           # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
+DATABASE_NAME = os.path.join(get_project_root(), 'fossbarcode', 'barcode.sqlite')
 DATABASE_USER = ''             # Not used with sqlite3.
 DATABASE_PASSWORD = ''         # Not used with sqlite3.
 DATABASE_HOST = ''             # Set to empty string for localhost. Not used with sqlite3.
@@ -74,20 +81,17 @@ if use_userdir():
     USERDIR_ROOT = get_userdir()
     DATABASE_NAME = os.path.join(USERDIR_ROOT, "barcode.sqlite")
     STATE_ROOT = USERDIR_ROOT
-    USERDATA_ROOT = os.path.join(USERDIR_ROOT, "user_data")
+    STATIC_DOC_ROOT = os.path.join(USERDIR_ROOT, "media")
+    USERDATA_ROOT = os.path.join(USERDIR_ROOT, "media", "user_data")
 else:
     USERDIR_ROOT = ''
-    DATABASE_NAME = os.path.join(get_project_root(), 'fossbarcode', 'barcode.sqlite')
+    DATABASE_NAME = os.path.join(PROJECT_ROOT, 'fossbarcode', 'barcode.sqlite')
     STATE_ROOT = os.path.join(PROJECT_ROOT, 'fossbarcode')
-    USERDATA_ROOT = os.path.join(PROJECT_ROOT, "fossbarcode", "user_data")
+    USERDATA_ROOT = os.path.join(PROJECT_ROOT, "fossbarcode", "media", "user_data")
 
 # Absolute path to the directory that holds media.
 # Example: "/home/media/media.lawrence.com/"
 MEDIA_ROOT = '' 
-
-STATIC_DOC_ROOT = os.path.join(PROJECT_ROOT, 'fossbarcode/media')
-# FIXME - if we go this route (for clickable links), drop the previous defs
-USERDATA_ROOT = os.path.join(PROJECT_ROOT, 'fossbarcode/media/user_data')
 
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash if there is a path component (optional in other cases).
