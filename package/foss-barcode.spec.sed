@@ -37,7 +37,7 @@ If you don't get a menu entry, run the app with:
 	%{basedir}/bin/foss-barcode.py start
 
 If a browser window or tab doesn't open, goto:
-	http://127.0.0.1:8000/linkage
+	http://127.0.0.1:8000/barcode
 
 The command-line tool is: 
 	%{basedir}/readelf.py
@@ -57,11 +57,12 @@ make
 
 rm -rf ${RPM_BUILD_ROOT}
 install -d ${RPM_BUILD_ROOT}%{basedir}
-cp -ar bin ${RPM_BUILD_ROOT}%{basedir}
-cp -ar compliance ${RPM_BUILD_ROOT}%{basedir}
+install -d ${RPM_BUILD_ROOT}%{basedir}/bin
+install -m 755 foss-barcode.py ${RPM_BUILD_ROOT}%{basedir}/bin
+cp -ar fossbarcode ${RPM_BUILD_ROOT}%{basedir}
 find ${RPM_BUILD_ROOT}%{basedir} -name '*.pyc' | xargs rm -f
-rm -f ${RPM_BUILD_ROOT}%{basedir}/compliance/media/docs/*
-install -m 644 compliance/media/docs/*.html ${RPM_BUILD_ROOT}%{basedir}/compliance/media/docs
+rm -f ${RPM_BUILD_ROOT}%{basedir}/fossbarcode/media/docs/*
+install -m 644 fossbarcode/media/docs/*.html ${RPM_BUILD_ROOT}%{basedir}/fossbarcode/media/docs
 install -d ${RPM_BUILD_ROOT}%{basedir}/share/icons/hicolor/16x16/apps
 install -m 644 desktop/lf_small.png ${RPM_BUILD_ROOT}%{basedir}/share/icons/hicolor/16x16/apps
 install -d ${RPM_BUILD_ROOT}%{basedir}/share/applications
@@ -69,10 +70,10 @@ install -m 644 desktop/%{name}.desktop ${RPM_BUILD_ROOT}%{basedir}/share/applica
 install -d ${RPM_BUILD_ROOT}%{basedir}/doc/%{name}
 install -m 644 doc/LICENSE doc/Contributing ${RPM_BUILD_ROOT}%{basedir}/doc/%{name}
 install -m 644 AUTHORS Changelog README.txt README.apache-mod_wsgi ${RPM_BUILD_ROOT}%{basedir}/doc/%{name}
-install -d ${RPM_BUILD_ROOT}/var%{basedir}/log/compliance
+install -d ${RPM_BUILD_ROOT}/var%{basedir}/log/fossbarcode
 %if %bundle_django
   tar -xf %{SOURCE1}
-  cp -ar Django-%{django_ver}/django ${RPM_BUILD_ROOT}%{basedir}/compliance
+  cp -ar Django-%{django_ver}/django ${RPM_BUILD_ROOT}%{basedir}/fossbarcode
 %endif
 
 #==================================================
@@ -107,7 +108,7 @@ fi
 %if %bundle_django
 if [ ! -e %{basedir}/bin/django ];then
   cd %{basedir}/bin
-  ln -sf ../compliance/django .
+  ln -sf ../foosbarcode/django .
 fi
 %endif
 
@@ -154,18 +155,21 @@ fi
 
 %dir %{basedir}/bin
 %dir %{basedir}/doc/%{name}
-%dir %{basedir}/compliance
+%dir %{basedir}/fossbarcode
 %dir %{basedir}/share/applications
 %dir %{basedir}/share/icons/hicolor/16x16/apps
-%dir /var/%{basedir}/log/compliance
+%dir /var/%{basedir}/log/fossbarcode
 
 %{basedir}/bin/*
-%{basedir}/compliance/*
+%{basedir}/fossbarcode/*
 %{basedir}/share/icons/hicolor/16x16/apps/*
 %{basedir}/share/applications/*
 %doc %{basedir}/doc/%{name}/*
 
 %changelog
+* Tue Feb 08 2011 Stew Benedict <stewb@linux-foundation.org>
+- re-arrange the layout so the rpm can co-exist with dep-checker
+
 * Wed Sep 22 2010 Stew Benedict <stewb@linux-foundation.org>
 - first pass at packaging - based on dep-checker
 

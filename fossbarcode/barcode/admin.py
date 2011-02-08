@@ -1,4 +1,4 @@
-from compliance.barcode.models import Barcode_Record, SPDX_Files, FOSS_Components, Patch_Files
+from fossbarcode.barcode.models import Barcode_Record, SPDX_Files, FOSS_Components, Patch_Files
 from django.contrib import admin
 
 admin.site.register(Barcode_Record)

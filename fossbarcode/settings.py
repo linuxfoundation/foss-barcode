@@ -7,7 +7,8 @@ import os, time
 def get_project_root():
     project_root_paths = [ ".", "..", "/opt/linuxfoundation" ]
     for path in project_root_paths:
-        if os.path.exists(os.path.join(path, "bin/foss-barcode.py")):
+        if os.path.exists(os.path.join(path, "foss-barcode.py")) or \
+                os.path.exists(os.path.join(path, "bin/foss-barcode.py")):
             return path
 
     # Shouldn't get here unless we can't find the path.
@@ -16,7 +17,7 @@ def get_project_root():
 # Return the proper directory to use for userdir mode.
 
 def get_userdir():
-    return os.path.join(os.environ["HOME"], ".foss-barcode")
+    return os.path.join(os.environ["HOME"], ".fossbarcode")
 
 # Should we use userdir mode?
 
@@ -24,7 +25,7 @@ def use_userdir():
     if os.getuid() == 0 or os.environ["LOGNAME"] == "compliance":
         return False
     project_root = get_project_root()
-    if os.access(os.path.join(project_root, "compliance"), os.W_OK):
+    if os.access(os.path.join(project_root, "fossbarcode"), os.W_OK):
         return False
 
     return True
@@ -76,17 +77,17 @@ if use_userdir():
     USERDATA_ROOT = os.path.join(USERDIR_ROOT, "user_data")
 else:
     USERDIR_ROOT = ''
-    DATABASE_NAME = os.path.join(get_project_root(), 'compliance', 'barcode.sqlite')
-    STATE_ROOT = os.path.join(PROJECT_ROOT, 'compliance')
-    USERDATA_ROOT = os.path.join(PROJECT_ROOT, "compliance", "user_data")
+    DATABASE_NAME = os.path.join(get_project_root(), 'fossbarcode', 'barcode.sqlite')
+    STATE_ROOT = os.path.join(PROJECT_ROOT, 'fossbarcode')
+    USERDATA_ROOT = os.path.join(PROJECT_ROOT, "fossbarcode", "user_data")
 
 # Absolute path to the directory that holds media.
 # Example: "/home/media/media.lawrence.com/"
 MEDIA_ROOT = '' 
 
-STATIC_DOC_ROOT = os.path.join(PROJECT_ROOT, 'compliance/media')
+STATIC_DOC_ROOT = os.path.join(PROJECT_ROOT, 'fossbarcode/media')
 # FIXME - if we go this route (for clickable links), drop the previous defs
-USERDATA_ROOT = os.path.join(PROJECT_ROOT, 'compliance/media/user_data')
+USERDATA_ROOT = os.path.join(PROJECT_ROOT, 'fossbarcode/media/user_data')
 
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash if there is a path component (optional in other cases).
@@ -114,13 +115,13 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
 )
 
-ROOT_URLCONF = 'compliance.urls'
+ROOT_URLCONF = 'fossbarcode.urls'
 
 TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
-    os.path.join(PROJECT_ROOT, "compliance/templates"),
+    os.path.join(PROJECT_ROOT, "fossbarcode/templates"),
 )
 
 INSTALLED_APPS = (
@@ -129,5 +130,5 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.sites',
     'django.contrib.admin',
-    'compliance.barcode',
+    'fossbarcode.barcode',
 )

@@ -29,10 +29,13 @@ command_line_options = [
 
 def get_base_path():
     this_module_path = os.path.dirname(os.path.abspath(__file__))
-    return os.path.join(os.path.dirname(this_module_path), "compliance")
+    if os.path.basename(this_module_path) == "bin":
+        this_module_path = os.path.dirname(this_module_path)
+    return os.path.join(this_module_path, "fossbarcode")
 
 def set_import_path():
     sys.path.append(get_base_path())
+    sys.path.append(os.path.join(get_base_path(), ".."))
 
 set_import_path()
 import settings
@@ -53,7 +56,7 @@ def setup_userdir():
     if not os.path.exists(settings.USERDIR_ROOT):
         os.mkdir(settings.USERDIR_ROOT)
         shutil.copyfile(os.path.join(settings.PROJECT_ROOT, 
-                                     "compliance", "barcode.sqlite"),
+                                     "fossbarcode", "barcode.sqlite"),
                         os.path.join(settings.USERDIR_ROOT, "barcode.sqlite"))
 
 def start_server(run_browser, interface=None):
@@ -92,7 +95,7 @@ def start_server(run_browser, interface=None):
 
         os.close(0)
 
-        manager_args = ["foss-barcode", "runserver"]
+        manager_args = ["fossbarcode", "runserver"]
         if interface:
             manager_args.append(interface)
 

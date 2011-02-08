@@ -1,12 +1,12 @@
 # Create your views here.
 from django.template import Context, loader
 from django.shortcuts import render_to_response, get_object_or_404
-from compliance.barcode.models import Barcode_Record, SPDX_Files, FOSS_Components, Patch_Files, RecordForm
+from fossbarcode.barcode.models import Barcode_Record, SPDX_Files, FOSS_Components, Patch_Files, RecordForm
 from django.http import HttpResponse, HttpResponseRedirect
 from django.http import Http404
 from django.conf import settings
 
-from compliance import task
+from fossbarcode import task
 
 import sys, os, re, urllib, subprocess, time, shutil
 
