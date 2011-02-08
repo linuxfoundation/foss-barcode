@@ -24,10 +24,10 @@ def get_userdir():
 def use_userdir():
     if os.getuid() == 0 or os.environ["LOGNAME"] == "compliance":
         return False
-    # for a regular user, always use userdir
-    #project_root = get_project_root()
-    #if os.access(os.path.join(project_root, "fossbarcode"), os.W_OK):
-    #    return False
+    
+    project_root = get_project_root()
+    if os.access(os.path.join(project_root, "fossbarcode"), os.W_OK):
+        return False
 
     return True
 
