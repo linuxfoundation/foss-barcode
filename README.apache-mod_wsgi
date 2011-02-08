@@ -13,7 +13,7 @@ Instead of the built in django server, you can use apache and mod_wsgi fairly ea
 3) Edit http.conf or possibly a seperate conf for mod_wsgi (/etc/httpd/modules.d/B23_mod_wsgi.conf
    on this system):
 
-    WSGIScriptAlias / /var/www/html/foss-barcode/compliance/apache/django.wsgi
+    WSGIScriptAlias / /var/www/html/foss-barcode/fossbarcode/apache/django.wsgi
 
    The above line is required. The referenced file is provided by foss-barcode. There are 2
    sys.path.append entries you may need to modify for your setup.
@@ -33,8 +33,8 @@ Instead of the built in django server, you can use apache and mod_wsgi fairly ea
 
     http://code.google.com/p/modwsgi/wiki/QuickConfigurationGuide
 
-4) The sqlite database compliance/compliance must be writable by the user account running apache
-   (apache on this system). The compliance directory must also be writable by this user for both
+4) The sqlite database fossbarcode/barcode.sqlite must be writable by the user account running apache
+   (apache on this system). The fossbarcode directory must also be writable by this user for both
    database journal and the task.log file used by the task manager.
 
 Documentation for setting up django with mod_wsgi mentions serving the static media files by 

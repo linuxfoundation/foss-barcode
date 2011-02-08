@@ -1,4 +1,4 @@
-# Django settings for compliance project.
+# Django settings for fossbarcode project.
 
 import os, time
 

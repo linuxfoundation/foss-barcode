@@ -39,9 +39,6 @@ If you don't get a menu entry, run the app with:
 If a browser window or tab doesn't open, goto:
 	http://127.0.0.1:8000/barcode
 
-The command-line tool is: 
-	%{basedir}/readelf.py
-
 Note: This package can be built with django bundled, using '--with django'
 
 #==================================================
