@@ -90,6 +90,11 @@ The only package I found I needed outside of a regular development toolchain (gc
 for the command <i>makeinfo</i>.  The rest of the commands used by the back end should be reasonably common 
 on most distributions.</p>
 
+<p>
+If your distribution does not provide netpbm for "pstopnm" and "pnmtopng", you
+can download source <a href="http://netpbm.sourceforge.net">here</a>/
+</p>
+
 </div>
 
 <div id="install">

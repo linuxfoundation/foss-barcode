@@ -2,6 +2,15 @@ Layout/Concept
 
 Relies on system commands "barcode", "cat", "find", "md5sum", "pstopnm", "pnmtopng"
 
+If your distribution does not provide "barcode", you can download source from:
+
+ftp://mirrors.kernel.org/gnu/barcode/
+
+If your distribution does not provide netpbm for "pstopnm" and "pnmtopng", you
+can download source from:
+
+http://netpbm.sourceforge.net/
+
 gui all lives under "fossbarcode", uses django so you need python-django or
   equivalent
 
