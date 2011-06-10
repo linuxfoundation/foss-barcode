@@ -103,7 +103,7 @@ def start_server(run_browser, interface=None):
 
         os.close(0)
 
-        manager_args = ["fossbarcode", "runserver"]
+        manager_args = ["fossbarcode", "runserver", "--noreload"]
         if interface:
             manager_args.append(interface)
 
