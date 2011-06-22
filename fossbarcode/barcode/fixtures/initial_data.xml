@@ -1,16 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <django-objects version="1.0">
-  <object pk="9" model="contenttypes.contenttype">
-    <field type="CharField" name="name">barcode_ record</field>
-    <field type="CharField" name="app_label">barcode</field>
-    <field type="CharField" name="model">barcode_record</field>
-  </object>
   <object pk="5" model="contenttypes.contenttype">
     <field type="CharField" name="name">content type</field>
     <field type="CharField" name="app_label">contenttypes</field>
     <field type="CharField" name="model">contenttype</field>
   </object>
-  <object pk="11" model="contenttypes.contenttype">
+  <object pk="10" model="contenttypes.contenttype">
     <field type="CharField" name="name">fos s_ components</field>
     <field type="CharField" name="app_label">barcode</field>
     <field type="CharField" name="model">foss_components</field>
@@ -30,7 +25,7 @@
     <field type="CharField" name="app_label">auth</field>
     <field type="CharField" name="model">message</field>
   </object>
-  <object pk="12" model="contenttypes.contenttype">
+  <object pk="11" model="contenttypes.contenttype">
     <field type="CharField" name="name">patch_ files</field>
     <field type="CharField" name="app_label">barcode</field>
     <field type="CharField" name="model">patch_files</field>
@@ -39,6 +34,11 @@
     <field type="CharField" name="name">permission</field>
     <field type="CharField" name="app_label">auth</field>
     <field type="CharField" name="model">permission</field>
+  </object>
+  <object pk="9" model="contenttypes.contenttype">
+    <field type="CharField" name="name">product_ record</field>
+    <field type="CharField" name="app_label">barcode</field>
+    <field type="CharField" name="model">product_record</field>
   </object>
   <object pk="6" model="contenttypes.contenttype">
     <field type="CharField" name="name">session</field>
@@ -49,11 +49,6 @@
     <field type="CharField" name="name">site</field>
     <field type="CharField" name="app_label">sites</field>
     <field type="CharField" name="model">site</field>
-  </object>
-  <object pk="10" model="contenttypes.contenttype">
-    <field type="CharField" name="name">spd x_ files</field>
-    <field type="CharField" name="app_label">barcode</field>
-    <field type="CharField" name="model">spdx_files</field>
   </object>
   <object pk="3" model="contenttypes.contenttype">
     <field type="CharField" name="name">user</field>
@@ -139,65 +134,50 @@
     <field to="contenttypes.contenttype" name="content_type" rel="ManyToOneRel">3</field>
     <field type="CharField" name="codename">delete_user</field>
   </object>
-  <object pk="25" model="auth.permission">
-    <field type="CharField" name="name">Can add barcode_ record</field>
-    <field to="contenttypes.contenttype" name="content_type" rel="ManyToOneRel">9</field>
-    <field type="CharField" name="codename">add_barcode_record</field>
-  </object>
-  <object pk="26" model="auth.permission">
-    <field type="CharField" name="name">Can change barcode_ record</field>
-    <field to="contenttypes.contenttype" name="content_type" rel="ManyToOneRel">9</field>
-    <field type="CharField" name="codename">change_barcode_record</field>
-  </object>
-  <object pk="27" model="auth.permission">
-    <field type="CharField" name="name">Can delete barcode_ record</field>
-    <field to="contenttypes.contenttype" name="content_type" rel="ManyToOneRel">9</field>
-    <field type="CharField" name="codename">delete_barcode_record</field>
-  </object>
-  <object pk="31" model="auth.permission">
+  <object pk="28" model="auth.permission">
     <field type="CharField" name="name">Can add fos s_ components</field>
-    <field to="contenttypes.contenttype" name="content_type" rel="ManyToOneRel">11</field>
+    <field to="contenttypes.contenttype" name="content_type" rel="ManyToOneRel">10</field>
     <field type="CharField" name="codename">add_foss_components</field>
   </object>
-  <object pk="32" model="auth.permission">
+  <object pk="29" model="auth.permission">
     <field type="CharField" name="name">Can change fos s_ components</field>
-    <field to="contenttypes.contenttype" name="content_type" rel="ManyToOneRel">11</field>
+    <field to="contenttypes.contenttype" name="content_type" rel="ManyToOneRel">10</field>
     <field type="CharField" name="codename">change_foss_components</field>
   </object>
-  <object pk="33" model="auth.permission">
+  <object pk="30" model="auth.permission">
     <field type="CharField" name="name">Can delete fos s_ components</field>
-    <field to="contenttypes.contenttype" name="content_type" rel="ManyToOneRel">11</field>
+    <field to="contenttypes.contenttype" name="content_type" rel="ManyToOneRel">10</field>
     <field type="CharField" name="codename">delete_foss_components</field>
   </object>
-  <object pk="34" model="auth.permission">
+  <object pk="31" model="auth.permission">
     <field type="CharField" name="name">Can add patch_ files</field>
-    <field to="contenttypes.contenttype" name="content_type" rel="ManyToOneRel">12</field>
+    <field to="contenttypes.contenttype" name="content_type" rel="ManyToOneRel">11</field>
     <field type="CharField" name="codename">add_patch_files</field>
   </object>
-  <object pk="35" model="auth.permission">
+  <object pk="32" model="auth.permission">
     <field type="CharField" name="name">Can change patch_ files</field>
-    <field to="contenttypes.contenttype" name="content_type" rel="ManyToOneRel">12</field>
+    <field to="contenttypes.contenttype" name="content_type" rel="ManyToOneRel">11</field>
     <field type="CharField" name="codename">change_patch_files</field>
   </object>
-  <object pk="36" model="auth.permission">
+  <object pk="33" model="auth.permission">
     <field type="CharField" name="name">Can delete patch_ files</field>
-    <field to="contenttypes.contenttype" name="content_type" rel="ManyToOneRel">12</field>
+    <field to="contenttypes.contenttype" name="content_type" rel="ManyToOneRel">11</field>
     <field type="CharField" name="codename">delete_patch_files</field>
   </object>
-  <object pk="28" model="auth.permission">
-    <field type="CharField" name="name">Can add spd x_ files</field>
-    <field to="contenttypes.contenttype" name="content_type" rel="ManyToOneRel">10</field>
-    <field type="CharField" name="codename">add_spdx_files</field>
+  <object pk="25" model="auth.permission">
+    <field type="CharField" name="name">Can add product_ record</field>
+    <field to="contenttypes.contenttype" name="content_type" rel="ManyToOneRel">9</field>
+    <field type="CharField" name="codename">add_product_record</field>
   </object>
-  <object pk="29" model="auth.permission">
-    <field type="CharField" name="name">Can change spd x_ files</field>
-    <field to="contenttypes.contenttype" name="content_type" rel="ManyToOneRel">10</field>
-    <field type="CharField" name="codename">change_spdx_files</field>
+  <object pk="26" model="auth.permission">
+    <field type="CharField" name="name">Can change product_ record</field>
+    <field to="contenttypes.contenttype" name="content_type" rel="ManyToOneRel">9</field>
+    <field type="CharField" name="codename">change_product_record</field>
   </object>
-  <object pk="30" model="auth.permission">
-    <field type="CharField" name="name">Can delete spd x_ files</field>
-    <field to="contenttypes.contenttype" name="content_type" rel="ManyToOneRel">10</field>
-    <field type="CharField" name="codename">delete_spdx_files</field>
+  <object pk="27" model="auth.permission">
+    <field type="CharField" name="name">Can delete product_ record</field>
+    <field to="contenttypes.contenttype" name="content_type" rel="ManyToOneRel">9</field>
+    <field type="CharField" name="codename">delete_product_record</field>
   </object>
   <object pk="13" model="auth.permission">
     <field type="CharField" name="name">Can add content type</field>

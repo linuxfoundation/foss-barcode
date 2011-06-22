@@ -1,2 +1,17 @@
 0.0.1:
     Project start
+
+0.0.2:
+    Re-arrange things so the rpm can co-exist with dep-checker
+
+0.0.3:
+    Fix docs for new layout (no ./bin)
+    Workaround bug in django 1.3 by disabling autoreload
+    http://stackoverflow.com/questions/6110168/pycharm-manage-py-runserver-error
+
+0.0.4:
+    Add support for QR codes
+    SPFX files -> 1 per component
+    Add new fields: License URL, Attribution, Copyright
+    Schema/layout/doc changes to accomodate above
+

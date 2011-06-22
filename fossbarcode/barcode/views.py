@@ -1,7 +1,7 @@
 # Create your views here.
 from django.template import Context, loader
 from django.shortcuts import render_to_response, get_object_or_404
-from fossbarcode.barcode.models import Barcode_Record, SPDX_Files, FOSS_Components, Patch_Files, RecordForm
+from fossbarcode.barcode.models import Product_Record, FOSS_Components, Patch_Files, RecordForm
 from django.http import HttpResponse, HttpResponseRedirect
 from django.http import Http404
 from django.conf import settings
@@ -23,21 +23,16 @@ def taskstatus(request):
 # record detail page
 def detail(request, record_id):
     foss = render_detail(record_id)
-    record_list = Barcode_Record.objects.filter(id = record_id)
+    record_list = Product_Record.objects.filter(id = record_id)
     record = record_list[0]
-    spdx = []
-    spdx_list = SPDX_Files.objects.filter(brecord = record_id)
-    for s in spdx_list:
-        local_path = os.path.basename(s.path)
-        spdx.append({'path': s.path, 'local_path': local_path})
-    return render_to_response('barcode/detail.html', {'record': record, 'spdx': spdx, 'foss': foss, 'tab_results': True})
+    return render_to_response('barcode/detail.html', {'record': record, 'foss': foss, 'tab_results': True})
 
 # record search page
 def search(request):
     error_message = ""
     if request.method == 'POST': # If the form has been submitted...
         searchsum = request.POST.get('searchsum', '')
-        record_list = Barcode_Record.objects.filter(checksum = searchsum)
+        record_list = Product_Record.objects.filter(checksum = searchsum)
         if record_list.count() == 0:
             error_message = "Record not found..."
         else:
@@ -59,7 +54,7 @@ def records(request):
                 if record != '':
                     error_message = delete_record(record)
 
-    latest_record_list = Barcode_Record.objects.order_by('-record_date')
+    latest_record_list = Product_Record.objects.order_by('-record_date')
     return render_to_response('barcode/records.html', {'latest_record_list': latest_record_list,
                                                        'error_message': error_message, 
                                                        'tab_records': True })
@@ -71,17 +66,32 @@ def input(request):
     error_message = check_for_system_apps()
     foss_components = ''
     foss_versions = ''
+    foss_copyrights = ''
+    foss_attributions = ''
     foss_licenses = ''
+    foss_license_urls = ''
     foss_urls = ''
+    foss_spdxs = ''
     foss_patches = ''
+    codetype = 'barcode'
 
     if request.method == 'POST': # If the form has been submitted...
-        recordform = RecordForm(request.POST) # A form bound to the POST data
-        # we need these whether it's valid or not to repopulate on a bad submit        
+        recordform = RecordForm(request.POST) # A form bound to the POST data      
+ 
+       # we need these whether it's valid or not to repopulate on a bad submit        
         foss_components = request.POST.get('foss_components', '')
         foss_versions = request.POST.get('foss_versions', '')
+        foss_copyrights = request.POST.get('foss_copyrights', '')
+        foss_attributions = request.POST.get('foss_attributions', '')
         foss_licenses = request.POST.get('foss_licenses', '')
+        foss_license_urls = request.POST.get('foss_license_urls', '')
         foss_urls = request.POST.get('foss_urls', '')
+        foss_spdxs = request.POST.get('foss_spdxs', '')
+        # barcode or qrcode?
+        do_qr = request.POST.get('submit_qrcode', '')
+        if do_qr != "":
+            codetype = 'qrcode'
+
         # patches are each in their own text area
         if foss_components != '':
             components = foss_components.split(",")
@@ -101,38 +111,27 @@ def input(request):
             except:
                 error_message = "Failed to create " + data_dest + "<br>"
 
-            # if we have spdx files, store their paths and save them
-            if recordform.cleaned_data['spdx_files'] != "":
-                spdx_list = recordform.cleaned_data['spdx_files'].split("\n")
-                if spdx_list:
-                    try:
-                        os.mkdir(spdx_dest)
-                    except:
-                        error_message = "Failed to create " + spdx_dest + "<br>"
-                for spdx in spdx_list:
-                    if spdx != "":
-                        spdx = spdx[:-1]
-                        spdxdata = SPDX_Files(brecord_id = recordid, path = spdx)
-                        spdxdata.save()
-                        try:
-                            shutil.copy(spdx, spdx_dest)
-                        except:
-                            error_message += "Failed to copy " + str(spdx) + "to " + spdx_dest + "<br>"
-
             # if we have foss components, store them also, and the patches
             if foss_components != '':
                 components = foss_components.split(",")
                 versions = foss_versions.split(",")
+                copyrights = foss_copyrights.split(",")
+                attributions = foss_attributions.split(",")
                 licenses = foss_licenses.split(",")
+                license_urls = foss_license_urls.spt(",")
                 urls = foss_urls.split(",")
+                spdxs = foss_spdxs.split(",")
                 i = 0
                 for foss in components:
                     if foss != "":
                         fossdata = FOSS_Components(brecord_id = recordid, 
                                                    package = foss, version = versions[i],
-                                                   license = licenses[i], url = urls[i])
+                                                   copyright = copyrights[i], attribution = attributions[i],
+                                                   license = licenses[i], license_url = license_urls[i], 
+                                                   url = urls[i], spdx = spdxs[i])
                         fossdata.save()
                         fossid = fossdata.id
+                    # FIXME - save SPDX file to user_data
                     # check for patches
                     patch_files = request.POST.get('patch_files' + str(i), '')
                     if patch_files != "":
@@ -157,8 +156,8 @@ def input(request):
             checksum = record_to_checksum(recordid)
 
             if checksum:
-                Barcode_Record.objects.filter(id = recordid).update(checksum = checksum)
-                result = checksum_to_barcode(recordid, checksum)
+                Product_Record.objects.filter(id = recordid).update(checksum = checksum)
+                result = checksum_to_barcode(recordid, checksum, codetype)
                 if result:
                     error_message += "Barcode generation failed...<br>"
             else:
@@ -172,7 +171,9 @@ def input(request):
     return render_to_response('barcode/input.html', {
                               'error_message': error_message, 'recordform': recordform,
                               'foss_components': foss_components, 'foss_versions': foss_versions,
-                              'foss_licenses': foss_licenses, 'foss_urls': foss_urls,
+                              'foss_copyrights': foss_copyrights, 'foss_attributions': foss_attributions,
+                              'foss_licenses': foss_licenses, 'foss_license_urls': foss_license_urls, 
+                              'foss_urls': foss_urls, 'foss_spdxs': foss_spdxs,
                               'foss_patches': foss_patches, 'tab_input': True
     })
 
@@ -252,16 +253,16 @@ def dirlist(request):
 # FIXME - what if "which" isn't present?
 def check_for_system_apps():
     errmsg = ''
-    apps_needed = ['find', 'cat', 'md5sum', 'barcode', 'pstopnm', 'pnmtopng']
+    apps_needed = ['find', 'cat', 'md5sum', 'barcode', 'qrencode' , 'pstopnm', 'pnmtopng', 'sam2p']
     for app in apps_needed:
         result = os.system("which " + app + "> /dev/null")
         if result:
             errmsg += "Could not find system app '<i>" + app + "</i>'...<br>"
-            if app == "barcode":
+            if app == "barcode" or app == "qrencode":
                 errmsg += "(See the documentation for building '<i>" + app + "</i>' from source)<br>"
 
     if errmsg:
-        errmsg += "Application will fail to generate barcodes without these apps<br>"
+        errmsg += "Application will fail to generate qr/barcode images without these apps<br>"
         errmsg += "Please use your system package manager to install them<br>"
 
     return errmsg
@@ -277,12 +278,8 @@ def record_to_checksum(recid):
     # FIXME - this could be cleaned up a bit, just QandD for now
     # FIXME - record has "pk" in it, so the same user date gets a different checksum
     from django.core import serializers
-    data = strip_pk(serializers.serialize("xml", Barcode_Record.objects.filter(id = recid), 
+    data = strip_pk(serializers.serialize("xml", Product_Record.objects.filter(id = recid), 
                                   fields=('company','website', 'product', 'version', 'release', 'checksum')))
-    has_spdx = SPDX_Files.objects.filter(brecord = recid).count()
-    print has_spdx
-    if has_spdx:
-        data += strip_pk(serializers.serialize("xml", SPDX_Files.objects.filter(brecord = recid), fields=('path')))
     has_foss = FOSS_Components.objects.filter(brecord = recid).count()
     if has_foss:
         data += strip_pk(serializers.serialize("xml", FOSS_Components.objects.filter(brecord = recid), 
@@ -328,24 +325,31 @@ def record_to_checksum(recid):
     return checksum
 
 # create eps and png files from a checksum
-def checksum_to_barcode(recid, checksum):
+def checksum_to_barcode(recid, checksum, codetype):
     # FIXME - can any user write the file to here?
     ps_file = os.path.join(settings.USERDATA_ROOT, str(recid), checksum + ".ps")
     png_file = os.path.join(settings.USERDATA_ROOT, str(recid), checksum + ".png")
 
-    result = os.system("barcode -b " + checksum + " -e 128 -m '0,0' -E > " + ps_file)
+    if codetype == "barcode":
+        result = os.system("barcode -b " + checksum + " -e 128 -m '0,0' -E > " + ps_file)
+    else:
+        result = os.system("qrencode -m 0 -o " + png_file + " " + checksum)
+
     if result == 0:
-	# image conversion tries to use root's settings, if started as root
-	os.putenv('TMP', '/tmp')
-	os.putenv('TMPDIR', '/tmp')
-        result = os.system("pstopnm -xsize 500 -portrait -stdout " + ps_file + " | pnmtopng > " + png_file)
-        
+    	# image conversion tries to use root's settings, if started as root
+    	os.putenv('TMP', '/tmp')
+    	os.putenv('TMPDIR', '/tmp')
+        if codetype == "barcode":
+            result = os.system("pstopnm -xsize 500 -portrait -stdout " + ps_file + " | pnmtopng > " + png_file)
+        else:
+            result = os.system("sam2p " + png_file + " PS: " + ps_file)                 
+
     return result
 
 # to remove a record
 def delete_record(recid):
     errmsg = ''
-    q = Barcode_Record.objects.filter(id = recid)
+    q = Product_Record.objects.filter(id = recid)
     checksum = q[0].checksum
     q.delete()
     try:

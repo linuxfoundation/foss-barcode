@@ -12,7 +12,7 @@ fossbarcode/barcode.sqlite: fossbarcode/barcode/models.py fossbarcode/barcode/fi
 
 fixture_regen:
 	(cd fossbarcode && python manage.py dumpdata --format xml) | \
-	  xmllint --format - > fossbarcode/fossbarcode/fixtures/initial_data.xml
+	  xmllint --format - > fossbarcode/barcode/fixtures/initial_data.xml
 
 fossbarcode/media/docs/index.html:
 	cd fossbarcode/media/docs && $(MAKE)

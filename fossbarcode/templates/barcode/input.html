@@ -26,15 +26,10 @@
   <tr align="left">
     <td align="right"><b>{{ recordform.company.label }}:</b>{{ recordform.company.errors }}</td>
     <td>{{ recordform.company }}</td>
-    <td align="center"><b>SPDX</b><sup>TM</sup><b> File(s)<br>(optional)</b>{{ recordform.spdx_files.errors }}</td>
-    <td align="center"><input type="button" name="spdxfilename" value="Select File(s)"
-              title="Open a File/Directory Selector"
-              onclick="toggle_visibility('target_select');set_destination('spdx_files');toggle_enabled('patchfilename');"/></td>
   </tr>
   <tr align="left">
     <td align="right"><b>{{ recordform.website.label }}:</b>{{ recordform.website.errors }}</td>
     <td>{{ recordform.website }}</td>
-    <td align="center" colspan="2" rowspan="5">{{ recordform.spdx_files }}</td>
   </tr>
   <tr align="left">
     <td align="right"><b>{{ recordform.product.label }}:</b>{{ recordform.product.errors }}</td>
@@ -51,11 +46,12 @@
   <tr align="left">
     <td align="right"><b>{{ recordform.contact.label }}:</b></td>
     <td>{{ recordform.contact }}</td>
+    <td align="center" colspan="2"><input style="width: 200px" type="submit" name="submit_qrcode" value="Create Checksum/QRcode" /></td>
   </tr>
   <tr align="left">
     <td align="right"><b>{{ recordform.email.label }}:</b>{{ recordform.email.errors }}</td>
     <td>{{ recordform.email }}</td>   
-    <td align="center" colspan="2"><input style="width: 200px" type="submit" name="submit" value="Create Checksum/Barcode" /></td>
+    <td align="center" colspan="2"><input style="width: 200px" type="submit" name="submit_barcode" value="Create Checksum/Barcode" /></td>
   </tr>      
 </table>
 </div> <!-- entry_form -->
@@ -68,24 +64,40 @@
 <table border="1" width="700" cellspacing="1" style='table-layout:fixed' id="foss_list">
     <col width=125>
     <col width=60>
+    <col width=120>
+    <col width=120>
     <col width=60>
     <col width=145>
+    <col width=145>
     <col width=120>
-    <col width=70>
+    <col width=80>
+    <col width=145>
+    <col width=120>
   <tr>
     <th>FOSS Component</th>
     <th>Version</th>
+    <th>Copyright<br>Information</th>
+    <th>Attribution<br>Notices</th>
     <th>License</th>
+    <th>License<br>URL</th>
     <th>Original<br>Download URL</th>
-    <th>Patches<br>(if applicable)</th>
+    <th colspan=2>SPDX<sup>TM</sup>File<br>(optional)</th>
+    <th>Patches<br>(if applicable)</th>  
     <td></td>
   </tr>
   <tr>
     <!-- needed to control the width here, so hand tweaked size in css -->
     <td>{{ recordform.foss_component }}</td>
     <td>{{ recordform.foss_version }}</td>
+    <td>{{ recordform.foss_copyright }}</td>
+    <td>{{ recordform.foss_attribution }}</td>
     <td>{{ recordform.foss_license }}</td>
+    <td>{{ recordform.foss_license_url }}</td>
     <td>{{ recordform.foss_url }}</td>
+    <td>{{ recordform.foss_spdx }}</td>
+    <td align="center"><input type="button" name="addspdx" 
+                                        value="Select" 
+                                        onclick=""/></td>
     <td align="center" colspan="2"><input type="button" name="addfoss" 
                                         value="Add Component" 
                                         onclick="get_foss_values();add_foss_row('foss_list', 'add')"/></td>
@@ -96,9 +108,14 @@
 
 <input type="hidden", name="foss_components", id="foss_components", value="{{ foss_components }}">
 <input type="hidden", name="foss_versions", id="foss_versions", value="{{ foss_versions }}">
+<input type="hidden", name="foss_copyrights", id="foss_copyrights", value="{{ foss_copyrights }}">
+<input type="hidden", name="foss_attributions", id="foss_attributions", value="{{ foss_attributions }}">
 <input type="hidden", name="foss_licenses", id="foss_licenses", value="{{ foss_licenses }}">
+<input type="hidden", name="foss_license_urls", id="foss_license_urls", value="{{ foss_license_urls }}">
 <input type="hidden", name="foss_urls", id="foss_urls", value="{{ foss_urls }}">
+<input type="hidden", name="foss_spdxs", id="foss_spdxs", value="{{ foss_spdxs }}">
 <input type="hidden", name="foss_patches", id="foss_patches", value="{{ foss_patches }}">
+
 
 </form>
 
@@ -113,11 +130,15 @@
 
 {% block scripts %}
 <script language="JavaScript">
-    var path_dest = "spdxfilename";
+    var path_dest = "";
     var foss_name = "";
+    var foss_copyright = "";
+    var foss_attribution = "";
     var foss_version = "";
     var foss_license = "";
+    var foss_license_url = "";
     var foss_url = "";
+    var foss_spdx = "";
 
     $(document).ready( function() {
         $('#target').fileTree({
@@ -133,17 +154,25 @@
         if (document.getElementById("foss_components").value != "") {
             var fossn = document.getElementById("foss_components").value.split(",");
             var fossv = document.getElementById("foss_versions").value.split(",");
+            var fossc = document.getElementById("foss_copyrights").value.split(",");
+            var fossa = document.getElementById("foss_attributions").value.split(",");
             var fossl = document.getElementById("foss_licenses").value.split(",");
+            var fosslu = document.getElementById("foss_license_urls").value.split(",");
             var fossu = document.getElementById("foss_urls").value.split(",");
+            var fosss = document.getElementById("foss_spdxs").value.split(",");
             var fossp = document.getElementById("foss_patches").value.split(",");
             for (i = 0; i < fossn.length - 1; i++) {
                 foss_name = fossn[i];
                 foss_version = fossv[i];
+                foss_copyright = fossc[i];
+                foss_attribution = fossa[i];
                 foss_license = fossl[i];
+                foss_license_url = fosslu[i]
                 foss_url = fossu[i];
+                foss_spdx = fosss[i];
                 add_foss_row("foss_list", "reload");
-                id_tag = "patch_files" + i;
-                document.getElementsByName(id_tag)[0].value = fossp[i];
+                patch_tag = "patch_files" + i;
+                document.getElementsByName(patch_tag)[0].value = fossp[i];
             }
         }
     }
@@ -176,7 +205,7 @@
             return;
         var tbody = document.getElementById(id).getElementsByTagName("TBODY")[0];
         var rindex = document.getElementById(id).rows.length - 2;
-        var id_tag = "patch_files" + rindex;
+        var patch_tag = "patch_files" + rindex;
         var row = document.createElement("TR");
         
         var td1 = document.createElement("TD");
@@ -196,30 +225,54 @@
 
         var td4 = document.createElement("TD");
         td4.setAttribute("valign", "top");
-        td4.appendChild (document.createTextNode(foss_url));
+        td4.appendChild (document.createTextNode(foss_license_url));
         row.appendChild(td4);
 
-        var td5 = document.createElement("TD");        
-        var ch5 = document.createElement("textarea");
-        ch5.setAttribute("type", "textarea");
-        ch5.setAttribute("name",id_tag);
-        td5.appendChild(ch5);   
+        var td5 = document.createElement("TD");
+        td5.setAttribute("valign", "top");
+        td5.appendChild (document.createTextNode(foss_copyright));
         row.appendChild(td5);
 
         var td6 = document.createElement("TD");
-        td6.setAttribute("align", "center");
-        var ch6 = document.createElement("input");
-        ch6.setAttribute("type", "button");
-        ch6.setAttribute("value", "Select" + "\n" + "Patch(es)");
-        ch6.setAttribute("onclick", "toggle_visibility('target_select');set_destination('" + id_tag + "')");
-        ch6.setAttribute("name","patchfilename");
-        ch6.setAttribute("title", "Open a File/Directory Selector");
-        td6.appendChild(ch6);
+        td6.setAttribute("valign", "top");
+        td6.appendChild (document.createTextNode(foss_attribution));
         row.appendChild(td6);
+
+        var td7 = document.createElement("TD");
+        td7.setAttribute("valign", "top");
+        td7.appendChild (document.createTextNode(foss_url));
+        row.appendChild(td7);
+
+        var td8 = document.createElement("TD");
+        td8.setAttribute("valign", "top");
+        td8.setAttribute("colspan", "2");
+        td8.appendChild (document.createTextNode(foss_spdx));
+        row.appendChild(td8);
+   
+        // list of patches
+        var td9 = document.createElement("TD");        
+        var ch9 = document.createElement("textarea");
+        ch9.setAttribute("type", "textarea");
+        ch9.setAttribute("name",patch_tag);
+        td9.appendChild(ch9);   
+        row.appendChild(td9);
+
+        // buttons for file selectors
+        var td10 = document.createElement("TD");
+        td10.setAttribute("align", "center");
+        var ch10 = document.createElement("input");
+        ch10.setAttribute("type", "button");
+        ch10.setAttribute("value", "Select\nPatch(es)");
+        ch10.setAttribute("onclick", "toggle_visibility('target_select');set_destination('" + patch_tag + "')");
+        ch10.setAttribute("name","patchfilename");
+        ch10.setAttribute("title", "Open a File/Directory Selector");
+        td10.appendChild(ch10);
+        row.appendChild(td10);
         
         tbody.appendChild(row);
 
         // only set the hidden fields for a clean add, not a form reload
+        // FIXME - need new fields here
         if (mode == "add") {
             document.getElementById("foss_components").value += foss_name + ",";
             document.getElementById("foss_versions").value += foss_version + ",";

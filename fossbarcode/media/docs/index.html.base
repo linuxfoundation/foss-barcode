@@ -71,7 +71,7 @@ for discussion of the tool.</p>
 <b>System Requirements:</b>
 
 <p>The GUI requires python. It also runs the OS commands: 
-<i>find, cat, barcode, md5sum, pstopnm, and pnmtopng</i>, so these should be present on your system.
+<i>find, cat, barcode, qrencode, md5sum, pstopnm, pnmtopng, and sam2p</i>, so these should be present on your system.
 The GUI requires <a href="http://www.djangoproject.com">Django</a>, along with sqlite 
 support for the results database. A web browser is also needed to interact with the GUI.
 If your distribution does not provide Django, you can follow these 
@@ -89,6 +89,17 @@ make install (using sudo or as root)
 The only package I found I needed outside of a regular development toolchain (gcc, make, etc.), to build barcode, was texinfo,
 for the command <i>makeinfo</i>.  The rest of the commands used by the back end should be reasonably common 
 on most distributions.</p>
+
+<p>If your distribution does not provide <i>qrencode</i>, it can be built from source:
+<pre>
+wget http://fukuchi.org/works/qrencode/qrencode-3.1.1.tar.bz2
+tar -xjf qrencode-3.1.1.tar.bz2
+cd qrencode-3.1.1
+./configure
+make
+make install (using sudo or as root)
+</pre>
+</p>
 
 <p>
 If your distribution does not provide netpbm for "pstopnm" and "pnmtopng", you
@@ -320,7 +331,7 @@ directory. It is an sqlite3 database file. Tables used by the application are as
 (arranged more or less as they are integrated into the application tabs):</p>
 
 <ul>
-<li><b>barcode_record</b> - table containing the information entered from the <b>Enter Data</b> tab. Each
+<li><b>product_record</b> - table containing the information entered from the <b>Enter Data</b> tab. Each
 record has an <i>id</i> used to track the record and the relationships to the spdx, components and patch 
 tables.</li>
   <ul>
@@ -335,12 +346,6 @@ tables.</li>
     <li>release - Product Release</li>
     <li>checksum - Generated Checksum</li>
   </ul>
-<li><b>spdx_files</b> - list of uploaded SPDX<sup>TM</sup> files. Linked to the <i>record</i> table via <i>brecord_id</i>.</li>          
-  <ul>
-    <li>id - primary key</li>
-    <li>brecord_id - link to the top-level record entry</li>
-    <li>path - original path to the uploaded file</li>
-  </ul>
 <li><b>foss_components</b> - entered list of FOSS components, versions, etc. Linked to the <i>record</i> table 
 via <i>brecord_id</i>.</li>           
   <ul>
@@ -348,9 +353,12 @@ via <i>brecord_id</i>.</li>
     <li>brecord_id - link to the top-level record entry</li>
     <li>package - FOSS component name (e.g. glibc)</li>
     <li>version - FOSS componenent version</li>
+    <li>copyright - FOSS copyright information</li>
+    <li>attribution - FOSS attribution notices</li> 
     <li>license - FOSS componenent license (e.g. GPLv2)</li>
+    <li>license_url - URL where FOSS license can be obtained</li>
     <li>url - upstream URL where FOSS component can be obtained</li>
-
+    <li>spdx - SPDX<sup>TM</sup> file name for the FOSS component</li>
   </ul>
 <li><b>patch_files</b> - List of uploaded patch files. Linked to the <i>foss_components</i> table via
 <i>frecord_id</i>.</li>

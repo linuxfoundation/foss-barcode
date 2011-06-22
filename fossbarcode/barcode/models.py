@@ -6,7 +6,7 @@ import re
 
 # Create your models here.
 
-class Barcode_Record(models.Model):
+class Product_Record(models.Model):
     company = models.CharField('Company Name', max_length=200)
     website = models.CharField('FOSS Website (optional)', max_length=200, blank=True)
     record_date = models.DateTimeField('Test Date', auto_now=True)
@@ -19,18 +19,16 @@ class Barcode_Record(models.Model):
     def __unicode__(self):
         return self.product
 
-class SPDX_Files(models.Model):
-    brecord = models.ForeignKey(Barcode_Record)
-    path = models.CharField(max_length=400)
-    def __unicode__(self):
-        return self.path
-
 class FOSS_Components(models.Model):
-    brecord = models.ForeignKey(Barcode_Record)
+    brecord = models.ForeignKey(Product_Record)
     package = models.CharField(max_length=200)
     version = models.CharField(max_length=20)
+    copyright = models.CharField(max_length=100)
+    attribution = models.CharField(max_length=100)
     license = models.CharField(max_length=40)
+    license_url = models.CharField(max_length=200)
     url = models.CharField(max_length=200)
+    spdx_file = models.CharField(max_length=100)
     def __unicode__(self):
         return self.package
 
@@ -42,11 +40,14 @@ class Patch_Files(models.Model):
 
 class RecordForm(ModelForm):   
     class Meta:
-        model = Barcode_Record
+        model = Product_Record
 
-    spdx_files = forms.CharField(widget=forms.Textarea, required=False)
     foss_component = forms.CharField(max_length=200, required=False)
     foss_version = forms.CharField(max_length=20, required=False)
+    foss_copyright = forms.CharField(max_length=100, required=False)
+    foss_attribution = forms.CharField(max_length=100, required=False)
     foss_license = forms.CharField(max_length=40, required=False)
+    foss_license_url = forms.CharField(max_length=200, required=False)
     foss_url = forms.CharField(max_length=200, required=False)
+    foss_spdx = forms.CharField(max_length=100, required=False)
 
