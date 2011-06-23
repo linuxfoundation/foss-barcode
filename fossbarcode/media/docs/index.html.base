@@ -333,7 +333,7 @@ directory. It is an sqlite3 database file. Tables used by the application are as
 
 <ul>
 <li><b>product_record</b> - table containing the information entered from the <b>Enter Data</b> tab. Each
-record has an <i>id</i> used to track the record and the relationships to the spdx, components and patch 
+record has an <i>id</i> used to track the record and the relationships to the components and patch 
 tables.</li>
   <ul>
     <li>id - record id, used for linking to the spdx and components tables (primary key)</li>
@@ -359,7 +359,7 @@ via <i>brecord_id</i>.</li>
     <li>license - FOSS componenent license (e.g. GPLv2)</li>
     <li>license_url - URL where FOSS license can be obtained</li>
     <li>url - upstream URL where FOSS component can be obtained</li>
-    <li>spdx - SPDX<sup>TM</sup> file name for the FOSS component</li>
+    <li>spdx_file - SPDX<sup>TM</sup> file name for the FOSS component</li>
   </ul>
 <li><b>patch_files</b> - List of uploaded patch files. Linked to the <i>foss_components</i> table via
 <i>frecord_id</i>.</li>
