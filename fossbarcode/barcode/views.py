@@ -161,7 +161,7 @@ def input(request):
                                                    package = foss, version = versions[i],
                                                    copyright = copyrights[i], attribution = attributions[i],
                                                    license = licenses[i], license_url = license_urls[i], 
-                                                   url = urls[i], spdx_file = spdxs[i])
+                                                   url = urls[i], spdx_file = os.path.basename(spdxs[i]))
                         fossdata.save()
                         fossid = fossdata.id
 
@@ -179,7 +179,7 @@ def input(request):
                         for patch in patches:
                             patch = patch[:-1]
                             if patch != "":
-                                patchdata = Patch_Files(frecord_id = fossid, path = patch)
+                                patchdata = Patch_Files(frecord_id = fossid, path = os.path.basename(patch))
                                 patchdata.save()
                                 try:
                                     shutil.copy(patch, patch_dest)

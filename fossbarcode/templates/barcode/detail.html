@@ -23,10 +23,10 @@
         <b>Product Version/Release: </b>{{ record.version }}-{{ record.release }}<br>
         <b>Date: </b>{{ record.record_date|date:"M d, Y H:i:s" }}<br>
         <b>Compliance Contact Name: </b>{{ record.contact }}<br>
-        <b>Compliance Contact Email: </b>{{ record.email }}<br>
+        <b>Compliance Contact Email: </b><a href="mailto:{{ record.email }}" target="_blank">{{ record.email }}</a><br>
       </td>
       <td align = "center" id = "noprint">
-        <input type="button" name="doprint" value="Print Results" onClick="javascript:window.print()">
+        <input type="button" name="doprint" value="Print BoM Compliance Record" onClick="javascript:window.print()">
       </td>
     </tr>    
     <tr>
@@ -40,7 +40,7 @@
     </tr>
   </table>
   <table border = "1" width = "100%">
-    <tr><th colspan = "9">FOSS Components/Patches/SPDX<sup>TM</sup> Files</th></tr>
+    <tr><th colspan = "9">FOSS Bill of Material for {{record.product }}-{{ record.version }}-{{ record.release }}</th></tr>
     <tr>
       <th>Component</th>
       <th>Version</th>
@@ -49,7 +49,7 @@
       <th>License<br>Name and Version</th>
       <th>License<br>URL</th>
       <th>Download<br>URL</th>
-      <th>SPDX<sup>TM</sup><br>File(s)</th>
+      <th>SPDX<sup>TM</sup><br>File</th>
       <th>Patch(es)</th>
     </tr>
     {% for row in foss %}
