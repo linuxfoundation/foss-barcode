@@ -42,3 +42,6 @@ database and docs:
 to access the gui: http://127.0.0.1:8000/barcode
 admin interface: http://127/0.0.1:8000/admin 
 	(username compliance, password compliance)
+
+See fossbarcode/dbsettings.py for information on using a database
+engine other than SQLite.
