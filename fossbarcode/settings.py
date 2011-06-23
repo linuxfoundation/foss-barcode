@@ -1,35 +1,11 @@
 # Django settings for fossbarcode project.
 
 import os, time
+from setutils import *
 
-# Function for finding the project root.
+# Database setup has been moved to a separate file.
 
-def get_project_root():
-    project_root_paths = [ ".", "..", "/opt/linuxfoundation" ]
-    for path in project_root_paths:
-        if os.path.exists(os.path.join(path, "foss-barcode.py")) or \
-                os.path.exists(os.path.join(path, "bin/foss-barcode.py")):
-            return path
-
-    # Shouldn't get here unless we can't find the path.
-    raise RuntimeError, "could not find the project path"
-
-# Return the proper directory to use for userdir mode.
-
-def get_userdir():
-    return os.path.join(os.environ["HOME"], ".fossbarcode")
-
-# Should we use userdir mode?
-
-def use_userdir():
-    if os.getuid() == 0 or os.environ["LOGNAME"] == "compliance":
-        return False
-    
-    project_root = get_project_root()
-    if os.access(os.path.join(project_root, "fossbarcode"), os.W_OK):
-        return False
-
-    return True
+from dbsettings import DATABASES
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -44,13 +20,6 @@ ADMINS = (
 )
 
 MANAGERS = ADMINS
-
-DATABASE_ENGINE = 'sqlite3'           # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
-DATABASE_NAME = os.path.join(get_project_root(), 'fossbarcode', 'barcode.sqlite')
-DATABASE_USER = ''             # Not used with sqlite3.
-DATABASE_PASSWORD = ''         # Not used with sqlite3.
-DATABASE_HOST = ''             # Set to empty string for localhost. Not used with sqlite3.
-DATABASE_PORT = ''             # Set to empty string for default. Not used with sqlite3.
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name

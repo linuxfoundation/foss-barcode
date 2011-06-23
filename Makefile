@@ -9,6 +9,7 @@ package:
 fossbarcode/barcode.sqlite: fossbarcode/barcode/models.py fossbarcode/barcode/fixtures/initial_data.xml
 	rm -f fossbarcode/barcode.sqlite
 	cd fossbarcode && python manage.py syncdb --noinput
+	touch fossbarcode/barcode.sqlite
 
 fixture_regen:
 	(cd fossbarcode && python manage.py dumpdata --format xml) | \

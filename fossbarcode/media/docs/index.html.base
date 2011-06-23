@@ -29,6 +29,7 @@
     <li><a href="#gui-use">Using the GUI</a></li>
     <li><a href="#admin">Admin Interface</a></li>
     <li><a href="#database">Database Schema</a></li>
+    <li><a href="#dbserver">Using a Database Server</a></li>
     <li><a href="#backend">How it Works</a></li>
     <li><a href="#limitations">Limitations</a></li>
   </ul>
@@ -368,6 +369,20 @@ via <i>brecord_id</i>.</li>
     <li>path - original path to the uploaded file</li>
   </ul>
 </ul>
+</div>
+
+<div id="dbserver">
+<b>Using a Database Server:</b>
+
+<p>By default, the progam uses a SQLite database to store its data.
+  This is suitable for most cases, but it may be important to scale up
+  to a real database server for high-volume situations.  This can be
+  done by editing the <tt>fossbarcode/dbsettings.py</tt> file.  Besides the
+  default SQLite setup, examples are provided for MySQL, PostgreSQL,
+  and Oracle database servers.  Comment out the SQLite configuration,
+  uncomment the configuration for your database server, and edit the
+  configuration as appropriate.</p>
+
 </div>
 
 <div id="backend">
