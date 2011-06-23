@@ -36,7 +36,7 @@
       </td>
     </tr>
     <tr>
-      <td align = "center"><b>Checksum: </b> {{ record.checksum }}</td>
+      <td align = "center"><b>Checksum/Site Reference: </b><a href="{{ host_site }}{{ record.checksum }}" target="_blank">{{ record.checksum }}</a></td>
     </tr>
   </table>
   <table border = "1" width = "100%">
@@ -44,21 +44,25 @@
     <tr>
       <th>Component</th>
       <th>Version</th>
-      <th>License</th>
+      <th>Copyright<br>Information</th>
+      <th>Attribution<br>Notices</th>
+      <th>License<br>Name and Version</th>
       <th>License<br>URL</th>
-      <th>Copyright</th>
-      <th>License<br>Attribution</th>
-      <th>Download URL</th>
-      <th>Patch(es)</th>
+      <th>Download<br>URL</th>
       <th>SPDX<sup>TM</sup><br>File(s)</th>
+      <th>Patch(es)</th>
     </tr>
     {% for row in foss %}
     <tr valign = "top">
       <td>{{ row.component }}</td>
       <td>{{ row.version }}</td>
+      <td>{{ row.copyright }}</td>
+      <td>{{ row.attribution }}</td>
       <td>{{ row.license }}</td>
+      <td><a href="{{ row.license_url }}" target="_blank">{{ row.license_url }}</a></td>
       <td><a href="{{ row.url }}" target="_blank">{{ row.url }}</a></td>
       {% autoescape off %}
+      <td>{{ row.spdx_file }}</td>
       <td>{{ row.patches }}</td>
       {% endautoescape %}
     </tr>

@@ -8,7 +8,7 @@ from django.conf import settings
 
 from fossbarcode import task
 
-import sys, os, re, urllib, subprocess, time, shutil
+import sys, os, re, urllib, subprocess, time, shutil, hashlib
 
 # buffer size for Popen, we want unbuffered
 bufsize = -1
@@ -22,10 +22,11 @@ def taskstatus(request):
 
 # record detail page
 def detail(request, record_id):
+    from site_settings import host_site
     foss = render_detail(record_id)
     record_list = Product_Record.objects.filter(id = record_id)
     record = record_list[0]
-    return render_to_response('barcode/detail.html', {'record': record, 'foss': foss, 'tab_results': True})
+    return render_to_response('barcode/detail.html', {'record': record, 'foss': foss, 'host_site': host_site, 'tab_results': True})
 
 # record search page
 def search(request):
@@ -62,7 +63,6 @@ def records(request):
 # input form - this is where the real work happens
 def input(request):
 
-    error_message = ''
     error_message = check_for_system_apps()
     foss_components = ''
     foss_versions = ''
@@ -73,12 +73,18 @@ def input(request):
     foss_urls = ''
     foss_spdxs = ''
     foss_patches = ''
+    component_error = ''
     codetype = 'barcode'
 
     if request.method == 'POST': # If the form has been submitted...
         recordform = RecordForm(request.POST) # A form bound to the POST data      
+
+        # barcode or qrcode?
+        do_qr = request.POST.get('submit_qrcode', '')
+        if do_qr != "":
+            codetype = 'qrcode'
  
-       # we need these whether it's valid or not to repopulate on a bad submit        
+        # we need these whether it's valid or not to repopulate on a bad submit        
         foss_components = request.POST.get('foss_components', '')
         foss_versions = request.POST.get('foss_versions', '')
         foss_copyrights = request.POST.get('foss_copyrights', '')
@@ -87,11 +93,12 @@ def input(request):
         foss_license_urls = request.POST.get('foss_license_urls', '')
         foss_urls = request.POST.get('foss_urls', '')
         foss_spdxs = request.POST.get('foss_spdxs', '')
-        # barcode or qrcode?
-        do_qr = request.POST.get('submit_qrcode', '')
-        if do_qr != "":
-            codetype = 'qrcode'
 
+        # need at least one full component entry to proceed
+        if foss_components == '' or foss_versions == '' or foss_copyrights == '' \
+          or foss_attributions == '' or foss_licenses == '' or foss_license_urls == '' or foss_urls == '':
+            component_error = "At least one full component record is required...<br>"
+  
         # patches are each in their own text area
         if foss_components != '':
             components = foss_components.split(",")
@@ -99,7 +106,7 @@ def input(request):
                 foss_patches += request.POST.get('patch_files' + str(i), '') + ","
 
         # back to "normal" processing
-        if recordform.is_valid(): # All validation rules pass
+        if recordform.is_valid() and component_error == '': # All validation rules pass
             recorddata = recordform.save(commit=False)       
             recorddata.save()
             recordid = recorddata.id
@@ -118,7 +125,7 @@ def input(request):
                 copyrights = foss_copyrights.split(",")
                 attributions = foss_attributions.split(",")
                 licenses = foss_licenses.split(",")
-                license_urls = foss_license_urls.spt(",")
+                license_urls = foss_license_urls.split(",")
                 urls = foss_urls.split(",")
                 spdxs = foss_spdxs.split(",")
                 i = 0
@@ -128,7 +135,7 @@ def input(request):
                                                    package = foss, version = versions[i],
                                                    copyright = copyrights[i], attribution = attributions[i],
                                                    license = licenses[i], license_url = license_urls[i], 
-                                                   url = urls[i], spdx = spdxs[i])
+                                                   url = urls[i], spdx_file = spdxs[i])
                         fossdata.save()
                         fossid = fossdata.id
                     # FIXME - save SPDX file to user_data
@@ -169,7 +176,8 @@ def input(request):
         recordform = RecordForm() # An unbound form
 
     return render_to_response('barcode/input.html', {
-                              'error_message': error_message, 'recordform': recordform,
+                              'error_message': error_message, 'component_error': component_error, 
+                              'recordform': recordform,
                               'foss_components': foss_components, 'foss_versions': foss_versions,
                               'foss_copyrights': foss_copyrights, 'foss_attributions': foss_attributions,
                               'foss_licenses': foss_licenses, 'foss_license_urls': foss_license_urls, 
@@ -275,11 +283,13 @@ def strip_pk(data):
 # build up an archive
 def record_to_checksum(recid):
     # create an xml file of the database data
-    # FIXME - this could be cleaned up a bit, just QandD for now
-    # FIXME - record has "pk" in it, so the same user date gets a different checksum
+    # FIXME - do we even need an xml dataset now with just these 4 fields?
     from django.core import serializers
     data = strip_pk(serializers.serialize("xml", Product_Record.objects.filter(id = recid), 
-                                  fields=('company','website', 'product', 'version', 'release', 'checksum')))
+                                  fields=('company', 'product', 'version', 'release')))
+    
+    # not using these for the checksum now
+    '''
     has_foss = FOSS_Components.objects.filter(brecord = recid).count()
     if has_foss:
         data += strip_pk(serializers.serialize("xml", FOSS_Components.objects.filter(brecord = recid), 
@@ -291,7 +301,7 @@ def record_to_checksum(recid):
             if has_patches:
                 data += strip_pk(serializers.serialize("xml", Patch_Files.objects.filter(frecord = fossid), 
                                                        fields=('path')))
-    
+
     # write the xml to a temporary file
     working_dir = os.path.join(settings.USERDATA_ROOT, str(recid))
     if os.path.exists(settings.USERDATA_ROOT) == 0:
@@ -305,27 +315,18 @@ def record_to_checksum(recid):
             os.mkdir(working_dir)
         except:
             error_message = "Failed to create " + working_dir + "<br>"
+    '''
 
-    outf = os.path.join(working_dir, "barcode_data.xml")
-    outh = open(outf, "w")
-    outh.write(data)
-    outh.close
+    m = hashlib.md5()
+    m.update(data)
+    checksum = m.hexdigest()
 
-    # tar the whole thing up - no workie - not repeatable
-    #checksum = os.popen("tar -C " + working_dir + " -cf - . | md5sum -").readline()
-    # cat everything into md5sum
-    checksum = os.popen("find " + working_dir + " -type f -exec cat {} + | md5sum -").readline()
- 
-    # just the number, not the filename
-    checksum = checksum[:32]
-    # remove the record file
-    os.unlink(outf)
-
-    # and return  
+    # and return
     return checksum
 
 # create eps and png files from a checksum
 def checksum_to_barcode(recid, checksum, codetype):
+    from site_settings import host_site
     # FIXME - can any user write the file to here?
     ps_file = os.path.join(settings.USERDATA_ROOT, str(recid), checksum + ".ps")
     png_file = os.path.join(settings.USERDATA_ROOT, str(recid), checksum + ".png")
@@ -333,7 +334,10 @@ def checksum_to_barcode(recid, checksum, codetype):
     if codetype == "barcode":
         result = os.system("barcode -b " + checksum + " -e 128 -m '0,0' -E > " + ps_file)
     else:
-        result = os.system("qrencode -m 0 -o " + png_file + " " + checksum)
+        mecard = record_to_mecard(recid)
+        # old way, url to central data site via checksum
+        #result = os.system("qrencode -m 0 -o " + png_file + " '" + host_site + checksum + "'")
+        result = os.system("qrencode -m 0 -o " + png_file + " '" + mecard + "'")
 
     if result == 0:
     	# image conversion tries to use root's settings, if started as root
@@ -345,6 +349,17 @@ def checksum_to_barcode(recid, checksum, codetype):
             result = os.system("sam2p " + png_file + " PS: " + ps_file)                 
 
     return result
+
+# convert a record to a MECARD string
+# see http://www.nttdocomo.co.jp/english/service/imode/make/content/barcode/function/application/addressbook/
+def record_to_mecard(recid):
+    from site_settings import host_site
+    q = Product_Record.objects.filter(id = recid)
+    mecard = "MECARD:N:" + q[0].company + ";URL:" + q[0].website + ";EMAIL:" + q[0].email
+    mecard += ";NOTE:" + q[0].product + ", Version: " + q[0].version + ", Release: " + q[0].release
+    # extra url to central site - needed?
+    mecard += ";URL:" + host_site + q[0].checksum + ";"
+    return mecard
 
 # to remove a record
 def delete_record(recid):
@@ -370,14 +385,23 @@ def delete_records(table, rlist):
 
 # pre-render some of the record detail
 def render_detail(id):
+    media_root = '<a href="/site_media/user_data/'
     foss = []
     foss_list = FOSS_Components.objects.filter(brecord = id)
     for f in foss_list:
         fossid = f.id
+        if f.spdx_file != '':
+            spdx_file = media_root + str(id) + "/spdx_files/" + os.path.basename(f.spdx_file) + '">' + f.spdx_file + "</a><br>"
+        else:
+            spdx_file = ''
+
         patch_list = Patch_Files.objects.filter(frecord = fossid)
         patches = ""
         for p in patch_list:
-            patches += '<a href="/site_media/user_data/' + str(id) + "/patches/" + os.path.basename(p.path) + '">' + p.path + "</a><br>"
-        foss.append({'component': f.package, 'version': f.version, 'license': f.license, 'url': f.url, 'patches': patches})
+            patches += media_root + str(id) + "/patches/" + os.path.basename(p.path) + '">' + p.path + "</a><br>"
+        foss.append({'component': f.package, 'version': f.version, 
+                     'copyright': f.copyright, 'attribution': f.attribution, 
+                     'license': f.license, 'license_url': f.license_url, 
+                     'url': f.url, 'spdx_file': spdx_file, 'patches': patches})
     return foss
 

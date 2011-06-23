@@ -8,7 +8,7 @@ import re
 
 class Product_Record(models.Model):
     company = models.CharField('Company Name', max_length=200)
-    website = models.CharField('FOSS Website (optional)', max_length=200, blank=True)
+    website = models.CharField('Company Website', max_length=200)
     record_date = models.DateTimeField('Test Date', auto_now=True)
     contact = models.CharField('Compliance Contact Name (optional)', max_length=200, blank=True)
     email = models.CharField('Compliance Contact Email', max_length=200)
@@ -28,7 +28,7 @@ class FOSS_Components(models.Model):
     license = models.CharField(max_length=40)
     license_url = models.CharField(max_length=200)
     url = models.CharField(max_length=200)
-    spdx_file = models.CharField(max_length=100)
+    spdx_file = models.CharField(max_length=100, blank=True)
     def __unicode__(self):
         return self.package
 

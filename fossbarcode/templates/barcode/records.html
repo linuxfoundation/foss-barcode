@@ -40,8 +40,8 @@
             {% if record.checksum %}<br>{{ record.checksum }}{% endif %} 
         </td>
         <td>
-            <i>Company Name:</i>{{ record.company }}<br>
-            <i>FOSS Website:</i> {{ record.website }}<br>
+            <i>Company Name:</i> {{ record.company }}<br>
+            <i>FOSS Website:</i> <a href="{{ record.website }}" target="_blank">{{ record.website }}</a><br>
             <i>Product Name:</i> {{ record.product }}<br>
             <i>Product Version-Release:</i> {{ record.version }}-{{ record.release }}<br>
             <i>Entry Date:</i> {{ record.record_date|date:"M d, Y H:i:s" }}<br>
