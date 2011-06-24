@@ -6,6 +6,7 @@
   <script type="text/javascript" src="/site_media/js/jquery-1.4.2.min.js"></script>
   <script type="text/javascript" src="/site_media/js/jqueryFileTree.js"></script>
   <script type="text/javascript" src="/site_media/js/visibility.js"></script>
+  <script type="text/javascript" src="/site_media/js/checklist.js"></script>
 </head>
 {% endblock %}
 
@@ -72,6 +73,7 @@
     {% endautoescape %}
 {% endif %}
 <table border="1" width="700" cellspacing="1" style='table-layout:fixed' id="foss_list">
+    <col width=30>
     <col width=125>
     <col width=60>
     <col width=120>
@@ -84,6 +86,7 @@
     <col width=145>
     <col width=120>
   <tr>
+    <td></td>
     <th>FOSS Component</th>
     <th>Version</th>
     <th>Copyright<br>Information</th>
@@ -97,6 +100,7 @@
   </tr>
   <tr>
     <!-- needed to control the width here, so hand tweaked size in css -->
+    <td></td>
     <td>{{ recordform.foss_component }}</td>
     <td>{{ recordform.foss_version }}</td>
     <td>{{ recordform.foss_copyright }}</td>
@@ -113,6 +117,18 @@
                                         value="Add Component" 
                                         onclick="get_foss_values();add_foss_row('foss_list', 'add')"/></td>
   </tr>
+  <div id="bom_editor">
+  <tr>
+    <td align="center"><input type="checkbox" name="selectall"
+                    title="Select/Deselect All Records" 
+                    onclick="toggleall(this.form,'bomcheck','selectall')" />
+    </td>
+    <td colspan="9"></td>
+    <td align="center" colspan="2"><input type="button" name="delete_rows" value="Delete Selected Components"
+                onclick="delete_bom_components('foss_list')" />
+    </td>
+  </tr>
+  </div> <!-- editor -->
 <!-- TODO - loop and fill this from SPDX? -->
 </table>
 </div> <!-- foss_table -->
@@ -151,7 +167,13 @@
 {% block scripts %}
 <script language="JavaScript">
     var path_dest = "";
-    var foss_name = "";
+
+    // FIXME - this works better than what we had before to iterate through the hidden fields, could still use some improvement though
+    hidden_fields = new Array("foss_components", "foss_copyrights", "foss_attributions", "foss_versions", "foss_licenses", "foss_license_urls", "foss_urls", "foss_spdxs" );
+    // FIXME - not used right now - would like a dictionary of these and the plurals above
+    bom_fields = new Array("foss_component", "foss_copyright", "foss_attribution", "foss_version", "foss_license", "foss_license_url", "foss_url", "foss_spdx" );
+
+    var foss_component = "";
     var foss_copyright = "";
     var foss_attribution = "";
     var foss_version = "";
@@ -173,9 +195,9 @@
     function setdefaults() {
         // if the user submitted with missing data, we lose the FOSS table content, repopulate
         if (document.getElementById("foss_components").value != "") {
-            var fossn = document.getElementById("foss_components").value.split(",");
+            var fossc = document.getElementById("foss_components").value.split(",");
             var fossv = document.getElementById("foss_versions").value.split(",");
-            var fossc = document.getElementById("foss_copyrights").value.split(",");
+            var fosscr = document.getElementById("foss_copyrights").value.split(",");
             var fossa = document.getElementById("foss_attributions").value.split(",");
             var fossl = document.getElementById("foss_licenses").value.split(",");
             var fosslu = document.getElementById("foss_license_urls").value.split(",");
@@ -183,18 +205,24 @@
             var fosss = document.getElementById("foss_spdxs").value.split(",");
             var fossp = document.getElementById("foss_patches").value.split(",");
             for (i = 0; i < fossn.length - 1; i++) {
-                foss_name = fossn[i];
+                foss_component = fossc[i];
                 foss_version = fossv[i];
-                foss_copyright = fossc[i];
+                foss_copyright = fosscr[i];
                 foss_attribution = fossa[i];
                 foss_license = fossl[i];
                 foss_license_url = fosslu[i]
                 foss_url = fossu[i];
                 foss_spdx = fosss[i];
                 add_foss_row("foss_list", "reload");
-                patch_tag = "patch_files" + i;
-                document.getElementsByName(patch_tag)[0].value = fossp[i];
+                var patch_tag = "patch_files" + i;
+                var p = document.getElementsByName(patch_tag)[0];
+                if (typeof p != 'undefined')
+                    p.value = fossp[i];
             }
+        } else {
+            // FIXME - hide the editor portion of the BOM if we have no data
+            var e = document.getElementById("bom_editor");
+            e.style.display = 'none';
         }
     }
     function set_destination(dest) {
@@ -220,7 +248,7 @@
         }
     }
     function get_foss_values() {
-        foss_name = document.getElementsByName("foss_component")[0].value;
+        foss_component = document.getElementsByName("foss_component")[0].value;
         foss_version = document.getElementsByName("foss_version")[0].value;
         foss_copyright = document.getElementsByName("foss_copyright")[0].value;
         foss_attribution = document.getElementsByName("foss_attribution")[0].value;
@@ -229,10 +257,48 @@
         foss_url = document.getElementsByName("foss_url")[0].value;
         foss_spdx = document.getElementsByName("foss_spdx")[0].value;       
     }
-    function add_foss_row(id, mode){
-   
+    function remove_bom_values(row) {
+        // jQuery method to iterate 
+        $.each(hidden_fields, function() {
+            var rlist = document.getElementById(this).value;
+            var rarray = rlist.split(",");
+            rarray.splice(row,1);
+            document.getElementById(this).value = rarray.join(",");
+        });
+    }
+    function clear_bom_values() {
+        $.each(hidden_fields, function() {
+	        document.getElementById(this).value = "";
+        });
+    }
+    function delete_bom_components(id) {
+        // nothing is in the database yet, so this is handled a little differently than the other forms
+        var t = document.getElementById(id);
+        var chk = document.getElementsByName("bomcheck");
+        // list index is 0... - actual row is +3     
+        if (typeof chk != 'undefined') {
+            if (typeof chk.length != 'undefined') {
+                // work backwords or we miss rows
+                for (i = chk.length - 1; i >= 0; i--) {
+                    if (chk[i].checked == true) {
+                        t.deleteRow(i+3);
+                        remove_bom_values(i);
+                    }
+                }
+            } else {
+                // only one row to work with
+                if (chk.checked == true) {
+                    t.deleteRow(3);
+                    clear_bom_values();
+                }
+            }
+        } else {
+            return;
+        }
+    }
+    function add_foss_row(id, mode){   
         // refuse to add unless all required fields are filled       
-        if ((mode == "add") && (foss_name.value == "" || foss_version.value == "" || foss_copyright.value == "" || foss_attribution == "" || foss_license == ""  || foss_license_url == "" || foss_url == "")) {
+        if ((mode == "add") && (foss_component.value == "" || foss_version.value == "" || foss_copyright.value == "" || foss_attribution == "" || foss_license == "" || foss_license_url == "" || foss_url == "")) {
             alert("Please fill all required component fields.");
             return;
         }
@@ -241,10 +307,24 @@
         var rindex = document.getElementById(id).rows.length - 2;
         var patch_tag = "patch_files" + rindex;
         var row = document.createElement("TR");
-        
+
+        var td0 = document.createElement("TD");
+        var tcb = document.createElement("input");
+        tcb.setAttribute("type", "checkbox");
+        tcb.setAttribute("name", "bomcheck");
+        var chk = document.getElementsByName("bomcheck");
+        var cvalue = 0;        
+        if (typeof chk != 'undefined') {
+            if (typeof chk.length != 'undefined')
+                cvalue = chk.length;
+        }
+        tcb.setAttribute("value", cvalue);
+        td0.appendChild(tcb);   
+        row.appendChild(td0);
+       
         var td1 = document.createElement("TD");
         td1.setAttribute("valign", "top");
-        td1.appendChild(document.createTextNode(foss_name));
+        td1.appendChild(document.createTextNode(foss_component));
         row.appendChild(td1);
 
         var td2 = document.createElement("TD");
@@ -287,7 +367,7 @@
         var td9 = document.createElement("TD");        
         var ch9 = document.createElement("textarea");
         ch9.setAttribute("type", "textarea");
-        ch9.setAttribute("name",patch_tag);
+        ch9.setAttribute("name", patch_tag);
         ch9.setAttribute("readonly", "true");
         td9.appendChild(ch9);   
         row.appendChild(td9);
@@ -308,7 +388,7 @@
 
         // only set the hidden fields for a clean add, not a form reload
         if (mode == "add") {
-            document.getElementById("foss_components").value += foss_name + ",";
+            document.getElementById("foss_components").value += foss_component + ",";
             document.getElementById("foss_versions").value += foss_version + ",";
             document.getElementById("foss_copyrights").value += foss_copyright + ",";
             document.getElementById("foss_attributions").value += foss_attribution + ",";
@@ -328,7 +408,7 @@
         }
 
         // cleanup the global vars
-        foss_name = "";
+        foss_component = "";
         foss_version = "";
         foss_copyright = "";
         foss_attribution = "";
