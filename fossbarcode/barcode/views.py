@@ -290,7 +290,7 @@ def dirlist(request):
 # FIXME - what if "which" isn't present?
 def check_for_system_apps():
     errmsg = ''
-    apps_needed = ['find', 'cat', 'md5sum', 'barcode', 'qrencode' , 'pstopnm', 'pnmtopng', 'sam2p']
+    apps_needed = ['barcode', 'qrencode' , 'pstopnm', 'pnmtopng', 'sam2p']
     for app in apps_needed:
         result = os.system("which " + app + "> /dev/null")
         if result:
@@ -356,9 +356,12 @@ def record_to_checksum(recid):
 # create eps and png files from a checksum
 def checksum_to_barcode(recid, checksum, codetype):
     from site_settings import host_site
+    import Image
+
     # FIXME - can any user write the file to here?
     ps_file = os.path.join(settings.USERDATA_ROOT, str(recid), checksum + ".ps")
     png_file = os.path.join(settings.USERDATA_ROOT, str(recid), checksum + ".png")
+    foss_file = os.path.join(settings.STATIC_DOC_ROOT, "images/foss.png")
 
     if codetype == "barcode":
         result = os.system("barcode -b " + checksum + " -e 128 -m '0,0' -E > " + ps_file)
@@ -366,7 +369,16 @@ def checksum_to_barcode(recid, checksum, codetype):
         mecard = record_to_mecard(recid)
         # old way, url to central data site via checksum
         #result = os.system("qrencode -m 0 -o " + png_file + " '" + host_site + checksum + "'")
-        result = os.system("qrencode -m 0 -o " + png_file + " '" + mecard + "'")
+        result = os.system("qrencode -v 6 -l Q -m 0 -o " + png_file + " '" + mecard + "'")
+        if result == 0:
+            # overlay the foss.png image for branding
+            qrcode = Image.open(png_file)
+            overlay = Image.open(foss_file)
+
+            (xdim,ydim) = qrcode.size
+
+            qrcode.paste(overlay,((xdim-1)/2-28,(ydim-1)/2-13))
+            qrcode.save(png_file,"PNG")
 
     if result == 0:
     	# image conversion tries to use root's settings, if started as root
@@ -386,8 +398,18 @@ def record_to_mecard(recid):
     q = Product_Record.objects.filter(id = recid)
     mecard = "MECARD:N:" + q[0].company + ";URL:" + q[0].website + ";EMAIL:" + q[0].email
     mecard += ";NOTE:" + q[0].product + ", Version: " + q[0].version + ", Release: " + q[0].release
+    # FOSS BoM
+    has_foss = FOSS_Components.objects.filter(brecord = recid).count()
+    if has_foss:
+        mecard += ", BoM: "
+        foss_list = FOSS_Components.objects.filter(brecord = recid)
+        for f in foss_list:
+            mecard += "(" + f.package + " " + f.version + " " + f.license + "), "
+        mecard = mecard[:-2]
     # extra url to central site - needed?
     mecard += ";URL:" + host_site + q[0].checksum + ";"
+
+    print mecard
     return mecard
 
 # to remove a record

@@ -15,3 +15,13 @@
     Add new fields: License URL, Attribution, Copyright
     Schema/layout/doc changes to accomodate above
 
+0.0.5:
+    Implement MECARD format for QR code
+    Add FOSS overlay to QR code
+    Checksum is only driven by company name, product name, version, release
+    Enforce filling out required fields
+    Move database settings to a separate config file, and document them.
+    Add mailto link for contact email
+    Copy spdx files to user_data, beef up error checking on file ops
+    Add BoM data to QR code
+
