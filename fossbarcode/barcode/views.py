@@ -103,7 +103,7 @@ def input(request):
         if foss_components != '':
             components = foss_components.split(",")
             for i in range(0, len(components)-1):
-                foss_patches += request.POST.get('patch_files' + str(i), '') + ","
+                foss_patches += request.POST.get('foss_patches' + str(i), '') + ","
 
         # back to "normal" processing
         if recordform.is_valid() and component_error == '': # All validation rules pass
@@ -173,7 +173,7 @@ def input(request):
                             error_message += "Failed to copy " + str(spdxs[i]) + "to " + spdx_dest + "<br>"
                     
                     # check for patches and save in user_data
-                    patch_files = request.POST.get('patch_files' + str(i), '')
+                    patch_files = request.POST.get('foss_patches' + str(i), '')
                     if patch_files != "":
                         patches = patch_files.split("\n")
                         for patch in patches:
@@ -369,7 +369,7 @@ def checksum_to_barcode(recid, checksum, codetype):
         mecard = record_to_mecard(recid)
         # old way, url to central data site via checksum
         #result = os.system("qrencode -m 0 -o " + png_file + " '" + host_site + checksum + "'")
-        result = os.system("qrencode -v 6 -l Q -m 0 -o " + png_file + " '" + mecard + "'")
+        result = os.system("qrencode -v 6 -l Q -m 0 -o " + png_file + """ + mecard + """)
         if result == 0:
             # overlay the foss.png image for branding
             qrcode = Image.open(png_file)
@@ -409,6 +409,7 @@ def record_to_mecard(recid):
     # extra url to central site - needed?
     mecard += ";URL:" + host_site + q[0].checksum + ";"
 
+    # FIXME - for debugging atm
     print mecard
     return mecard
 
