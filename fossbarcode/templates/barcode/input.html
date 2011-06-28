@@ -20,6 +20,7 @@
     {% endautoescape %}
 {% endif %}
 
+{% if not needs_setup %}
 <form name="entryform" method="post" action="" enctype="multipart/form-data">
 
 <div class="container" id="entry_form">
@@ -161,7 +162,7 @@
 <b>Report bugs and request features at <a href="http://bugs.linuxfoundation.org/enter_bug.cgi?product=Compliance">bugzilla</a></b><br>
 -->
 </div>
-
+{% endif %}
 {% endblock %}
 
 {% block scripts %}

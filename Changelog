@@ -24,4 +24,6 @@
     Add mailto link for contact email
     Copy spdx files to user_data, beef up error checking on file ops
     Add BoM data to QR code
+    Add FOSS branding image to QR code
+    Add a System Configuration tab for local settings
 

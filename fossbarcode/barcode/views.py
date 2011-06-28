@@ -1,17 +1,23 @@
 # Create your views here.
 from django.template import Context, loader
 from django.shortcuts import render_to_response, get_object_or_404
-from fossbarcode.barcode.models import Product_Record, FOSS_Components, Patch_Files, RecordForm
+from fossbarcode.barcode.models import Product_Record, FOSS_Components, Patch_Files, System_Settings, RecordForm
 from django.http import HttpResponse, HttpResponseRedirect
 from django.http import Http404
 from django.conf import settings
 
 from fossbarcode import task
 
-import sys, os, re, urllib, subprocess, time, shutil, hashlib
+import sys, os, re, urllib, subprocess, time, shutil, hashlib, datetime
 
 # buffer size for Popen, we want unbuffered
 bufsize = -1
+
+# collect the system configuration global defaults - just host_site for now
+settings_list = System_Settings.objects.all()
+for s in settings_list:
+    if s.name == "host_site":
+        host_site = s.value
 
 ### each of these views has a corresponding html page in ../templates/barcode
 
@@ -20,9 +26,38 @@ def taskstatus(request):
     tm = task.TaskManager()
     return HttpResponse(tm.read_status())
 
+# system configuration settings
+def sysconfig(request):
+    info_message = ""
+
+    if request.method == 'POST': # If the form has been submitted...
+        # walk through all the known system settings and update
+        # do we need to go back and regenerate all the QR codes if host_site changes?
+        ss_list = System_Settings.objects.values('name')
+        for s in ss_list:
+            print s['name']
+            ss_value = request.POST.get(s['name'], '')
+            if (ss_value != ""):
+                System_Settings.objects.filter(name = s['name']).update(value = ss_value, 
+                                               last_updated = str(datetime.date.today()), 
+                                               user_updated = True)
+
+        return HttpResponseRedirect('/barcode/input/')
+
+    else:
+        # has the user confirmed the settings?
+        settings_done = System_Settings.objects.filter(user_updated = True).count()
+        if (settings_done) == 0:
+            info_message = "You must confirm and save the system settings to continue..."
+        
+    settings_list = System_Settings.objects.order_by('name')
+
+    return render_to_response('barcode/sysconfig.html', {'info_message': info_message,
+                                                        'settings_list': settings_list,
+                                                        'host_site': host_site })
+
 # record detail page
 def detail(request, record_id):
-    from site_settings import host_site
     foss = render_detail(record_id)
     record_list = Product_Record.objects.filter(id = record_id)
     record = record_list[0]
@@ -75,6 +110,7 @@ def input(request):
     foss_patches = ''
     component_error = ''
     codetype = 'barcode'
+    needs_setup = 0
 
     if request.method == 'POST': # If the form has been submitted...
         recordform = RecordForm(request.POST) # A form bound to the POST data      
@@ -204,9 +240,15 @@ def input(request):
     else:
         recordform = RecordForm() # An unbound form
 
+        # check if the user has done basic setup
+        settings_done = System_Settings.objects.filter(user_updated = True).count()
+        if (settings_done) == 0:
+            error_message = 'Please Configure Basic System Settings <a href="../sysconfig/">Here</a>'
+            needs_setup = 1
+
     return render_to_response('barcode/input.html', {
                               'error_message': error_message, 'component_error': component_error, 
-                              'recordform': recordform,
+                              'recordform': recordform, 'needs_setup': needs_setup,
                               'foss_components': foss_components, 'foss_versions': foss_versions,
                               'foss_copyrights': foss_copyrights, 'foss_attributions': foss_attributions,
                               'foss_licenses': foss_licenses, 'foss_license_urls': foss_license_urls, 
@@ -317,35 +359,6 @@ def record_to_checksum(recid):
     data = strip_pk(serializers.serialize("xml", Product_Record.objects.filter(id = recid), 
                                   fields=('company', 'product', 'version', 'release')))
     
-    # not using these for the checksum now
-    '''
-    has_foss = FOSS_Components.objects.filter(brecord = recid).count()
-    if has_foss:
-        data += strip_pk(serializers.serialize("xml", FOSS_Components.objects.filter(brecord = recid), 
-                                               fields=('package', 'version')))
-        foss_list = FOSS_Components.objects.filter(brecord = recid)
-        for f in foss_list:
-            fossid = f.id
-            has_patches = Patch_Files.objects.filter(frecord = fossid).count()
-            if has_patches:
-                data += strip_pk(serializers.serialize("xml", Patch_Files.objects.filter(frecord = fossid), 
-                                                       fields=('path')))
-
-    # write the xml to a temporary file
-    working_dir = os.path.join(settings.USERDATA_ROOT, str(recid))
-    if os.path.exists(settings.USERDATA_ROOT) == 0:
-        try:
-            os.mkdir(settings.USERDATA_ROOT)
-        except:
-            error_message = "Failed to create " + settings.USERDATA_ROOT + "<br>"
-    
-    if os.path.exists(working_dir) == 0:
-        try:
-            os.mkdir(working_dir)
-        except:
-            error_message = "Failed to create " + working_dir + "<br>"
-    '''
-
     m = hashlib.md5()
     m.update(data)
     checksum = m.hexdigest()
@@ -355,7 +368,6 @@ def record_to_checksum(recid):
 
 # create eps and png files from a checksum
 def checksum_to_barcode(recid, checksum, codetype):
-    from site_settings import host_site
     import Image
 
     # FIXME - can any user write the file to here?
@@ -367,8 +379,6 @@ def checksum_to_barcode(recid, checksum, codetype):
         result = os.system("barcode -b " + checksum + " -e 128 -m '0,0' -E > " + ps_file)
     else:
         mecard = record_to_mecard(recid)
-        # old way, url to central data site via checksum
-        #result = os.system("qrencode -m 0 -o " + png_file + " '" + host_site + checksum + "'")
         result = os.system("qrencode -v 6 -l Q -m 0 -o " + png_file + """ + mecard + """)
         if result == 0:
             # overlay the foss.png image for branding
@@ -394,7 +404,6 @@ def checksum_to_barcode(recid, checksum, codetype):
 # convert a record to a MECARD string
 # see http://www.nttdocomo.co.jp/english/service/imode/make/content/barcode/function/application/addressbook/
 def record_to_mecard(recid):
-    from site_settings import host_site
     q = Product_Record.objects.filter(id = recid)
     mecard = "MECARD:N:" + q[0].company + ";URL:" + q[0].website + ";EMAIL:" + q[0].email
     mecard += ";NOTE:" + q[0].product + ", Version: " + q[0].version + ", Release: " + q[0].release
@@ -409,8 +418,6 @@ def record_to_mecard(recid):
     # extra url to central site - needed?
     mecard += ";URL:" + host_site + q[0].checksum + ";"
 
-    # FIXME - for debugging atm
-    print mecard
     return mecard
 
 # to remove a record

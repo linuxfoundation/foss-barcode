@@ -50,6 +50,11 @@
     <field type="CharField" name="app_label">sites</field>
     <field type="CharField" name="model">site</field>
   </object>
+  <object pk="12" model="contenttypes.contenttype">
+    <field type="CharField" name="name">system_ settings</field>
+    <field type="CharField" name="app_label">barcode</field>
+    <field type="CharField" name="model">system_settings</field>
+  </object>
   <object pk="3" model="contenttypes.contenttype">
     <field type="CharField" name="name">user</field>
     <field type="CharField" name="app_label">auth</field>
@@ -58,6 +63,13 @@
   <object pk="1" model="sites.site">
     <field type="CharField" name="domain">example.com</field>
     <field type="CharField" name="name">example.com</field>
+  </object>
+  <object pk="1" model="barcode.system_settings">
+    <field type="CharField" name="name">host_site</field>
+    <field type="CharField" name="value">http://compliance.linuxfoundation.org/foss-products/</field>
+    <field type="CharField" name="descr">Public site hosting BoM records</field>
+    <field type="DateTimeField" name="last_updated">2011-06-27 19:12:42</field>
+    <field type="BooleanField" name="user_updated">False</field>
   </object>
   <object pk="22" model="auth.permission">
     <field type="CharField" name="name">Can add log entry</field>
@@ -178,6 +190,21 @@
     <field type="CharField" name="name">Can delete product_ record</field>
     <field to="contenttypes.contenttype" name="content_type" rel="ManyToOneRel">9</field>
     <field type="CharField" name="codename">delete_product_record</field>
+  </object>
+  <object pk="34" model="auth.permission">
+    <field type="CharField" name="name">Can add system_ settings</field>
+    <field to="contenttypes.contenttype" name="content_type" rel="ManyToOneRel">12</field>
+    <field type="CharField" name="codename">add_system_settings</field>
+  </object>
+  <object pk="35" model="auth.permission">
+    <field type="CharField" name="name">Can change system_ settings</field>
+    <field to="contenttypes.contenttype" name="content_type" rel="ManyToOneRel">12</field>
+    <field type="CharField" name="codename">change_system_settings</field>
+  </object>
+  <object pk="36" model="auth.permission">
+    <field type="CharField" name="name">Can delete system_ settings</field>
+    <field to="contenttypes.contenttype" name="content_type" rel="ManyToOneRel">12</field>
+    <field type="CharField" name="codename">delete_system_settings</field>
   </object>
   <object pk="13" model="auth.permission">
     <field type="CharField" name="name">Can add content type</field>

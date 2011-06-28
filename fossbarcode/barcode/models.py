@@ -38,6 +38,16 @@ class Patch_Files(models.Model):
     def __unicode__(self):
         return self.path
 
+class System_Settings(models.Model):
+    name = models.CharField(max_length=32, db_index=True)
+    value = models.CharField(max_length=128)
+    descr = models.CharField(max_length=256)
+    last_updated = models.DateTimeField('Updated', auto_now=True)
+    user_updated = models.BooleanField(default=False)
+
+    def __unicode__(self):
+        return "%s = %s" % (self.name, self.value)
+
 class RecordForm(ModelForm):   
     class Meta:
         model = Product_Record
@@ -50,4 +60,5 @@ class RecordForm(ModelForm):
     foss_license_url = forms.CharField(max_length=200, required=False)
     foss_url = forms.CharField(max_length=200, required=False)
     foss_spdx = forms.CharField(max_length=100, required=False)
+
 

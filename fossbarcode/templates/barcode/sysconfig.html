@@ -1,0 +1,41 @@
+{% extends "barcode/base.html" %}
+
+{% block content %}
+
+<p>
+Below are are list of user configurable settings. At a minumum you should set <i>host_site</i>, which gets embedded in the MECARD data of the QR code as well as driving the site link on the record detail screen. The default for host_site is <i>{{ host_site }}</i>.
+</p>
+<p>
+<b>Warning:</b> Changing host_site after you've created QR codes will not change the existing code images. 
+</p>
+
+{% if info_message %}<p><strong>{{ info_message }}</strong></p>{% endif %}
+ 
+<form name="sysconfigform" method="post" action="" enctype="multipart/form-data">  
+<p>
+<input type="submit" name="change_search_paths", value="Save Settings" /> 
+</p>
+
+<table width = "100%" border="1">
+  <tr align="left">
+    <th>Name</th>
+    <th>Value</th>
+    <th>Description</th>
+    <th>Last Updated</th>
+    <th>User Updated?</th>
+  </tr>
+{% for record in settings_list %}
+  <tr>
+    <td>{{ record.name }}</td>
+    <td><input type="input" name="{{record.name}}" size="80" value="{{ record.value }}"></td>
+    <td>{{ record.descr }}</td>
+    <td>{{ record.last_updated|date:"M d, Y H:i:s"  }}</td>
+    <td>{{ record.user_updated }}</td>
+  </tr> 
+{% endfor %}
+</table>
+</form>
+
+{% endblock %}
+
+
