@@ -247,7 +247,7 @@ You can terminate the server from this console by hitting ctrl-C
 <p>
 If a browser does not open by launching the menu item, you can access the GUI 
 (once the server is started): at 
-<a href="http://127.0.0.1:8000/barcode" target="_blank">http://127.0.0.1:8000/linkage</a>.
+<a href="http://127.0.0.1:8000/barcode" target="_blank">http://127.0.0.1:8000/barcode</a>.
 </p>
 </div>
 
@@ -258,31 +258,32 @@ If a browser does not open by launching the menu item, you can access the GUI
 program:
 
 <ul>
-<li><a href="#Enter Data"><b>Enter Data</b></a> - Data entry form</li>
-<li><a href="#Review Records"><b>Review Records</b></a> - Tabular list of existing records</li>
-<li><a href="#Search Records"><b>Search Records</b></a> - Search for records by checksum tab</li>
-<li><b>Documentation</b> - This documentation</li>
+<li><a href="#Create Compliance Data"><b>Create Compliance Data</b></a> - Data entry form</li>
+<li><a href="#Review Compliance Records"><b>Review Compliance Records</b></a> - Tabular list of existing records</li>
+<li><a href="#Search Compliance Records"><b>Search Compliance Records</b></a> - Search for records by checksum tab</li>
+<li><a href="#System Configuration"><b>System Configuration</b></a> - User configurable system settings</li>
+<li><b>Tool Documentation</b> - This documentation</li>
 </ul>
 
 The final page, which isn't visible in the tabs, is the record detail page, 
 brought up by either generating a barcode, or clicking on the link in the results page.
 </p>
 
-<div id="Enter Data">
-<b>Enter Data:</b>
+<div id="Create Compliance Data">
+<b>Create Compliance Data:</b>
 
 <p>This tab is where you enter the information that defines the "product". This includes Company Name, 
-FOSS Website (optional), Product Name, Product Version, Product Release, as well as the Compliance
+FOSS Website, Product Name, Product Version, Product Release, as well as the Compliance
 Contact Name (optional) and Email. The date is also recorded, simply for record keeping. It does not 
 contribute to the checksum.</p>
 
 <p>There are additional option components that can be entered or loaded to further define the product. 
 These include SPDX<sup>TM</sup> files as well as a tabular list of FOSS Components and possible patches. If files
 are loaded using the file selection navigator, they are stored in the system under user_data for review later
-in the detailed reporting. Multiple files can be loaded for either SPDX<sup>TM</sup> files or FOSS component patches.
-For FOSS components, the name of the component and the version are required as a minumum for an entry.</p>
+in the detailed reporting. Multiple files can be loaded for FOSS component patches.
+For FOSS components, all fields but SPDX<sup>TM</sup> File and Patches are mandatory.</p>
 
-<p>Once you enter the data, click on the <b>Create Checksum/Barcode</b> button. After the data
+<p>Once you enter the data, click on the <b>Create Checksum/QRcode</b> or <b>Create Checksum/Barcode</b> button. After the data
 is compiled you will be presented with the detailed record results in tabular form, with a graphical
 image of the barcode. The <i>Download Postscript</i> link will download an .eps file of the bardcode
 image for product packaging. Websites and uploaded files should be clickable links for further information.</p>
@@ -293,8 +294,8 @@ printed output so that only the test results show up in the printed report.</p>
 
 </div>
 
-<div id="Review Records">
-<b>Review Records:</b>
+<div id="Review Compliance Records">
+<b>Review Compliance Records:</b>
 
 <p>The data records should also be accessible from the <b>Review Records</b> page. This is a tabular
 list of all the data entries, sorted by id/date. The far-right column has a summary of the information
@@ -303,10 +304,16 @@ open the detail tab. If you want to delete records, you can select the checkboxe
 delete them from here, using the <i>Delete Selected Records</i> button.</p>
 </div>
 
-<div id="Search Records">
-<b>Search Records:</b>
+<div id="Search Compliance Records">
+<b>Search Compliance Records:</b>
 
 <p>The <b>Search Records</b> tab lets you enter a checksum and lookup the data detail for that value.</p>
+
+<div id="System Configuration">
+<b>System Configuation:</b>
+
+<p>The <b>System Configuration</b> tab lets you change the default settings for some variables used by the system. In particular, <i>host_site</i> is used and captured in the QR code data, and should point to the site where you intend to host the compliance data.
+</p>
 
 </div>
 
@@ -368,6 +375,14 @@ via <i>brecord_id</i>.</li>
     <li>frecord_id - link to the foss_components record entry</li>
     <li>path - original path to the uploaded file</li>
   </ul>
+<li><b>system_settings</b> - User configurable system settings, such as <i>host_site</i></li>
+  <ul>
+    <li>id - primary key</li>
+    <li>name - variable name used by the application</li>
+    <li>value - assigned variable value</li>
+    <li>last_updated - last update date</li>
+    <li>user_updated - boolean value. Shipped values have this set to False. User must review and save to use application</li>
+  </ul>
 </ul>
 </div>
 
@@ -388,15 +403,8 @@ via <i>brecord_id</i>.</li>
 <div id="backend">
 <b>How it Works:</b>
 
-<p>what the program does is write all the user inputs to a temporary <tt>barcode_data.xml</tt> file, and along with
-the other (optional) uploaded files in a subdirectory named with the record id, feed these through md5sum to get 
-a checksum:
-
-<pre>
-find . -type f -exec cat {} | md5sum -
-</pre>
-
-This checksum is then used to generate the barcode, using the command line <i>barcode</i> application:
+<p>What the program does is collect several of the user inputs and feed these through md5sum to get 
+a checksum. This checksum is then used to generate the barcode, using either of the 2 command line applications, <i>barcode</i> or <qrencode</i>:
 
 <pre>
 barcode -b &lt;checksum&gt; -e 128 -m '0,0' -E &gt; &lt;checksum&gt;.ps
@@ -408,7 +416,22 @@ and converted to a bitmap for display on the detail page:
 pstopnm -xsize 500 -portrait -stdout &lt;checksum&gt;.ps | pnmtopng &gt; &lt;checksum&gt;.png
 </pre>
 
-The xml file is discarded after the checksum generation, as the data remains in the database.
+For the case of qrencode, not only is the checksum used, but additional data is gathered in MECARD format for scanning by devices capable of using this data. qrencode creates the bitmap .png file native, and post processing creates the .ps file using sam2p.
+
+<pre>
+qrencode -v 6 -l Q -m 0 -o checksum.png [mecard data]
+</pre>
+
+An overview of the MECARD format can be found <a href="http://www.nttdocomo.co.jp/english/service/imode/make/content/barcode/function/application/addressbook/">here</a>. A typical record created by the application would look something like this (line breaks added for readability):
+
+<pre>
+MECARD:
+N:Software Widgets Inc.;
+URL:http://softwarewidgets.com;
+EMAIL:widgetsupport@softwarewidgets.com;
+NOTE:Widget III, Version: 3, Release: 2, BoM: (fosslib1 1 GPLv2), (fosslib2 2.4 BSD);
+URL:http://compliance.linuxfoundation.org/foss-products/bcfc695e010eac680d69c914ec0c781a;
+</pre>
 </p>
 
 </div>
