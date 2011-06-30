@@ -405,7 +405,7 @@ def checksum_to_barcode(recid, checksum, codetype):
 # see http://www.nttdocomo.co.jp/english/service/imode/make/content/barcode/function/application/addressbook/
 def record_to_mecard(recid):
     q = Product_Record.objects.filter(id = recid)
-    mecard = '"' + "MECARD:N:" + q[0].company + ";URL:" + q[0].website + ";EMAIL:" + q[0].email
+    mecard = "MECARD:N:" + q[0].company + ";URL:" + q[0].website + ";EMAIL:" + q[0].email
     mecard += ";NOTE:" + q[0].product + ", Version: " + q[0].version + ", Release: " + q[0].release
     # FOSS BoM
     has_foss = FOSS_Components.objects.filter(brecord = recid).count()
@@ -417,9 +417,9 @@ def record_to_mecard(recid):
         mecard = mecard[:-2]
     # extra url to central site - needed?
     mecard += ";URL:" + host_site + q[0].checksum + ";"
-    mecard += '"'
 
-    return mecard
+    escaped = re.escape(mecard)
+    return escaped
 
 # to remove a record
 def delete_record(recid):
