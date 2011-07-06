@@ -3,7 +3,7 @@
 {% block content %}
 
 <p>
-Below are are list of user configurable settings. At a minumum you should set <i>host_site</i>, which gets embedded in the MECARD data of the QR code as well as driving the site link on the record detail screen. The default for host_site is <i>{{ host_site }}</i>.
+Below are are list of user configurable settings. At a minumum you should set <i>host_site</i> and <i>host_site_in_qrcode</i>, which control whether a hosting site URL gets embedded in the MECARD data of the QR code. <i>host_site</i> also drives the site link on the record detail screen. The default for host_site is <i>{{ host_site }}</i>.
 </p>
 <p>
 <b>Warning:</b> Changing host_site after you've created QR codes will not change the existing code images. 
@@ -27,7 +27,14 @@ Below are are list of user configurable settings. At a minumum you should set <i
 {% for record in settings_list %}
   <tr>
     <td>{{ record.name }}</td>
-    <td><input type="input" name="{{record.name}}" size="80" value="{{ record.value }}"></td>
+    {% if record.ftype == 'b' %}
+        <td>
+        <input type="radio" name="{{ record.name }}" value="True" {% if record.value == "True" %} checked {% endif %}> True
+        <input type="radio" name="{{ record.name }}" value="False" {% if record.value == "False" %} checked {% endif %}> False</td>
+        </td>
+    {% else %}
+    <td><input type="input" name="{{ record.name }}" size="80" value="{{ record.value }}"></td>
+    {% endif %}
     <td>{{ record.descr }}</td>
     <td>{{ record.last_updated|date:"M d, Y H:i:s"  }}</td>
     <td>{{ record.user_updated }}</td>
@@ -38,4 +45,9 @@ Below are are list of user configurable settings. At a minumum you should set <i
 
 {% endblock %}
 
-
+{% block scripts %}
+<script language="JavaScript">
+    function setdefaults() {
+    }
+</script>
+{% endblock %}

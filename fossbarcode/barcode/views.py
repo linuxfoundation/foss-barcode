@@ -18,6 +18,8 @@ settings_list = System_Settings.objects.all()
 for s in settings_list:
     if s.name == "host_site":
         host_site = s.value
+    if s.name == "host_site_in_qrcode":
+        host_site_in_qrcode = s.value
 
 ### each of these views has a corresponding html page in ../templates/barcode
 
@@ -33,9 +35,8 @@ def sysconfig(request):
     if request.method == 'POST': # If the form has been submitted...
         # walk through all the known system settings and update
         # do we need to go back and regenerate all the QR codes if host_site changes?
-        ss_list = System_Settings.objects.values('name')
+        ss_list = System_Settings.objects.values('name')    
         for s in ss_list:
-            print s['name']
             ss_value = request.POST.get(s['name'], '')
             if (ss_value != ""):
                 System_Settings.objects.filter(name = s['name']).update(value = ss_value, 
@@ -54,7 +55,8 @@ def sysconfig(request):
 
     return render_to_response('barcode/sysconfig.html', {'info_message': info_message,
                                                         'settings_list': settings_list,
-                                                        'host_site': host_site })
+                                                        'host_site': host_site,
+                                                        'tab_sysconfig': True })
 
 # record detail page
 def detail(request, record_id):
@@ -75,7 +77,7 @@ def search(request):
             id = record_list[0].id
             return HttpResponseRedirect('/barcode/' + str(id) + '/detail/')
 
-    return render_to_response('barcode/search.html', {'error_message': error_message})
+    return render_to_response('barcode/search.html', {'error_message': error_message, 'tab_search': True})
  
 # record list page - this is also a form, for record deletions
 def records(request):
@@ -414,9 +416,10 @@ def record_to_mecard(recid):
         foss_list = FOSS_Components.objects.filter(brecord = recid)
         for f in foss_list:
             mecard += "(" + f.package + " " + f.version + " " + f.license + "), "
-        mecard = mecard[:-2]
-    # extra url to central site - needed?
-    mecard += ";URL:" + host_site + q[0].checksum + ";"
+        mecard = mecard[:-2] + ";"
+    # extra url to central site
+    if host_site_in_qrcode == "True":
+        mecard += "URL:" + host_site + q[0].checksum + ";"
 
     escaped = re.escape(mecard)
     return escaped
