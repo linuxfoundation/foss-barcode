@@ -2,15 +2,11 @@
 {% block header %}
   <!-- for the file browser -->
   <style type="text/css" media="screen">@import "/site_media/css/jqueryFileTree.css";</style>
-  <!-- and the modal dialogs -->
-  <style type="text/css" media="screen">@import "/site_media/css/barcode-modals.css";</style>
   <style type="text/css">@import "/site_media/css/containers.css";</style>
   <script type="text/javascript" src="/site_media/js/jquery-1.4.2.min.js"></script>
   <script type="text/javascript" src="/site_media/js/jqueryFileTree.js"></script>
   <script type="text/javascript" src="/site_media/js/visibility.js"></script>
   <script type="text/javascript" src="/site_media/js/checklist.js"></script>
-  <script type='text/javascript' src='/site_media/js/jquery.simplemodal.1.4.1.min.js'></script>
-  <script type='text/javascript' src='/site_media/js/barcode-modals.js'></script>
 </head>
 {% endblock %}
 
@@ -129,7 +125,6 @@
                     title="Select/Deselect All Records" 
                     onclick="toggleall(this.form,'bomcheck','selectall')" />
     </td>
-    <td>
     <td colspan="9"></td>
     <td align="center" colspan="2"><input type="button" name="delete_rows" value="Delete Selected Components"
                 onclick="delete_bom_components('foss_list')" />
@@ -161,26 +156,6 @@
   </tr>
 </table>
 <hr>
-<div id="line-item-modal-content">
-    <h3>Edit Line Item:</h3>
-    <!-- FIXME - we need to fill this dynamically for the selected row -->
-    <table>
-      <tr><td><b>Component:</b></td><td><input type="input" name="component" value="{{ row.component }}"></td></tr>
-      <tr><td><b>Version:</b></td><td><input type="input" name="cversion" value="{{ row.version }}"></td></tr>
-      <tr><td><b>Copyright Information:</b></td><td><input type="copyright_info" name="product" value="{{ row.copyright }}"></td></tr>
-      <tr><td><b>Attribution Notices:</b></td><td><input type="attribution" name="version" value="{{ row.attribution }}"></td></tr>
-      <tr><td><b>License Name and Version:</b></td><td><input type="license" name="release" value="{{ row.license }}"></td></tr>
-      <tr><td><b>License URL:</b></td><td><input type="input" name="license_url" value="{{ row.license_url }}"></td></tr>
-      <tr><td><b>Download URL:</b></td><td><input type="input" name="download_url" value="{{ row.url }}"></td></tr>
-      <tr><td><b>SPDX<sup>TM</sup> File:</b></td><td><input type="spdx_file" name="email" value="{{ row.spdx_file }}"></td></tr>
-      <tr><td><b>Patches:</b></td><td><input type="input" name="patches" value="{{ row.patches }}"></td></tr>
-      <tr><td></td><td align="center"><input type="button" name="Update" value="Update Item" onclick="edit_bom_item()"/></td></tr>
-    </table>
-</div>
-<!-- preload the images -->
-<div style='display:none'>
-    <img src='/site_media/images/x.png' alt='' />
-</div>
 </form> <!-- overall form ends here to include the submit buttons -->
 <!-- remove per Ibrahim
 <b>Subscribe to the <a href="https://lists.linux-foundation.org/mailman/listinfo/foss-barcode-dev">mailing list</a></b><br>
@@ -188,7 +163,6 @@
 <b>Report bugs and request features at <a href="http://bugs.linuxfoundation.org/enter_bug.cgi?product=Compliance">bugzilla</a></b><br>
 -->
 </div>
-
 {% endif %}
 {% endblock %}
 
@@ -292,9 +266,6 @@
             document.getElementById(fh).value = "";
         }
     }
-    function edit_bom_values() {
-        alert("TBD: edit item");
-    }
     function delete_bom_components(id) {
         // nothing is in the database yet, so this is handled a little differently than the other forms
         var t = document.getElementById(id);
@@ -364,7 +335,6 @@
         tda.appendChild(tdi);
         tdd.appendChild(tda);
         td1.appendChild(tdd);
-  
         row.appendChild(td1);
 
         // all text fields, just loop through input object

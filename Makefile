@@ -24,6 +24,7 @@ README.txt: fossbarcode/media/docs/index.html
 clean:
 	cd package && $(MAKE) clean
 	cd fossbarcode/media/docs && $(MAKE) clean
+	rm -fr fossbarcode/media/user_data/*
 	rm -f README.txt
 	rm -f fossbarcode/barcode.sqlite
 
