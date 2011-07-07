@@ -1,6 +1,12 @@
 {% extends "barcode/base.html" %}
 {% block header %}
     <style type="text/css">@import "/site_media/css/containers.css";</style>
+    <!-- CSS file for modal dialog -->
+    <style type="text/css" media="screen">@import "/site_media/css/barcode-modals.css";</style>
+    <!-- used for modal dialog -->
+    <script type="text/javascript" src="/site_media/js/jquery-1.4.2.min.js"></script>
+    <script type='text/javascript' src='/site_media/js/jquery.simplemodal.1.4.1.min.js'></script>
+    <script type='text/javascript' src='/site_media/js/barcode-modals.js'></script>
 </head>
 {% endblock %}
 
@@ -17,6 +23,15 @@
   <table width = "100%" border = "1">
     <tr>
       <td rowspan = "3" width = "40%">
+        <span id="noprint">
+          &nbsp;&nbsp;
+          <span id="header-modal">    
+            <a href='#' class='basic'><img src="/site_media/images/filetree/css.png" title="Edit Record Header"></a>
+          </span>
+          <span id="history-modal" float="left">
+            <a href='#' class='basic'><img src="/site_media/images/filetree/code.png" title="Change History"></a>
+          </span>
+        </span>
         <b>Company Name: </b>{{ record.company }}<br>
         <b>FOSS Website: </b><a href="{{ record.website }}" target="_blank">{{ record.website }}</a><br>
         <b>Product Name: </b>{{ record.product }}<br>
@@ -24,6 +39,7 @@
         <b>Date: </b>{{ record.record_date|date:"M d, Y H:i:s" }}<br>
         <b>Compliance Contact Name: </b>{{ record.contact }}<br>
         <b>Compliance Contact Email: </b><a href="mailto:{{ record.email }}" target="_blank">{{ record.email }}</a><br>
+        
       </td>
       <td align = "center" id = "noprint">
         <input type="button" name="doprint" value="Print BoM Compliance Record" onClick="javascript:window.print()">
@@ -32,7 +48,9 @@
     <tr>
       <td align = "center">
         <img src="/site_media/user_data/{{ record.id }}/{{ record.checksum }}.png"><br>
+        <span id="noprint">
         <a href="/site_media/user_data/{{ record.id }}/{{ record.checksum }}.ps">Download Postscript</a>
+        </span>
       </td>
     </tr>
     <tr>
@@ -40,8 +58,9 @@
     </tr>
   </table>
   <table border = "1" width = "100%">
-    <tr><th colspan = "9">FOSS Bill of Material for {{record.product }}-{{ record.version }}-{{ record.release }}</th></tr>
+    <tr><th colspan = "10">FOSS Bill of Material for {{record.product }}-{{ record.version }}-{{ record.release }}</th></tr>
     <tr>
+      <td></td>
       <th>Component</th>
       <th>Version</th>
       <th>Copyright<br>Information</th>
@@ -53,7 +72,14 @@
       <th>Patch(es)</th>
     </tr>
     {% for row in foss %}
-    <tr valign = "top">
+    <tr valign = "top">   
+      <td align="center" width="30">
+      <span id="noprint">
+        <div id="line-item-modal">
+            <a href='#' class='basic'><img src="/site_media/images/filetree/css.png" title="Edit Line Item"></a>
+        </div>
+      </span>     
+      </td>
       <td>{{ row.component }}</td>
       <td>{{ row.version }}</td>
       <td>{{ row.copyright }}</td>
@@ -68,7 +94,63 @@
     </tr>
   {% endfor %}
   </table>
+    <!-- modal content -->
+    <div id="header-modal-content">
+        <h3>Edit Record Header:</h3>
+        <table>
+          <tr><td><b>Company Name:</b></td><td><input type="input" name="company" value="{{ record.company }}"></td></tr>
+          <tr><td><b>FOSS Website:</b></td><td><input type="input" name="website" value="{{ record.website }}"></td></tr>
+          <tr><td><b>Product Name:</b></td><td><input type="input" name="product" value="{{ record.product }}"></td></tr>
+          <tr><td><b>Product Version:</b></td><td><input type="input" name="version" value="{{ record.version }}"></td></tr>
+          <tr><td><b>Product Release:</b></td><td><input type="input" name="release" value="{{ record.release }}"></td></tr>
+          <tr><td><b>Compliance Contact Name:</b></td><td><input type="input" name="contact" value="{{ record.contact }}"></td></tr>
+          <tr><td><b>Compliance Contact Email:</b></td><td><input type="input" name="email" value="{{ record.email }}"></td></tr>
+          <tr><td></td><td align="center"><input type="button" name="Update" value="Update Header" onclick="update_header()"/></td></tr>
+        </table>
+    </div>
+    <div id="line-item-modal-content">
+        <h3>Edit Line Item:</h3>
+        <!-- FIXME - we need to fill this dynamically for the selected row -->
+        <table>
+          <tr><td><b>Component:</b></td><td><input type="input" name="component" value="{{ row.component }}"></td></tr>
+          <tr><td><b>Version:</b></td><td><input type="input" name="cversion" value="{{ row.version }}"></td></tr>
+          <tr><td><b>Copyright Information:</b></td><td><input type="copyright_info" name="product" value="{{ row.copyright }}"></td></tr>
+          <tr><td><b>Attribution Notices:</b></td><td><input type="attribution" name="version" value="{{ row.attribution }}"></td></tr>
+          <tr><td><b>License Name and Version:</b></td><td><input type="license" name="release" value="{{ row.license }}"></td></tr>
+          <tr><td><b>License URL:</b></td><td><input type="input" name="license_url" value="{{ row.license_url }}"></td></tr>
+          <tr><td><b>Download URL:</b></td><td><input type="input" name="download_url" value="{{ row.url }}"></td></tr>
+          <tr><td><b>SPDX<sup>TM</sup> File:</b></td><td><input type="spdx_file" name="email" value="{{ row.spdx_file }}"></td></tr>
+          <tr><td><b>Patches:</b></td><td><input type="input" name="patches" value="{{ row.patches }}"></td></tr>
+          <tr><td></td><td align="center"><input type="button" name="Update" value="Update Line Item" onclick="update_line_item()"/></td></tr>
+        </table>
+    </div>
+    <div id="history-modal-content">
+        <h3>Change History:</h3>
+        <p>This is just dummy data, diff links don't do anything yet</p>
+        <!-- FIXME - just dummy data for now - fill with per-record data, links to diffs -->
+        <ul>
+             <li>7/2/2011 - changed foo to bar <a href="#">diff</a></li>
+             <li>6/22/2011 - changed bar to baz <a href="#">diff</a></li>
+        </ul>
+    </div>
+    <!-- preload the images -->
+    <div style='display:none'>
+        <img src='/site_media/images/x.png' alt='' />
+    </div>
   </div>
 {% endif %}
 
+{% endblock %}
+
+{% block scripts %}
+<script language="JavaScript">
+    function setdefaults() {
+    }
+    function update_header() {
+        alert("TBD: update header");
+    }
+    function update_line_item() {
+        alert("TBD: update item");
+    }
+</script>
 {% endblock %}
