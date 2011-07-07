@@ -66,9 +66,18 @@
   </object>
   <object pk="1" model="barcode.system_settings">
     <field type="CharField" name="name">host_site</field>
+    <field type="CharField" name="ftype">t</field>
     <field type="CharField" name="value">http://compliance.linuxfoundation.org/foss-products/</field>
     <field type="CharField" name="descr">Public site hosting BoM records</field>
-    <field type="DateTimeField" name="last_updated">2011-06-27 19:12:42</field>
+    <field type="DateTimeField" name="last_updated">2011-07-06 00:00:00</field>
+    <field type="BooleanField" name="user_updated">False</field>
+  </object>
+  <object pk="2" model="barcode.system_settings">
+    <field type="CharField" name="name">host_site_in_qrcode</field>
+    <field type="CharField" name="ftype">b</field>
+    <field type="CharField" name="value">False</field>
+    <field type="CharField" name="descr">Include the host site in QR Code/MECARD data?</field>
+    <field type="DateTimeField" name="last_updated">2011-07-06 00:00:00</field>
     <field type="BooleanField" name="user_updated">False</field>
   </object>
   <object pk="22" model="auth.permission">

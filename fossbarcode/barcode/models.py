@@ -139,6 +139,7 @@ class Patch_Files(models.Model):
 
 class System_Settings(models.Model):
     name = models.CharField(max_length=32, db_index=True)
+    ftype = models.CharField(max_length=1, default='t', choices=(('b', 'bool'), ('t', 'text')))
     value = models.CharField(max_length=128)
     descr = models.CharField(max_length=256)
     last_updated = models.DateTimeField('Updated', auto_now=True)
