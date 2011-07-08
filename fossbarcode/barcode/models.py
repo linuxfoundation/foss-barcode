@@ -42,8 +42,15 @@ class FileDataMixin:
                 o = getattr(o, p)
             self._file_path = os.path.join(settings.USERDATA_ROOT, str(o.id))
 
-    def set_data_fn(self, fn):
-        self._file_name = fn
+    def set_data_fn(self):
+        if not self._file_name:
+            fn_base = self.__class__.__name__ + "_%d.pickle"
+            filenum = 1
+            fn = fn_base % filenum
+            while os.path.exists(os.path.join(self._file_path, fn)):
+                filenum = filenum + 1
+                fn = fn_base % filenum
+            self._file_name = fn
 
     def sanitize_init(self, kwargs):
         new_kwargs = kwargs.copy()
@@ -55,8 +62,7 @@ class FileDataMixin:
 
     def load_from_fn(self):
         self.set_data_path()
-        if not self._file_name:
-            raise ValueError, "FileDataMixin not set up properly"
+        self.set_data_fn()
 
         # Set defaults.
         for field in self._file_fields:
@@ -72,8 +78,7 @@ class FileDataMixin:
 
     def write_to_fn(self):
         self.set_data_path()
-        if not self._file_name:
-            raise ValueError, "FileDataMixin not set up properly"
+        self.set_data_fn()
 
         to_write = {}
         for key in self.__dict__:
@@ -119,10 +124,11 @@ class FOSS_Components(models.Model, FileDataMixin):
     def __init__(self, *args, **kwargs):
         sanitized_kwargs = self.sanitize_init(kwargs)
         super(FOSS_Components, self).__init__(*args, **sanitized_kwargs)
-        if not self.data_file_name:
-            self.data_file_name = "FOSS_Components_%d.pickle" % int(time.time())
-        self.set_data_fn(self.data_file_name)
+        if self.data_file_name:
+            self._file_name = self.data_file_name
         self.load_from_fn()
+        if not self.data_file_name:
+            self.data_file_name = self._file_name
 
     def __unicode__(self):
         return self.package
