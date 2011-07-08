@@ -44,7 +44,7 @@
         <td align="center">
             <input type="checkbox" name="recordcheck" value="{{ record.id }}" /><br>
             <div id="history-modal">
-                <a href='#' class='basic'><img src="/site_media/images/filetree/code.png" title="Change History"></a>
+                <a href='#' class='basic' name="history{{ record.id }}"><img src="/site_media/images/filetree/code.png" title="Change History"></a>
             </div>
         </td>
         <td><a href="/barcode/{{ record.id }}/detail">{{ record.id }}</a>
@@ -64,17 +64,7 @@
     </table>
     <input type="hidden", name="recordlist", value="" />
 
-    <!-- modal content -->
-    <div id="history-modal-content">
-        <h3>Change History:</h3>
-        <p>This is just dummy data, diff links don't do anything yet</p>
-        <!-- FIXME - just dummy data for now - fill with per-record data, links to diffs -->
-        <ul>
-             <li>7/2/2011 - changed foo to bar <a href="#">diff</a></li>
-             <li>6/22/2011 - changed bar to baz <a href="#">diff</a></li>
-        </ul>
-    </div>
-    <!-- preload the images -->
+    <!-- preload the X image for the modal dialog  -->
     <div style='display:none'>
         <img src='/site_media/images/x.png' alt='' />
     </div>
@@ -82,8 +72,6 @@
     </form>
 {% endif %}
 
-
-   
 {% endblock %}
 
 {% block scripts %}

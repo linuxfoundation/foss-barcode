@@ -26,10 +26,10 @@
         <span id="noprint">
           &nbsp;&nbsp;
           <span id="header-modal">    
-            <a href='#' class='basic'><img src="/site_media/images/filetree/css.png" title="Edit Record Header"></a>
+            <a href="#" class="basic"><img src="/site_media/images/filetree/edit.png" title="Edit Record Header"></a>
           </span>
           <span id="history-modal" float="left">
-            <a href='#' class='basic'><img src="/site_media/images/filetree/code.png" title="Change History"></a>
+            <a href="#" class="basic" name="history{{ record.id }}"><img src="/site_media/images/filetree/code.png" title="Change History"></a>
           </span>
         </span>
         <b>Company Name: </b>{{ record.company }}<br>
@@ -76,7 +76,7 @@
       <td align="center" width="30">
       <span id="noprint">
         <div id="line-item-modal">
-            <a href='#' class='basic'><img src="/site_media/images/filetree/css.png" title="Edit Line Item"></a>
+            <a href="#" class="basic" name="edit_row{{ forloop.counter }}"><img src="/site_media/images/filetree/edit.png" title="Edit Line Item"></a>
         </div>
       </span>     
       </td>
@@ -97,6 +97,7 @@
     <!-- modal content -->
     <div id="header-modal-content">
         <h3>Edit Record Header:</h3>
+        <span class="red"><b>Warning</b> - changing these fields will cause the checksum/barcode to be regenerated!</span>
         <table>
           <tr><td><b>Company Name:</b></td><td><input type="input" name="company" value="{{ record.company }}"></td></tr>
           <tr><td><b>FOSS Website:</b></td><td><input type="input" name="website" value="{{ record.website }}"></td></tr>
@@ -105,6 +106,7 @@
           <tr><td><b>Product Release:</b></td><td><input type="input" name="release" value="{{ record.release }}"></td></tr>
           <tr><td><b>Compliance Contact Name:</b></td><td><input type="input" name="contact" value="{{ record.contact }}"></td></tr>
           <tr><td><b>Compliance Contact Email:</b></td><td><input type="input" name="email" value="{{ record.email }}"></td></tr>
+          <tr><td><b>Change Comments (for change history):</b></td><td><input type="input" name="changelog" value=""></td></tr>
           <tr><td></td><td align="center"><input type="button" name="Update" value="Update Header" onclick="update_header()"/></td></tr>
         </table>
     </div>
@@ -121,17 +123,9 @@
           <tr><td><b>Download URL:</b></td><td><input type="input" name="download_url" value="{{ row.url }}"></td></tr>
           <tr><td><b>SPDX<sup>TM</sup> File:</b></td><td><input type="spdx_file" name="email" value="{{ row.spdx_file }}"></td></tr>
           <tr><td><b>Patches:</b></td><td><input type="input" name="patches" value="{{ row.patches }}"></td></tr>
+          <tr><td><b>Change Comments (for change history):</b></td><td><input type="input" name="changelog" value=""></td></tr>
           <tr><td></td><td align="center"><input type="button" name="Update" value="Update Line Item" onclick="update_line_item()"/></td></tr>
         </table>
-    </div>
-    <div id="history-modal-content">
-        <h3>Change History:</h3>
-        <p>This is just dummy data, diff links don't do anything yet</p>
-        <!-- FIXME - just dummy data for now - fill with per-record data, links to diffs -->
-        <ul>
-             <li>7/2/2011 - changed foo to bar <a href="#">diff</a></li>
-             <li>6/22/2011 - changed bar to baz <a href="#">diff</a></li>
-        </ul>
     </div>
     <!-- preload the images -->
     <div style='display:none'>

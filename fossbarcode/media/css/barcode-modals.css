@@ -24,3 +24,9 @@
 #simplemodal-container a {color:#ddd;}
 #simplemodal-container a.modalCloseImg {background:url(../images/x.png) no-repeat; width:25px; height:29px; display:inline; z-index:3200; position:absolute; top:-15px; right:-16px; cursor:pointer;}
 #simplemodal-container h3 {color:#84b8d9;}
+
+/* Content - to style the history page in an iframe */
+#simplemodal-content {color:#bbb; background-color:#333;}
+#simplemodal-content h3 {color:#84b8d9;}
+#simplemodal-content a {color:#ddd;}
+

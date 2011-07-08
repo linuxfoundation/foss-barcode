@@ -65,6 +65,13 @@ def detail(request, record_id):
     record = record_list[0]
     return render_to_response('barcode/detail.html', {'record': record, 'foss': foss, 'host_site': host_site, 'tab_results': True})
 
+# record change history page
+def history(request, record_id):
+    record_list = Product_Record.objects.filter(id = record_id)
+    record = record_list[0]
+    # FIXME - need to do something more useful both here and in the template
+    return render_to_response('barcode/history.html', {'record': record})
+   
 # record search page
 def search(request):
     error_message = ""

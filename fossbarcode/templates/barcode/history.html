@@ -1,0 +1,24 @@
+<!-- we don't extend base for this one as we don't want the overall tabs/styling -->
+{% block header %}
+<head>
+    <!-- CSS file for modal dialog -->
+    <style type="text/css" media="screen">@import "/site_media/css/barcode-modals.css";</style>
+</head>
+{% endblock %}
+
+{% block content %}
+
+{% if error_message %}
+  <h2>{{ error_message }}</h2>
+{% endif %}
+  <br>
+<div id="simplemodal-content">
+  <h3>Change History, record #{{ record.id }}:</h3>
+  <p>This is just dummy data, diff links don't do anything yet</p>
+  <!-- FIXME - just dummy data for now - fill with per-record data, links to diffs -->
+  <ul>
+       <li>7/2/2011 - changed foo to bar <a href="#">diff</a></li>
+       <li>6/22/2011 - changed bar to baz <a href="#">diff</a></li>
+  </ul>
+</div>
+{% endblock %}

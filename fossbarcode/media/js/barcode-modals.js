@@ -15,12 +15,21 @@ jQuery(function ($) {
 	// Load dialog on page load
 	//$('#basic-modal-content').modal();
 
-	// Load dialog on click
-	$('#history-modal .basic').click(function (e) {
-		$('#history-modal-content').modal();
+    // history modal loads the history template/view
+    $('#history-modal .basic').click(function(e) {
+        // see which record we're looking for
+        var clicked = $(this).attr("name");
+        if (clicked.search("history") != -1 ) {
+            var record = clicked.replace("history", "");
+            var src = "/barcode/" + record + "/history/";
+            $.modal('<iframe src="' + src + '" height="450" width="830" style="border:0">');
+        } else {
+            $.modal('<h3>Unable to retrieve history...</h3>');
+        }
+        return false;
+    });
 
-		return false;
-	});
+	// Load dialog on click
 	$('#header-modal .basic').click(function (e) {
 		$('#header-modal-content').modal();
 
