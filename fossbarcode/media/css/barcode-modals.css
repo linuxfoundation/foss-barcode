@@ -29,4 +29,8 @@
 #simplemodal-content {color:#bbb; background-color:#333;}
 #simplemodal-content h3 {color:#84b8d9;}
 #simplemodal-content a {color:#ddd;}
+/* to keep things consistent with tabstyle.css - user agent stylesheet seems to override tables */
+#simplemodal-content table {color: #bbb; font: x-small/1.5em Georgia,Serif; font-size: small;}
+/* and we lose our "red" class in these iframes */
+#simplemodal-content .red {color: red;}
 

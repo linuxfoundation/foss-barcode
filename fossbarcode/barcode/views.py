@@ -71,7 +71,19 @@ def history(request, record_id):
     record = record_list[0]
     # FIXME - need to do something more useful both here and in the template
     return render_to_response('barcode/history.html', {'record': record})
-   
+
+# line item edit page
+def edit_line(request, record_id, item_id):
+    item_list = FOSS_Components.objects.filter(brecord = record_id, id = item_id)
+    item = item_list[0]
+    return render_to_response('barcode/edit_line.html', {'item': item})
+
+# header edit page
+def edit_header(request, record_id):
+    record_list = Product_Record.objects.filter(id = record_id)
+    record = record_list[0]
+    return render_to_response('barcode/edit_header.html', {'record': record})
+
 # record search page
 def search(request):
     error_message = ""
@@ -469,7 +481,7 @@ def render_detail(id):
         patches = ""
         for p in patch_list:
             patches += media_root + str(id) + "/patches/" + os.path.basename(p.path) + '">' + p.path + "</a><br>"
-        foss.append({'component': f.package, 'version': f.version, 
+        foss.append({'id': f.id, 'component': f.package, 'version': f.version, 
                      'copyright': f.copyright, 'attribution': f.attribution, 
                      'license': f.license, 'license_url': f.license_url, 
                      'url': f.url, 'spdx_file': spdx_file, 'patches': patches})

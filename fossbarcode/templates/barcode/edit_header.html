@@ -1,0 +1,37 @@
+<!-- we don't extend base for this one as we don't want the overall tabs/styling -->
+{% block header %}
+<head>
+    <!-- CSS file for modal dialog -->
+    <style type="text/css" media="screen">@import "/site_media/css/barcode-modals.css";</style>
+</head>
+{% endblock %}
+
+{% block content %}
+
+{% if error_message %}
+  <h2>{{ error_message }}</h2>
+{% endif %}
+<div id="simplemodal-content">
+    <h3>Edit Header, id# {{ record.id }}:</h3>
+    <span class="red"><b>Warning</b> - changing these fields will cause the checksum/barcode to be regenerated!</span>
+    <table>
+      <tr><td><b>Company Name:</b></td><td><input type="input" name="company" value="{{ record.company }}"></td></tr>
+      <tr><td><b>FOSS Website:</b></td><td><input type="input" name="website" value="{{ record.website }}"></td></tr>
+      <tr><td><b>Product Name:</b></td><td><input type="input" name="product" value="{{ record.product }}"></td></tr>
+      <tr><td><b>Product Version:</b></td><td><input type="input" name="version" value="{{ record.version }}"></td></tr>
+      <tr><td><b>Product Release:</b></td><td><input type="input" name="release" value="{{ record.release }}"></td></tr>
+      <tr><td><b>Compliance Contact Name:</b></td><td><input type="input" name="contact" value="{{ record.contact }}"></td></tr>
+      <tr><td><b>Compliance Contact Email:</b></td><td><input type="input" name="email" value="{{ record.email }}"></td></tr>
+      <tr><td><b>Change Comments (for change history):</b></td><td><input type="input" name="changelog" value=""></td></tr>
+      <tr><td></td><td align="center"><input type="button" name="Update" value="Update Header" onclick="update_header()"/></td></tr>
+    </table>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script language="JavaScript">
+    function update_header() {
+        alert("TBD: update header");
+    }
+</script>
+{% endblock %}
