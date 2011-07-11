@@ -425,7 +425,7 @@ def delete_record(recid):
     q = Product_Record.objects.filter(id = recid)
     checksum = q[0].checksum
     try:
-        q.remove_directory()
+        q[0].remove_directory()
     except:
         errmsg += "Failed to delete user data...<br>"
     q.delete()
