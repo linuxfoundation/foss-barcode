@@ -21,6 +21,9 @@ fossbarcode/media/docs/index.html:
 README.txt: fossbarcode/media/docs/index.html
 	w3m -dump $< > $@
 
+test:
+	cd fossbarcode && python manage.py test
+
 clean:
 	cd package && $(MAKE) clean
 	cd fossbarcode/media/docs && $(MAKE) clean
@@ -28,4 +31,4 @@ clean:
 	rm -f README.txt
 	rm -f fossbarcode/barcode.sqlite
 
-.PHONY: default clean package fixture_regen
+.PHONY: default clean package fixture_regen test
