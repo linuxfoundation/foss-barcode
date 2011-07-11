@@ -7,8 +7,6 @@ import re
 import pickle
 import time
 
-# Create your models here.
-
 # This is a special mix-in class which implements the loading and
 # saving of some attributes via a pickle file.  It allows us to use
 # traditional version control to audit certain data changes.
@@ -92,7 +90,37 @@ class FileDataMixin:
         pickle.dump(to_write, f)
         f.close()
 
-class Product_Record(models.Model):
+# This mixin class actually manages the files being created by the
+# FileDataMixin class.  Whichever model ends up being the "master"
+# model should derive from this.  It handles the details of setting up
+# the directory and the version control repository, and also handled
+# commits and history.
+class FileDataDirMixin:
+    _subdirs = None
+
+    def file_path(self):
+        return os.path.join(settings.USERDATA_ROOT, str(self.id))
+
+    def setup_directory(self):
+        file_path = self.file_path()
+        if not os.path.isdir(file_path):
+            try:
+                os.makedirs(file_path)
+                if self._subdirs:
+                    for subdir in self._subdirs:
+                        os.mkdir(os.path.join(file_path, subdir))
+            except OSError:
+                if os.path.exists(file_path):
+                    shutil.rmtree(file_path)
+                return False
+        return True
+
+    def commit(self):
+        pass
+
+class Product_Record(models.Model, FileDataDirMixin):
+    _subdirs = ["spdx_files", "patches"]
+
     company = models.CharField('Company Name', max_length=200)
     product = models.CharField('Product Name', max_length=200)
     version = models.CharField('Product Version', max_length=20)
@@ -102,6 +130,7 @@ class Product_Record(models.Model):
     record_date = models.DateTimeField('Test Date', auto_now=True)
     contact = models.CharField('Compliance Contact Name (optional)', max_length=200, blank=True)
     email = models.CharField('Compliance Contact Email', max_length=200)
+
     def __unicode__(self):
         return self.product
 

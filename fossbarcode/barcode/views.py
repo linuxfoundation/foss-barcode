@@ -167,38 +167,12 @@ def input(request):
             recorddata = recordform.save(commit=False)       
             recorddata.save()
             recordid = recorddata.id
-            data_dest = os.path.join(settings.USERDATA_ROOT,str(recordid))           
-            if os.path.exists(settings.USERDATA_ROOT) == 0:
-                try:
-                    os.mkdir(settings.USERDATA_ROOT)
-                except:
-                    error_message += "Failed to create " + settings.USERDATA_ROOT + "<br>"
+            data_dest = recorddata.file_path()
+            if not recorddata.setup_directory():
+                error_message += "Failed to create " + data_dest + "<br>"
             
             spdx_dest = os.path.join(data_dest, "spdx_files")
             patch_dest = os.path.join(data_dest, "patches")
-
-            # might have stuff lying around from deleted records or rebuilt database
-            if os.path.exists(data_dest):
-                try:
-                    shutil.rmtree(data_dest)
-                except:
-                    error_message += "Failed to remove old " + data_dest + "<br>"
-                
-            # now make a new data tree
-            try:
-                os.mkdir(data_dest)
-            except:
-                error_message += "Failed to create " + data_dest + "<br>"
-                    
-            try:
-                os.mkdir(spdx_dest)
-            except:
-                error_message += "Failed to create " + spdx_dest + "<br>"
-                        
-            try:
-                os.mkdir(patch_dest)
-            except:
-                error_message += "Failed to create " + patch_dest + "<br>"
 
             # if we have foss components, store them also, and the patches
             if foss_components != '':
