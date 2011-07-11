@@ -1,7 +1,7 @@
 # Create your views here.
 from django.template import Context, loader
 from django.shortcuts import render_to_response, get_object_or_404
-from fossbarcode.barcode.models import Product_Record, FOSS_Components, Patch_Files, System_Settings, RecordForm
+from fossbarcode.barcode.models import Product_Record, FOSS_Components, Patch_Files, System_Settings, RecordForm, HeaderForm, ItemForm
 from django.http import HttpResponse, HttpResponseRedirect
 from django.http import Http404
 from django.conf import settings
@@ -40,7 +40,7 @@ def sysconfig(request):
             ss_value = request.POST.get(s['name'], '')
             if (ss_value != ""):
                 System_Settings.objects.filter(name = s['name']).update(value = ss_value, 
-                                               last_updated = str(datetime.date.today()), 
+                                               last_updated = str(datetime.datetime.now()), 
                                                user_updated = True)
 
         return HttpResponseRedirect('/barcode/input/')
@@ -58,31 +58,46 @@ def sysconfig(request):
                                                         'host_site': host_site,
                                                         'tab_sysconfig': True })
 
-# record detail page
+# record detail page - this is a multiform too with the edit additions
 def detail(request, record_id):
+    error_message = ''
     foss = render_detail(record_id)
     record_list = Product_Record.objects.filter(id = record_id)
     record = record_list[0]
-    return render_to_response('barcode/detail.html', {'record': record, 'foss': foss, 'host_site': host_site, 'tab_results': True})
+   
+    if request.method == 'POST': # If the form has been submitted...
+        # FIXME - is it a header or line item submit?
+        headerform = HeaderForm(request.POST) # A form bound to the POST data
+        itemform = ItemForm(request.POST) # A form bound to the POST data
 
-# record change history page
-def history(request, record_id):
-    record_list = Product_Record.objects.filter(id = record_id)
-    record = record_list[0]
-    # FIXME - need to do something more useful both here and in the template
-    return render_to_response('barcode/history.html', {'record': record})
+        if headerform.is_valid(): # All validation rules pass            
+            Product_Record.objects.filter(id = record_id).update(company = request.POST.get('company', ''),
+                                                                 website = request.POST.get('website', ''),
+                                                                 product = request.POST.get('product', ''),
+                                                                 version = request.POST.get('version', ''),
+                                                                 release = request.POST.get('release', ''),
+                                                                 contact = request.POST.get('contact', ''),
+                                                                 email = request.POST.get('email', ''),
+                                                                 record_date = str(datetime.datetime.now()),)
+            # FIXME - compute the new checksum, compare with the old and update if needed
 
-# line item edit page
-def edit_line(request, record_id, item_id):
-    item_list = FOSS_Components.objects.filter(brecord = record_id, id = item_id)
-    item = item_list[0]
-    return render_to_response('barcode/edit_line.html', {'item': item})
+            # FIXME - do something interesting with request.POST.get('commit_message', '')
+ 
+            return HttpResponseRedirect('/barcode/' + record_id + '/detail/')
 
-# header edit page
-def edit_header(request, record_id):
-    record_list = Product_Record.objects.filter(id = record_id)
-    record = record_list[0]
-    return render_to_response('barcode/edit_header.html', {'record': record})
+        else:
+            error_message = "Invalid header update data, see header dialog..."
+
+        # FIXME - if it's line item, we still want to update record_date
+
+    else:
+        headerform = HeaderForm() # An unbound form
+        itemform = ItemForm() # An unbound form
+
+    return render_to_response('barcode/detail.html', {'record': record, 'foss': foss, 
+                                                      'host_site': host_site, 'tab_results': True,
+                                                      'error_message': error_message, 
+                                                      'headerform': headerform, 'itemform': itemform })
 
 # record search page
 def search(request):
@@ -274,8 +289,7 @@ def input(request):
                               'foss_copyrights': foss_copyrights, 'foss_attributions': foss_attributions,
                               'foss_licenses': foss_licenses, 'foss_license_urls': foss_license_urls, 
                               'foss_urls': foss_urls, 'foss_spdxs': foss_spdxs,
-                              'foss_patches': foss_patches, 'tab_input': True
-    })
+                              'foss_patches': foss_patches, 'tab_input': True })
 
 ### these are all basically documentation support
 

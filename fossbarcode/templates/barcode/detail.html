@@ -11,13 +11,12 @@
 {% endblock %}
 
 {% block content %}
-
 {% if error_message %}
-  <p><b>No barcode result, or error message from cli was:</b></p>
-  <pre>
-  {{ error_message }}
-  </pre>
-{% else %}
+    {% autoescape off %}
+    <span class="red"><b>{{ error_message }}</b></span>
+    {% endautoescape %}
+{% endif %}
+
   <div id="print">
   <br>
   <table width = "100%" border = "1">
@@ -26,17 +25,17 @@
         <span id="noprint">
           &nbsp;&nbsp;
           <span id="header-modal">    
-            <a href="#" class="basic" name="header{{ record.id }}"><img src="/site_media/images/filetree/edit.png" title="Edit Record Header"></a>
+            <a href="#" class="basic"><img src="/site_media/images/filetree/edit.png" title="Edit Record Header"></a>
           </span>
           <span id="history-modal" float="left">
-            <a href="#" class="basic" name="history{{ record.id }}"><img src="/site_media/images/filetree/code.png" title="Change History"></a>
+            <a href="#" class="basic"><img src="/site_media/images/filetree/code.png" title="Change History"></a>
           </span>
         </span>
         <b>Company Name: </b>{{ record.company }}<br>
         <b>FOSS Website: </b><a href="{{ record.website }}" target="_blank">{{ record.website }}</a><br>
         <b>Product Name: </b>{{ record.product }}<br>
         <b>Product Version/Release: </b>{{ record.version }}-{{ record.release }}<br>
-        <b>Date: </b>{{ record.record_date|date:"M d, Y H:i:s" }}<br>
+        <b>Last Updated: </b>{{ record.record_date|date:"M d, Y H:i:s" }}<br>
         <b>Compliance Contact Name: </b>{{ record.contact }}<br>
         <b>Compliance Contact Email: </b><a href="mailto:{{ record.email }}" target="_blank">{{ record.email }}</a><br>
         
@@ -95,13 +94,22 @@
   {% endfor %}
   </table>
   </div>
-{% endif %}
-
+  <!-- this is the modal popup content for editing the header data -->
+  {% include "barcode/edit_header.html" %}
+  <!-- this is the modal popup content for viewing the history data -->
+  {% include "barcode/history.html" %}
+  <!-- this is the modal popup content for editing the line item data -->
+  <!-- FIXME - need to populate for the requested record -->
+  {% include "barcode/edit_line.html" %}
 {% endblock %}
 
 {% block scripts %}
 <script language="JavaScript">
     function setdefaults() {
+    }
+    function update_header() {
+        alert("TBD: update header");
+        document.forms["headerform"].submit();
     }
 </script>
 {% endblock %}

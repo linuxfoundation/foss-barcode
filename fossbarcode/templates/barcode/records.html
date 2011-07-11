@@ -55,7 +55,7 @@
             <i>FOSS Website:</i> <a href="{{ record.website }}" target="_blank">{{ record.website }}</a><br>
             <i>Product Name:</i> {{ record.product }}<br>
             <i>Product Version-Release:</i> {{ record.version }}-{{ record.release }}<br>
-            <i>Entry Date:</i> {{ record.record_date|date:"M d, Y H:i:s" }}<br>
+            <i>Last Updated:</i> {{ record.record_date|date:"M d, Y H:i:s" }}<br>
             <i>Compliance Contact Name:</i> {{ record.contact }}<br>
             <i>Compliance Contact Email:</i> {{ record.email }}<br>
         </td>
@@ -65,8 +65,10 @@
     <input type="hidden", name="recordlist", value="" />
 
     </form>
+    <!-- this is the modal popup content for viewing the history data -->
+    <!-- FIXME - need to populate for the requested record -->
+    {% include "barcode/history.html" %}
 {% endif %}
-
 {% endblock %}
 
 {% block scripts %}
