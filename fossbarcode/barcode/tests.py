@@ -9,6 +9,10 @@ class BarCodeHarness(TestCase):
         if os.path.exists(settings.USERDATA_ROOT):
             shutil.rmtree(settings.USERDATA_ROOT)
 
+        # File to copy around for testing.
+        self.source_path = os.path.join(settings.STATE_ROOT, 
+                                        "media/css/barstyle.css")
+
         self.product = Product_Record(company="Test Company",
                                       product="Test Product",
                                       version="1.0",
@@ -39,6 +43,7 @@ class BarCodeHarness(TestCase):
         self.assertFalse(os.path.exists(settings.USERDATA_ROOT))
         self.assertIsNotNone(self.product)
         self.assertEqual(self.product.company, "Test Company")
+        self.assertTrue(os.path.exists(self.source_path))
 
 class TestFileDataDirMixin(BarCodeHarness):
     def testSetupDirectoryNew(self):
@@ -49,6 +54,24 @@ class TestFileDataDirMixin(BarCodeHarness):
         self.assertTrue(os.path.exists(product_path))
         for subdir in ["spdx_files", "patches"]:
             self.assertTrue(os.path.exists(os.path.join(product_path, subdir)))
+
+    def testNewFileFromExisting(self):
+        dest_path = os.path.join(self.product.file_path(),
+                                 "patches/barstyle.css")
+        self.assertFalse(os.path.exists(dest_path))
+
+        self.product.setup_directory()
+        self.product.new_file_from_existing(self.source_path, "patches")
+
+        self.assertTrue(os.path.exists(dest_path))
+
+    def testRemoveDirectory(self):
+        self.assertFalse(os.path.exists(self.product.file_path()))
+        self.product.setup_directory()
+        self.product.new_file_from_existing(self.source_path, "patches")
+        self.assertTrue(os.path.exists(self.product.file_path()))
+        self.product.remove_directory()
+        self.assertFalse(os.path.exists(self.product.file_path()))
 
 class TestFileDataMixin(BarCodeHarness):
     def testNewObject(self):

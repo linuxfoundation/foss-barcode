@@ -4,6 +4,7 @@ from django.forms import ModelForm, forms, Form
 from django import forms
 import os
 import re
+import shutil
 import pickle
 import time
 
@@ -126,6 +127,16 @@ class FileDataDirMixin:
                     shutil.rmtree(file_path)
                 return False
         return True
+
+    def remove_directory(self):
+        shutil.rmtree(self.file_path())
+
+    def new_file_from_existing(self, orig_path, subdir=None):
+        if subdir:
+            dest_path = os.path.join(self.file_path(), subdir)
+        else:
+            dest_path = self.file_path()
+        shutil.copy(orig_path, dest_path)
 
     def commit(self):
         pass
