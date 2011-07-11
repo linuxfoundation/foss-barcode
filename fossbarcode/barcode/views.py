@@ -8,7 +8,7 @@ from django.conf import settings
 
 from fossbarcode import task
 
-import sys, os, re, urllib, subprocess, time, hashlib, datetime
+import sys, os, re, urllib, subprocess, time, datetime
 
 # buffer size for Popen, we want unbuffered
 bufsize = -1
@@ -221,11 +221,12 @@ def input(request):
                     i = i + 1
 
             # generate the checksum/barcode
-            checksum = record_to_checksum(recordid)
+            checksum = recorddata.calc_checksum()
 
             if checksum:
-                Product_Record.objects.filter(id = recordid).update(checksum = checksum)
-                result = checksum_to_barcode(recordid, checksum, codetype)
+                recorddata.checksum = checksum
+                recorddata.save()
+                result = recorddata.checksum_to_barcode(codetype)
                 if result:
                     error_message += "Barcode generation failed...<br>"
             else:
@@ -342,82 +343,6 @@ def check_for_system_apps():
         errmsg += "Please use your system package manager to install them<br>"
 
     return errmsg
-
-# strip 'pk' entry from serialized data
-def strip_pk(data):
-    data = re.sub('pk=".*?" ','', data)
-    return data
-
-# build up an archive
-def record_to_checksum(recid):
-    # create an xml file of the database data
-    # FIXME - do we even need an xml dataset now with just these 4 fields?
-    from django.core import serializers
-    data = strip_pk(serializers.serialize("xml", Product_Record.objects.filter(id = recid), 
-                                  fields=('company', 'product', 'version', 'release')))
-    
-    m = hashlib.md5()
-    m.update(data)
-    checksum = m.hexdigest()
-
-    # and return
-    return checksum
-
-# create eps and png files from a checksum
-def checksum_to_barcode(recid, checksum, codetype):
-    import Image
-
-    # FIXME - can any user write the file to here?
-    ps_file = os.path.join(settings.USERDATA_ROOT, str(recid), checksum + ".ps")
-    png_file = os.path.join(settings.USERDATA_ROOT, str(recid), checksum + ".png")
-    foss_file = os.path.join(settings.STATIC_DOC_ROOT, "images/foss.png")
-
-    if codetype == "barcode":
-        result = os.system("barcode -b " + checksum + " -e 128 -m '0,0' -E > " + ps_file)
-    else:
-        mecard = record_to_mecard(recid)
-        result = os.system("qrencode -v 6 -l Q -m 0 -o " + png_file + " " + mecard)
-        if result == 0:
-            # overlay the foss.png image for branding
-            qrcode = Image.open(png_file)
-            overlay = Image.open(foss_file)
-
-            (xdim,ydim) = qrcode.size
-
-            qrcode.paste(overlay,((xdim-1)/2-28,(ydim-1)/2-13))
-            qrcode.save(png_file,"PNG")
-
-    if result == 0:
-    	# image conversion tries to use root's settings, if started as root
-    	os.putenv('TMP', '/tmp')
-    	os.putenv('TMPDIR', '/tmp')
-        if codetype == "barcode":
-            result = os.system("pstopnm -xsize 500 -portrait -stdout " + ps_file + " | pnmtopng > " + png_file)
-        else:
-            result = os.system("sam2p " + png_file + " PS: " + ps_file)                 
-
-    return result
-
-# convert a record to a MECARD string
-# see http://www.nttdocomo.co.jp/english/service/imode/make/content/barcode/function/application/addressbook/
-def record_to_mecard(recid):
-    q = Product_Record.objects.filter(id = recid)
-    mecard = "MECARD:N:" + q[0].company + ";URL:" + q[0].website + ";EMAIL:" + q[0].email
-    mecard += ";NOTE:" + q[0].product + ", Version: " + q[0].version + ", Release: " + q[0].release
-    # FOSS BoM
-    has_foss = FOSS_Components.objects.filter(brecord = recid).count()
-    if has_foss:
-        mecard += ", BoM: "
-        foss_list = FOSS_Components.objects.filter(brecord = recid)
-        for f in foss_list:
-            mecard += "(" + f.package + " " + f.version + " " + f.license + "), "
-        mecard = mecard[:-2] + ";"
-    # extra url to central site
-    if host_site_in_qrcode == "True":
-        mecard += "URL:" + host_site + q[0].checksum + ";"
-
-    escaped = re.escape(mecard)
-    return escaped
 
 # to remove a record
 def delete_record(recid):

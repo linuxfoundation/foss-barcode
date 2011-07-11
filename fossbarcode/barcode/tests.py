@@ -91,3 +91,30 @@ class TestFileDataMixin(BarCodeHarness):
         self.assertEqual(loaded_component.package, self.component.package)
         self.assertEqual(loaded_component.license, self.component.license)
         self.assertEqual(loaded_component.url, self.component.url)
+
+class TestProductRecord(BarCodeHarness):
+    def testChecksum(self):
+        self.assertEqual(self.product.calc_checksum(),
+                         "ef7fb81294c22856d9593d44f489cdd3")
+
+    def testBarcode(self):
+        self.product.setup_directory()
+        self.product.checksum = self.product.calc_checksum()
+        self.product.save()
+        partial_path = os.path.join(self.product.file_path(),
+                                    self.product.checksum)
+
+        self.product.checksum_to_barcode("barcode")
+        self.assertTrue(os.path.exists(partial_path + ".ps"))
+        self.assertTrue(os.path.exists(partial_path + ".png"))
+
+    def testQRCode(self):
+        self.product.setup_directory()
+        self.product.checksum = self.product.calc_checksum()
+        self.product.save()
+        partial_path = os.path.join(self.product.file_path(),
+                                    self.product.checksum)
+
+        self.product.checksum_to_barcode("mecard")
+        self.assertTrue(os.path.exists(partial_path + ".ps"))
+        self.assertTrue(os.path.exists(partial_path + ".png"))

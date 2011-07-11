@@ -7,10 +7,18 @@ import re
 import shutil
 import pickle
 import time
+import hashlib
 
 # Custom exceptions.
 class FileDataMixinCreateError(StandardError):
     pass
+
+# Utility functions.
+
+# strip 'pk' entry from serialized data
+def strip_pk(data):
+    data = re.sub('pk=".*?" ','', data)
+    return data
 
 # This is a special mix-in class which implements the loading and
 # saving of some attributes via a pickle file.  It allows us to use
@@ -138,6 +146,9 @@ class FileDataDirMixin:
             dest_path = self.file_path()
         shutil.copy(orig_path, dest_path)
 
+    def register_new_file(self, subpath):
+        pass
+
     def commit(self):
         pass
 
@@ -156,6 +167,92 @@ class Product_Record(models.Model, FileDataDirMixin):
 
     def __unicode__(self):
         return self.product
+
+    def calc_checksum(self):
+        # create an xml file of the database data
+        # FIXME - do we even need an xml dataset now with just these 4 fields?
+        from django.core import serializers
+        data = strip_pk(serializers.serialize("xml", [self], 
+                                              fields=('company', 'product', 'version', 'release')))
+    
+        m = hashlib.md5()
+        m.update(data)
+        checksum = m.hexdigest()
+
+        # and return
+        return checksum
+
+    # create eps and png files from a checksum
+    def checksum_to_barcode(self, codetype):
+        import Image
+
+        if not self.checksum:
+            self.checksum = self.calc_checksum()
+            self.save()
+
+        # FIXME - can any user write the file to here?
+        file_path = self.file_path()
+        ps_filename = self.checksum + ".ps"
+        ps_file = os.path.join(file_path, ps_filename)
+        png_filename = self.checksum + ".png"
+        png_file = os.path.join(file_path, png_filename)
+        foss_file = os.path.join(settings.STATIC_DOC_ROOT, "images/foss.png")
+
+        if codetype == "barcode":
+            result = os.system("barcode -b " + self.checksum + " -e 128 -m '0,0' -E > " + ps_file)
+        else:
+            mecard = self.record_to_mecard()
+            result = os.system("qrencode -v 6 -l Q -m 0 -o " + png_file + " " + mecard)
+            if result == 0:
+                # overlay the foss.png image for branding
+                qrcode = Image.open(png_file)
+                overlay = Image.open(foss_file)
+
+                (xdim,ydim) = qrcode.size
+
+                qrcode.paste(overlay,((xdim-1)/2-28,(ydim-1)/2-13))
+                qrcode.save(png_file,"PNG")
+
+        if result == 0:
+            # image conversion tries to use root's settings, if started as root
+            os.putenv('TMP', '/tmp')
+            os.putenv('TMPDIR', '/tmp')
+            if codetype == "barcode":
+                result = os.system("pstopnm -xsize 500 -portrait -stdout " + ps_file + " | pnmtopng > " + png_file)
+            else:
+                result = os.system("sam2p " + png_file + " PS: " + ps_file)
+
+        self.register_new_file(ps_filename)
+        self.register_new_file(png_filename)
+
+        return result
+
+    # convert a record to a MECARD string
+    # see http://www.nttdocomo.co.jp/english/service/imode/make/content/barcode/function/application/addressbook/
+    def record_to_mecard(self):
+        settings_list = System_Settings.objects.all()
+        for s in settings_list:
+            if s.name == "host_site":
+                host_site = s.value
+            if s.name == "host_site_in_qrcode":
+                host_site_in_qrcode = s.value
+
+        mecard = "MECARD:N:" + self.company + ";URL:" + self.website + ";EMAIL:" + self.email
+        mecard += ";NOTE:" + self.product + ", Version: " + self.version + ", Release: " + self.release
+        # FOSS BoM
+        has_foss = FOSS_Components.objects.filter(brecord = self).count()
+        if has_foss:
+            mecard += ", BoM: "
+            foss_list = FOSS_Components.objects.filter(brecord = self)
+            for f in foss_list:
+                mecard += "(" + f.package + " " + f.version + " " + f.license + "), "
+            mecard = mecard[:-2] + ";"
+        # extra url to central site
+        if host_site_in_qrcode == "True":
+            mecard += "URL:" + host_site + self.checksum + ";"
+
+        escaped = re.escape(mecard)
+        return escaped
 
 class FOSS_Components(models.Model, FileDataMixin):
     _master_class_path = ["brecord"]
