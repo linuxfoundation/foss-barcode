@@ -8,7 +8,7 @@ from django.conf import settings
 
 from fossbarcode import task
 
-import sys, os, re, urllib, subprocess, time, shutil, hashlib, datetime
+import sys, os, re, urllib, subprocess, time, hashlib, datetime
 
 # buffer size for Popen, we want unbuffered
 bufsize = -1
@@ -182,38 +182,12 @@ def input(request):
             recorddata = recordform.save(commit=False)       
             recorddata.save()
             recordid = recorddata.id
-            data_dest = os.path.join(settings.USERDATA_ROOT,str(recordid))           
-            if os.path.exists(settings.USERDATA_ROOT) == 0:
-                try:
-                    os.mkdir(settings.USERDATA_ROOT)
-                except:
-                    error_message += "Failed to create " + settings.USERDATA_ROOT + "<br>"
+            data_dest = recorddata.file_path()
+            if not recorddata.setup_directory():
+                error_message += "Failed to create " + data_dest + "<br>"
             
             spdx_dest = os.path.join(data_dest, "spdx_files")
             patch_dest = os.path.join(data_dest, "patches")
-
-            # might have stuff lying around from deleted records or rebuilt database
-            if os.path.exists(data_dest):
-                try:
-                    shutil.rmtree(data_dest)
-                except:
-                    error_message += "Failed to remove old " + data_dest + "<br>"
-                
-            # now make a new data tree
-            try:
-                os.mkdir(data_dest)
-            except:
-                error_message += "Failed to create " + data_dest + "<br>"
-                    
-            try:
-                os.mkdir(spdx_dest)
-            except:
-                error_message += "Failed to create " + spdx_dest + "<br>"
-                        
-            try:
-                os.mkdir(patch_dest)
-            except:
-                error_message += "Failed to create " + patch_dest + "<br>"
 
             # if we have foss components, store them also, and the patches
             if foss_components != '':
@@ -240,7 +214,8 @@ def input(request):
                     # check for SPDX files and save in user_data
                     if spdxs[i] != '':
                         try:
-                            shutil.copy(spdxs[i], spdx_dest)
+                            recorddata.new_file_from_existing(spdxs[i],
+                                                              "spdx_files")
                         except:
                             error_message += "Failed to copy " + str(spdxs[i]) + "to " + spdx_dest + "<br>"
                     
@@ -254,7 +229,8 @@ def input(request):
                                 patchdata = Patch_Files(frecord_id = fossid, path = os.path.basename(patch))
                                 patchdata.save()
                                 try:
-                                    shutil.copy(patch, patch_dest)
+                                    recorddata.new_file_from_existing(patch,
+                                                                      "patches")
                                 except:
                                     error_message += "Failed to copy " + str(patch) + "to " + patch_dest + "<br>"
                     i = i + 1
@@ -462,11 +438,11 @@ def delete_record(recid):
     errmsg = ''
     q = Product_Record.objects.filter(id = recid)
     checksum = q[0].checksum
-    q.delete()
     try:
-        shutil.rmtree(os.path.join(settings.USERDATA_ROOT,str(recid)))
+        q[0].remove_directory()
     except:
         errmsg += "Failed to delete user data...<br>"
+    q.delete()
     return errmsg
 
 # delete table records requested by id from one of the input forms

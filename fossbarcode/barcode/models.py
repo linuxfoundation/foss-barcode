@@ -4,10 +4,13 @@ from django.forms import ModelForm, forms, Form
 from django import forms
 import os
 import re
+import shutil
 import pickle
 import time
 
-# Create your models here.
+# Custom exceptions.
+class FileDataMixinCreateError(StandardError):
+    pass
 
 # This is a special mix-in class which implements the loading and
 # saving of some attributes via a pickle file.  It allows us to use
@@ -15,10 +18,9 @@ import time
 class FileDataMixin:
     # To use a FileDataMixin class, define this to be an array
     # of attribute names.  This will be called to get the ID
-    # of the Product_Record object which should control the files.
-    # For example, if the Product_Record object is accessed via
-    # self.foo.bar, set this to ["foo", "bar"].  For Product_Record
-    # itself, define it to an empty array.
+    # of the FileDataDirMixin object which should control the files.
+    # For example, if the FileDataDirMixin object is accessed via
+    # self.foo.bar, set this to ["foo", "bar"].
     _master_class_path = None
 
     # This should be set to a dict.  Each key becomes an attribute
@@ -32,15 +34,24 @@ class FileDataMixin:
 
     # These are calculated based on a number of things, including
     # the _master_class_path setting above.
+    _master_class = None
     _file_path = None
     _file_name = None
 
-    def set_data_path(self):
-        if not self._file_path:
+    def set_master_class(self):
+        if not self._master_class:
             o = self
             for p in self._master_class_path:
                 o = getattr(o, p)
-            self._file_path = os.path.join(settings.USERDATA_ROOT, str(o.id))
+            self._master_class = o
+
+            if not self._master_class.setup_directory():
+                raise FileDataMixinCreateError()
+
+    def set_data_path(self):
+        if not self._file_path:
+            self.set_master_class()
+            self._file_path = self._master_class.file_path()
 
     def set_data_fn(self):
         if not self._file_name:
@@ -92,7 +103,47 @@ class FileDataMixin:
         pickle.dump(to_write, f)
         f.close()
 
-class Product_Record(models.Model):
+# This mixin class actually manages the files being created by the
+# FileDataMixin class.  Whichever model ends up being the "master"
+# model should derive from this.  It handles the details of setting up
+# the directory and the version control repository, and also handled
+# commits and history.
+class FileDataDirMixin:
+    _subdirs = None
+
+    def file_path(self):
+        return os.path.join(settings.USERDATA_ROOT, str(self.id))
+
+    def setup_directory(self):
+        file_path = self.file_path()
+        if not os.path.isdir(file_path):
+            try:
+                os.makedirs(file_path)
+                if self._subdirs:
+                    for subdir in self._subdirs:
+                        os.mkdir(os.path.join(file_path, subdir))
+            except OSError:
+                if os.path.exists(file_path):
+                    shutil.rmtree(file_path)
+                return False
+        return True
+
+    def remove_directory(self):
+        shutil.rmtree(self.file_path())
+
+    def new_file_from_existing(self, orig_path, subdir=None):
+        if subdir:
+            dest_path = os.path.join(self.file_path(), subdir)
+        else:
+            dest_path = self.file_path()
+        shutil.copy(orig_path, dest_path)
+
+    def commit(self):
+        pass
+
+class Product_Record(models.Model, FileDataDirMixin):
+    _subdirs = ["spdx_files", "patches"]
+
     company = models.CharField('Company Name', max_length=200)
     product = models.CharField('Product Name', max_length=200)
     version = models.CharField('Product Version', max_length=20)
@@ -102,6 +153,7 @@ class Product_Record(models.Model):
     record_date = models.DateTimeField('Last Updated', auto_now=True)
     contact = models.CharField('Compliance Contact Name (optional)', max_length=200, blank=True)
     email = models.CharField('Compliance Contact Email', max_length=200)
+
     def __unicode__(self):
         return self.product
 
