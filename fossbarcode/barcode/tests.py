@@ -51,4 +51,20 @@ class TestFileDataDirMixin(BarCodeHarness):
             self.assertTrue(os.path.exists(os.path.join(product_path, subdir)))
 
 class TestFileDataMixin(BarCodeHarness):
-    pass
+    def testNewObject(self):
+        self.addComponent()
+        data_file_path = os.path.join(self.product.file_path(), 
+                                      "FOSS_Components_%d.pickle" % self.component.id)
+        self.assertTrue(os.path.exists(data_file_path))
+
+    def testLoadObject(self):
+        self.addComponent()
+        self.assertEqual(self.component.brecord, self.product)
+
+        loaded_component = FOSS_Components.objects.get(id=self.component.id)
+
+        self.assertEqual(loaded_component.id, self.component.id)
+        self.assertEqual(loaded_component.brecord.id, self.component.brecord.id)
+        self.assertEqual(loaded_component.package, self.component.package)
+        self.assertEqual(loaded_component.license, self.component.license)
+        self.assertEqual(loaded_component.url, self.component.url)

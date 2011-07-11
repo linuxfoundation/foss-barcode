@@ -7,16 +7,19 @@ import re
 import pickle
 import time
 
+# Custom exceptions.
+class FileDataMixinCreateError(StandardError):
+    pass
+
 # This is a special mix-in class which implements the loading and
 # saving of some attributes via a pickle file.  It allows us to use
 # traditional version control to audit certain data changes.
 class FileDataMixin:
     # To use a FileDataMixin class, define this to be an array
     # of attribute names.  This will be called to get the ID
-    # of the Product_Record object which should control the files.
-    # For example, if the Product_Record object is accessed via
-    # self.foo.bar, set this to ["foo", "bar"].  For Product_Record
-    # itself, define it to an empty array.
+    # of the FileDataDirMixin object which should control the files.
+    # For example, if the FileDataDirMixin object is accessed via
+    # self.foo.bar, set this to ["foo", "bar"].
     _master_class_path = None
 
     # This should be set to a dict.  Each key becomes an attribute
@@ -30,15 +33,24 @@ class FileDataMixin:
 
     # These are calculated based on a number of things, including
     # the _master_class_path setting above.
+    _master_class = None
     _file_path = None
     _file_name = None
 
-    def set_data_path(self):
-        if not self._file_path:
+    def set_master_class(self):
+        if not self._master_class:
             o = self
             for p in self._master_class_path:
                 o = getattr(o, p)
-            self._file_path = os.path.join(settings.USERDATA_ROOT, str(o.id))
+            self._master_class = o
+
+            if not self._master_class.setup_directory():
+                raise FileDataMixinCreateError()
+
+    def set_data_path(self):
+        if not self._file_path:
+            self.set_master_class()
+            self._file_path = self._master_class.file_path()
 
     def set_data_fn(self):
         if not self._file_name:
