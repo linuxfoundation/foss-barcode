@@ -75,20 +75,20 @@
       <td align="center" width="30">
       <span id="noprint">
         <div id="line-item-modal">
-            <a href="#" class="basic" name="line_item{{ record.id }}/{{ row.id }}"><img src="/site_media/images/filetree/edit.png" title="Edit Line Item"></a>
+            <a href="#" class="basic" name="line_item{{ forloop.counter }}" id="{{ row.id }}"><img src="/site_media/images/filetree/edit.png" title="Edit Line Item"></a>
         </div>
       </span>     
       </td>
-      <td>{{ row.component }}</td>
-      <td>{{ row.version }}</td>
-      <td>{{ row.copyright }}</td>
-      <td>{{ row.attribution }}</td>
-      <td>{{ row.license }}</td>
-      <td><a href="{{ row.license_url }}" target="_blank">{{ row.license_url }}</a></td>
-      <td><a href="{{ row.url }}" target="_blank">{{ row.url }}</a></td>
+      <td id="foss_component{{ forloop.counter }}">{{ row.component }}</td>
+      <td id="foss_version{{ forloop.counter }}">{{ row.version }}</td>
+      <td id="foss_copyright{{ forloop.counter }}">{{ row.copyright }}</td>
+      <td id="foss_attribution{{ forloop.counter }}">{{ row.attribution }}</td>
+      <td id="foss_license{{ forloop.counter }}">{{ row.license }}</td>
+      <td id="foss_license_url{{ forloop.counter }}"><a href="{{ row.license_url }}" target="_blank">{{ row.license_url }}</a></td>
+      <td id="foss_url{{ forloop.counter }}"><a href="{{ row.url }}" target="_blank">{{ row.url }}</a></td>
       {% autoescape off %}
-      <td>{{ row.spdx_file }}</td>
-      <td>{{ row.patches }}</td>
+      <td id="foss_spdx{{ forloop.counter }}">{{ row.spdx_file }}</td>
+      <td id="foss_patches{{ forloop.counter }}">{{ row.patches }}</td>
       {% endautoescape %}
     </tr>
   {% endfor %}
@@ -99,17 +99,78 @@
   <!-- this is the modal popup content for viewing the history data -->
   {% include "barcode/history.html" %}
   <!-- this is the modal popup content for editing the line item data -->
-  <!-- FIXME - need to populate for the requested record -->
   {% include "barcode/edit_line.html" %}
 {% endblock %}
 
 {% block scripts %}
 <script language="JavaScript">
+    var header_fields = { "company": "",
+                          "website": "",
+                          "product": "",
+                          "version": "",
+                          "release": "",
+                          "contact": "",
+                          "email": "" };
+
+    // order matters here - needs to be the same as the table columns
+    var bom_fields = { "foss_component": "",
+                       "foss_version": "", 
+                       "foss_copyright": "", 
+                       "foss_attribution": "",        
+                       "foss_license": "", 
+                       "foss_license_url": "", 
+                       "foss_url": "", 
+                       "foss_spdx": "",
+                       "foss_patches": "" };
+
     function setdefaults() {
     }
-    function update_header() {
-        alert("TBD: update header");
-        document.forms["headerform"].submit();
+
+    function submit_header_validate() {
+        var filled = true;
+        for(var f in header_fields){
+            var src = "id_" + f;
+            if (document.getElementById(src).value == "" && f != "contact")
+                filled = false;
+        }
+        if (document.getElementById('id_header_commit_message').value == "")
+            filled = false;
+        // refuse to submit unless all required fields are filled       
+        if (filled == false) {      
+            alert("Please fill all required header fields, including the commit message");
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    function line_edit_fill(row, record) {
+        document.getElementById('line_item_no').innerHTML = row;
+        // walk through the table row and plug the values into the edit form, called when we click the icon, before the form appears
+        for(var f in bom_fields){
+            var dest = "id_" + f;
+            var src = f + row;
+            document.getElementById(dest).value = document.getElementById(src).innerText;
+        }
+        document.getElementById('foss_record_id').value = record;    
+    }
+
+    function submit_line_validate() {
+        var filled = true;
+        for(var f in bom_fields){
+            var src = "id_" + f;
+            if (document.getElementById(src).value == "" && f != "foss_spdx" && f != "foss_patches")
+                filled = false;
+        }
+        if (document.getElementById('id_item_commit_message').value == "")
+            filled = false;
+        // refuse to submit unless all required fields are filled       
+        if (filled == false) {      
+            alert("Please fill all required component fields, including the commit message");
+            return false;
+        } else {
+            return true;
+        }
     }
 </script>
 {% endblock %}
