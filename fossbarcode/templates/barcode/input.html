@@ -2,8 +2,12 @@
 {% block header %}
   <!-- for the file browser -->
   <style type="text/css" media="screen">@import "/site_media/css/jqueryFileTree.css";</style>
+  <!-- CSS file for modal dialog -->
   <style type="text/css">@import "/site_media/css/containers.css";</style>
+  <style type="text/css" media="screen">@import "/site_media/css/barcode-modals.css";</style>
   <script type="text/javascript" src="/site_media/js/jquery-1.4.2.min.js"></script>
+  <script type='text/javascript' src='/site_media/js/jquery.simplemodal.1.4.1.min.js'></script>
+  <script type='text/javascript' src='/site_media/js/barcode-modals.js'></script>
   <script type="text/javascript" src="/site_media/js/jqueryFileTree.js"></script>
   <script type="text/javascript" src="/site_media/js/visibility.js"></script>
   <script type="text/javascript" src="/site_media/js/checklist.js"></script>
@@ -22,7 +26,6 @@
 
 {% if not needs_setup %}
 <form name="entryform" method="post" action="" enctype="multipart/form-data">
-
 <div class="container" id="entry_form">
 <table align="left" width="100%">
   <tr align="left">
@@ -157,13 +160,11 @@
 </table>
 <hr>
 </form> <!-- overall form ends here to include the submit buttons -->
-<!-- remove per Ibrahim
-<b>Subscribe to the <a href="https://lists.linux-foundation.org/mailman/listinfo/foss-barcode-dev">mailing list</a></b><br>
-<b>Get latest version from <a href="http://git.linuxfoundation.org/?p=foss-barcode.git;a=summary">git</a></b><br>
-<b>Report bugs and request features at <a href="http://bugs.linuxfoundation.org/enter_bug.cgi?product=Compliance">bugzilla</a></b><br>
--->
 </div>
+
 {% endif %}
+<!-- this is the modal popup content for editing the line item data -->
+{% include "barcode/edit_line_input.html" %}
 {% endblock %}
 
 {% block scripts %}
@@ -260,6 +261,20 @@
             document.getElementById(fh).value = rarray.join(",");
         } 
     }
+    function replace_bom_values(row) {
+        // called from the modal line-item change dialog
+        for(var f in bom_fields){
+            var fh = f + "s";
+            var src = "id_m_" + f;
+            var dest = f + row;
+            document.getElementById(dest).innerHTML = document.getElementById(src).value; 
+            var rlist = document.getElementById(fh).value;
+            var rarray = rlist.split(",");
+            // table is 1-indexed, hidden lists are zero indexed
+            rarray[row] = document.getElementById(src).value;
+            document.getElementById(fh).value = rarray.join(",");
+        } 
+    }
     function clear_bom_values() {
         for(var f in bom_fields){
             var fh = f + "s";
@@ -309,6 +324,7 @@
         var patch_tag = pfield + rindex;
         var row = document.createElement("TR");
 
+        // checkbox for deletes
         var td0 = document.createElement("TD");
         var tcb = document.createElement("input");
         tcb.setAttribute("type", "checkbox");
@@ -323,14 +339,19 @@
         td0.appendChild(tcb);
         row.appendChild(td0);
 
+        // icon for editing a line
         var td1 = document.createElement("TD");
         var tdd = document.createElement("div");
         tdd.setAttribute("id", "line-item-modal");
         var tda = document.createElement("a");
         tda.setAttribute("href", "#");
         tda.setAttribute("class", "basic");
+        tda.setAttribute("name", "line_item" + cvalue);
+        tda.setAttribute("id", cvalue);
+        // for some reason, dynamically added modal triggers don't activate the model, use onclick
+        tda.setAttribute("onclick", "line_edit_init(" + cvalue + ");");
         var tdi = document.createElement("img");
-        tdi.setAttribute("src", "/site_media/images/filetree/css.png");
+        tdi.setAttribute("src", "/site_media/images/filetree/edit.png");
         tdi.setAttribute("title", "Edit Line Item");
         tda.appendChild(tdi);
         tdd.appendChild(tda);
@@ -341,6 +362,7 @@
         for(var f in bom_fields){
             var td = document.createElement("TD");
             td.setAttribute("valign", "top");
+            td.setAttribute("id", f + cvalue);
             if (f == sfield)
                 td.setAttribute("colspan", "2");
             td.appendChild(document.createTextNode(bom_fields[f]));
@@ -385,6 +407,54 @@
             bom_fields[f] = "";
         }
     }
+
+    function line_edit_fill(row) {
+        document.getElementById('line_item_no').innerHTML = row;
+        // walk through the table row and plug the values into the edit form, called when we click the icon, before the form appears
+        for(var f in bom_fields){
+            var dest = "id_m_" + f;
+            var src = f + row;
+            if (document.getElementById(src).children.length > 0) {
+                document.getElementById(dest).value = document.getElementById(src).children[0].innerHTML;
+            } else {
+                document.getElementById(dest).value = document.getElementById(src).innerHTML;
+            }
+        }
+    }
+
+    function line_edit_init(row) {
+        // FIXME - for some reason, the dynamically added icons never trigger $('#line-item-modal .basic').click
+        // so we basically dupe the jQuery code here (calling $('#line-item-modal .basic').click() 
+        // directly triggers recursion issues in chrome)
+        line_edit_fill(row);
+        $('#line-item-modal-content').modal({
+             containerCss:{
+                 height:450,
+                 padding:0,
+                 width:700
+             }
+        });
+    }
+
+    function line_validate_change() {
+        var filled = true;
+        for(var f in bom_fields){
+            var src = "id_m_" + f;
+            if (document.getElementById(src).value == "" && f != "foss_spdx" && f != "foss_patches")
+                filled = false;
+        }
+        // refuse to submit unless all required fields are filled       
+        if (filled == false) {      
+            alert("Please fill all required component fields, including the commit message");
+        } else {
+            // plug the values back into the table row and the hidden field
+            var row = document.getElementById('line_item_no').innerHTML;
+            replace_bom_values(row);
+            // close the modal dialog
+            $.modal.close();
+        }
+    }
+
 </script>
 
 {% endblock %}

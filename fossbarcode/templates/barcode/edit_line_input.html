@@ -1,0 +1,34 @@
+<!-- we don't extend base for this one as we don't want the overall tabs/styling -->
+{% block content %}
+<div id="line-item-modal-content">
+  <!-- form needs to be inside the div -->
+  <form id="itemform" method="post" action="" enctype="multipart/form-data">
+    <h3>Edit Line Item, id# <span id="line_item_no">N</span>:</h3>
+    <table>
+      <tr><td><b>{{ itemform.foss_component.label }}:</b></td><td>{{ itemform.foss_component }}</td></tr>
+      <tr><td>{{ itemform.foss_component.errors }}</td><td></td></tr>
+      <tr><td><b>{{ itemform.foss_version.label }}:</b></td><td>{{ itemform.foss_version }}</td></tr>
+      <tr><td>{{ itemform.foss_version.errors }}</td><td></td></tr>
+      <tr><td><b>{{ itemform.foss_copyright.label }}:</b></td><td>{{ itemform.foss_copyright }}</td></tr>
+      <tr><td>{{ itemform.foss_copyright.errors }}</td><td></td></tr>
+      <tr><td><b>{{ itemform.foss_attribution.label }}:</b></td><td>{{ itemform.foss_attribution }}</td></tr>
+      <tr><td>{{ itemform.foss_attributions.errors }}</td><td></td></tr>
+      <tr><td><b>{{ itemform.foss_license.label }}:</b></td><td>{{ itemform.foss_license }}</td></tr>
+      <tr><td>{{ itemform.foss_license.errors }}</td><td></td></tr>
+      <tr><td><b>{{ itemform.foss_license_url.label }}:</b></td><td>{{ itemform.foss_license_url }}</td></tr>
+      <tr><td>{{ itemform.foss_license_url.errors }}</td><td></td></tr>
+      <tr><td><b>{{ itemform.foss_url.label }}:</b></td><td>{{ itemform.foss_url }}</td></tr>
+      <tr><td>{{ itemform.foss_url.errors }}</td><td></td></tr>
+      <tr><td><b>{% autoescape off %}{{ itemform.foss_spdx.label }}{% endautoescape %}:</b></td><td>{{ itemform.foss_spdx }}</td></tr>
+      <tr><td><b>{{ itemform.foss_patches.label }}:</b></td><td>{{ itemform.foss_patches }}</td></tr>
+      <tr>
+        <td></td>
+        <td><input type="button" name="submit" value="Update Item" onclick="line_validate_change();"></td>
+      </tr>
+    </table>
+    <!-- so the back end knows which record to update -->
+    <input type="hidden" name="foss_record_id" id="foss_record_id" value="">
+  </form>
+</div>
+{% endblock %}
+

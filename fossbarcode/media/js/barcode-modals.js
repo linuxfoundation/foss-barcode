@@ -39,7 +39,7 @@ jQuery(function ($) {
 		return false;
 	});
 
-    // line edit doesn't work as iframe either
+    // line edit modal popup
 	$('#line-item-modal .basic').click(function (e) {
         var clicked = $(this).attr("name");
         var record = $(this).attr("id");
@@ -58,19 +58,5 @@ jQuery(function ($) {
             $.modal('<h3>Unable to retrieve line_item...</h3>');
         }
 		return false;
-	});
-
-    // not used, we still need a variant for the input screen though
-	$('#line-item-modal2 .basic').click(function (e) {
-       // see which record we're looking for
-        var clicked = $(this).attr("name");
-        if (clicked.search("line_item") != -1 ) {
-            var record = clicked.replace("line_item", "");
-            var src = "/barcode/" + record + "/edit_line/";
-            $.modal('<iframe src="' + src + '" height="450" width="450" style="border:0">');
-        } else {
-            $.modal('<h3>Unable to retrieve line_item...</h3>');
-        }
-        return false;
 	});
 });

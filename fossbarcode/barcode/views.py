@@ -177,6 +177,9 @@ def input(request):
     component_error = ''
     codetype = 'barcode'
     needs_setup = 0
+    # we don't do anything with this content, just used to format the modal popup
+    # because it's also a subset of Recordform, change out the id string id_foo -> id_m_foo
+    itemform = ItemForm(auto_id='id_m_%s') # An unbound form
 
     if request.method == 'POST': # If the form has been submitted...
         recordform = RecordForm(request.POST) # A form bound to the POST data      
@@ -291,7 +294,7 @@ def input(request):
 
     return render_to_response('barcode/input.html', {
                               'error_message': error_message, 'component_error': component_error, 
-                              'recordform': recordform, 'needs_setup': needs_setup,
+                              'recordform': recordform, 'itemform': itemform, 'needs_setup': needs_setup,
                               'foss_components': foss_components, 'foss_versions': foss_versions,
                               'foss_copyrights': foss_copyrights, 'foss_attributions': foss_attributions,
                               'foss_licenses': foss_licenses, 'foss_license_urls': foss_license_urls, 
