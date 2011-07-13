@@ -23,7 +23,7 @@
       <tr><td><b>{{ itemform.foss_patches.label }}:</b></td><td>{{ itemform.foss_patches }}</td></tr>
       <tr>
         <td><b>{{ itemform.item_commit_message.label }}:</b></td>
-        <td><input type="submit" name="submit" value="Update Item" onclick="javascript:return submit_line_validate();"></td>
+        <td><input type="submit" name="submit" value="Update Item" onclick="return submit_line_validate();"></td>
       </tr>
       <tr><td>{{ itemform.item_commit_message.errors }}</td><td></td></tr>
       <tr><td colspan="2">{{ itemform.item_commit_message }}</td></tr>

@@ -1,16 +1,19 @@
 {% extends "barcode/base.html" %}
 {% block header %}
-    <style type="text/css">@import "/site_media/css/containers.css";</style>
-    <!-- CSS file for modal dialog -->
-    <style type="text/css" media="screen">@import "/site_media/css/barcode-modals.css";</style>
-    <!-- used for modal dialog -->
-    <script type="text/javascript" src="/site_media/js/jquery-1.4.2.min.js"></script>
-    <script type='text/javascript' src='/site_media/js/jquery.simplemodal.1.4.1.min.js'></script>
-    <script type='text/javascript' src='/site_media/js/barcode-modals.js'></script>
+  <style type="text/css">@import "/site_media/css/containers.css";</style>
+  <!-- CSS file for modal dialog -->
+  <style type="text/css" media="screen">@import "/site_media/css/barcode-modals.css";</style>
+  <!-- used for modal dialog -->
+  <script type="text/javascript" src="/site_media/js/jquery-1.4.2.min.js"></script>
+  <script type='text/javascript' src='/site_media/js/jquery.simplemodal.1.4.1.min.js'></script>
+  <script type='text/javascript' src='/site_media/js/barcode-modals.js'></script>
 </head>
 {% endblock %}
 
 {% block content %}
+
+<div id="title">&nbsp;{% include "barcode/noscript.html" %}</div>
+
 {% if error_message %}
     {% autoescape off %}
     <span class="red"><b>{{ error_message }}</b></span>
@@ -150,7 +153,11 @@
         for(var f in bom_fields){
             var dest = "id_" + f;
             var src = f + row;
-            document.getElementById(dest).value = document.getElementById(src).innerText;
+            if (document.getElementById(src).children.length > 0) {
+                document.getElementById(dest).value = document.getElementById(src).children[0].innerHTML;
+            } else {
+                document.getElementById(dest).value = document.getElementById(src).innerHTML;
+            }
         }
         document.getElementById('foss_record_id').value = record;    
     }
