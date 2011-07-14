@@ -34,6 +34,7 @@ class BarCodeHarness(TestCase):
                                          license_url="http://testprj.example.com/license.html",
                                          url="http://testprj.example.com/")
         self.component.save()
+        self.product.commit("Add test component.")
 
     def tearDown(self):
         if os.path.exists(settings.USERDATA_ROOT):
@@ -52,8 +53,11 @@ class TestFileDataDirMixin(BarCodeHarness):
         self.assertFalse(os.path.exists(product_path))
         self.product.setup_directory()
         self.assertTrue(os.path.exists(product_path))
-        for subdir in ["spdx_files", "patches"]:
+        for subdir in [".git", "spdx_files", "patches"]:
             self.assertTrue(os.path.exists(os.path.join(product_path, subdir)))
+
+        repo = self.product.get_repo()
+        self.assertIsNotNone(repo)
 
     def testNewFileFromExisting(self):
         dest_path = os.path.join(self.product.file_path(),
@@ -62,14 +66,21 @@ class TestFileDataDirMixin(BarCodeHarness):
 
         self.product.setup_directory()
         self.product.new_file_from_existing(self.source_path, "patches")
-
         self.assertTrue(os.path.exists(dest_path))
+
+        self.assertTrue(self.product.commit("Test commit."))
+        repo = self.product.get_repo()
+        self.assertEqual(len(repo.revision_history(repo.head())), 1)
 
     def testRemoveDirectory(self):
         self.assertFalse(os.path.exists(self.product.file_path()))
         self.product.setup_directory()
         self.product.new_file_from_existing(self.source_path, "patches")
         self.assertTrue(os.path.exists(self.product.file_path()))
+        self.assertTrue(self.product.commit("Test commit."))
+        repo = self.product.get_repo()
+        self.assertEqual(len(repo.revision_history(repo.head())), 1)
+
         self.product.remove_directory()
         self.assertFalse(os.path.exists(self.product.file_path()))
 
