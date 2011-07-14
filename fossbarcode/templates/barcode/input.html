@@ -123,8 +123,7 @@
                                         value="Add Component" 
                                         onclick="get_bom_values();add_bom_row('foss_list', 'add')"/></td>
   </tr>
-  <div id="bom_editor">
-  <tr>
+  <tr id="bom_editor">
     <td align="left" colspan="2"><input type="checkbox" name="selectall"
                     title="Select/Deselect All Records" 
                     onclick="toggleall(this.form,'bomcheck','selectall')" />
@@ -133,8 +132,7 @@
     <td align="center" colspan="2"><input type="button" name="delete_rows" value="Delete Selected Components"
                 onclick="delete_bom_components('foss_list')" />
     </td>
-  </tr>
-  </div> <!-- editor -->
+  </tr> <!-- editor -->
 <!-- TODO - loop and fill this from SPDX? -->
 </table>
 </div> <!-- foss_table -->
@@ -199,9 +197,7 @@
                     p.value = fossp[i];                
             }
         } else {
-            // FIXME - hide the editor portion of the BOM if we have no data
-            var e = document.getElementById("bom_editor");
-            e.style.display = 'none';
+            hide_element("bom_editor");
         }
     }
     function update_patch_list(src) {
@@ -271,6 +267,7 @@
                 }
             }
             document.getElementsByName("selectall")[0].checked = false;
+            hide_element("bom_editor");
         } else {
             return;
         }
@@ -375,6 +372,9 @@
         for(var f in bom_fields){
             bom_fields[f] = "";
         }
+        
+        // show our "select all" controls
+        show_none("bom_editor");
     }
 
     function line_edit_fill(row) {
