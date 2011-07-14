@@ -64,31 +64,61 @@ def detail(request, record_id):
     foss = render_detail(record_id)
     record_list = Product_Record.objects.filter(id = record_id)
     record = record_list[0]
-   
+ 
     if request.method == 'POST': # If the form has been submitted...
-        # FIXME - is it a header or line item submit?
+        mode = urllib.unquote(request.POST.get('submit'))
+
         headerform = HeaderForm(request.POST) # A form bound to the POST data
         itemform = ItemForm(request.POST) # A form bound to the POST data
 
-        if headerform.is_valid(): # All validation rules pass            
-            Product_Record.objects.filter(id = record_id).update(company = request.POST.get('company', ''),
+        if (mode == "Update Header"):
+            if headerform.is_valid(): # All validation rules pass            
+                Product_Record.objects.filter(id = record_id).update(company = request.POST.get('company', ''),
                                                                  website = request.POST.get('website', ''),
                                                                  product = request.POST.get('product', ''),
                                                                  version = request.POST.get('version', ''),
                                                                  release = request.POST.get('release', ''),
                                                                  contact = request.POST.get('contact', ''),
                                                                  email = request.POST.get('email', ''),
-                                                                 record_date = str(datetime.datetime.now()),)
-            # FIXME - compute the new checksum, compare with the old and update if needed
+                                                                 record_date = str(datetime.datetime.now()))
 
-            # FIXME - do something interesting with request.POST.get('commit_message', '')
+                # FIXME - compute the new checksum, compare with the old and update if needed
+
+                # FIXME - do something interesting with request.POST.get('header_commit_message', '')
  
-            return HttpResponseRedirect('/barcode/' + record_id + '/detail/')
+                return HttpResponseRedirect('/barcode/' + record_id + '/detail/')
 
-        else:
-            error_message = "Invalid header update data, see header dialog..."
+            else:
+                error_message = "Invalid header update data, see header dialog..."
 
-        # FIXME - if it's line item, we still want to update record_date
+        if (mode == "Update Item"):
+            if itemform.is_valid(): # All validation rules pass
+                # line item data is in a file, so we alter/save rather than update
+                foss_id = request.POST.get('foss_record_id', '')
+                fossdata = FOSS_Components(brecord_id = record_id, id = foss_id, 
+                                           package = request.POST.get('foss_component', ''),
+                                           version = request.POST.get('foss_version', ''),
+                                           copyright = request.POST.get('foss_copyright', ''), 
+                                           attribution = request.POST.get('foss_attribution', ''),
+                                           license = request.POST.get('foss_license', ''), 
+                                           license_url = request.POST.get('foss_license_url', ''), 
+                                           url = request.POST.get('foss_url', ''), 
+                                           spdx_file = request.POST.get('foss_spdx', ''))
+                
+                fossdata.save()
+                # FIXME do we need to save new SPDXs now?
+
+                # FIXME update/save patches
+
+                # update the master record "last updated"         
+                Product_Record.objects.filter(id = record_id).update(record_date = str(datetime.datetime.now()))
+
+                # FIXME - do something interesting with request.POST.get('item_commit_message', '')
+
+                return HttpResponseRedirect('/barcode/' + record_id + '/detail/')
+
+            else:
+                error_message = "Invalid line item update data, see item dialog..."
 
     else:
         headerform = HeaderForm() # An unbound form
@@ -147,6 +177,9 @@ def input(request):
     component_error = ''
     codetype = 'barcode'
     needs_setup = 0
+    # we don't do anything with this content, just used to format the modal popup
+    # because it's also a subset of Recordform, change out the id string id_foo -> id_m_foo
+    itemform = ItemForm(auto_id='id_m_%s') # An unbound form
 
     if request.method == 'POST': # If the form has been submitted...
         recordform = RecordForm(request.POST) # A form bound to the POST data      
@@ -264,7 +297,7 @@ def input(request):
 
     return render_to_response('barcode/input.html', {
                               'error_message': error_message, 'component_error': component_error, 
-                              'recordform': recordform, 'needs_setup': needs_setup,
+                              'recordform': recordform, 'itemform': itemform, 'needs_setup': needs_setup,
                               'foss_components': foss_components, 'foss_versions': foss_versions,
                               'foss_copyrights': foss_copyrights, 'foss_attributions': foss_attributions,
                               'foss_licenses': foss_licenses, 'foss_license_urls': foss_license_urls, 
@@ -282,7 +315,7 @@ def documentation(request):
     status = 0
 
     try:
-        f = open(settings.STATIC_DOC_ROOT + "/docs/index.html", 'r')
+        f = open(settings.STATIC_DOC_ROOT + "/docs/index.khtml", 'r')
 
     except:
         # docs aren't created yet, try to do it

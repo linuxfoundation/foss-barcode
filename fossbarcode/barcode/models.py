@@ -356,16 +356,17 @@ class RecordForm(ModelForm):
     foss_license_url = forms.CharField(label="License URL", max_length=200, required=False)
     foss_url = forms.CharField(label="Download URL", max_length=200, required=False)
     foss_spdx = forms.CharField(label="SPDX<sup>TM</sup> File", max_length=100, required=False)
+    foss_patches = forms.CharField(label="Patches", max_length=200, required=False)
 
 class HeaderForm(ModelForm):
     class Meta:
         model = Product_Record
 
-    commit_message = forms.CharField(label="Change Comments (for change history)", widget=forms.Textarea(attrs={'cols': 80, 'rows': 4}))
+    header_commit_message = forms.CharField(label="Change Comments (for change history, required)", widget=forms.Textarea(attrs={'cols': 80, 'rows': 4}))
 
 class ItemForm(RecordForm):
     class Meta(RecordForm.Meta):
         exclude = ('company', 'product', 'version', 'release', 'checksum', 'website', 'record_date' 'contact', 'email')
 
-    commit_message = forms.CharField(label="Change Comments (for change history)", widget=forms.Textarea(attrs={'cols': 50, 'rows': 4}))
+    item_commit_message = forms.CharField(label="Change Comments (for change history, required)", widget=forms.Textarea(attrs={'cols': 80, 'rows': 4}))
 

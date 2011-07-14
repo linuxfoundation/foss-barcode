@@ -15,7 +15,7 @@ jQuery(function ($) {
 	// Load dialog on page load
 	//$('#basic-modal-content').modal();
 
-    // header edit doesn't really work as an iframe
+    // header edit modal popup
 	$('#header-modal .basic').click(function (e) {
 		$('#header-modal-content').modal({
             containerCss:{
@@ -39,29 +39,24 @@ jQuery(function ($) {
 		return false;
 	});
 
-    // line edit doesn't work as iframe either
+    // line edit modal popup
 	$('#line-item-modal .basic').click(function (e) {
-		$('#line-item-modal-content').modal({
-           containerCss:{
-                height:450,
-                padding:0,
-                width:700
-            }
-        });
-		return false;
-	});
-
-    // not used, we still need a variant for the input screen though
-	$('#line-item-modal2 .basic').click(function (e) {
-       // see which record we're looking for
         var clicked = $(this).attr("name");
+        var record = $(this).attr("id");
         if (clicked.search("line_item") != -1 ) {
-            var record = clicked.replace("line_item", "");
-            var src = "/barcode/" + record + "/edit_line/";
-            $.modal('<iframe src="' + src + '" height="450" width="450" style="border:0">');
+            var row = clicked.replace("line_item", "");
+            // this function is in the detail page, so it can get the dynamic values
+            line_edit_fill(row, record);       
+		    $('#line-item-modal-content').modal({
+                containerCss:{
+                    height:450,
+                    padding:0,
+                    width:700
+                }
+            });
         } else {
             $.modal('<h3>Unable to retrieve line_item...</h3>');
         }
-        return false;
+		return false;
 	});
 });

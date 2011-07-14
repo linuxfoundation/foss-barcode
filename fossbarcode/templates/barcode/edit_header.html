@@ -6,22 +6,25 @@
     <h3>Edit Header:</h3>
     <span class="red"><b>Warning</b> - changing these fields will cause the checksum/barcode to be regenerated!</span>
     <table>
-      <tr><td><span class="red"><b>{{ headerform.company.label }}:</b></span></td><td><input type="input" name="company" value="{{ record.company }}"></td></tr>
+      <tr><td><span class="red"><b>{{ headerform.company.label }}:</b></span></td><td><input type="input" id="id_company" name="company" value="{{ record.company }}"></td></tr>
       <tr><td>{{ headerform.company.errors }}</td><td></td></tr>
-      <tr><td><b>{{ headerform.website.label }}:</b></td><td><input type="input" name="website" value="{{ record.website }}"></td></tr>
+      <tr><td><b>{{ headerform.website.label }}:</b></td><td><input type="input" id="id_website" name="website" value="{{ record.website }}"></td></tr>
       <tr><td>{{ headerform.website.errors }}</td><td></td></tr>
-      <tr><td><span class="red"><b>{{ headerform.product.label }}:</b></span></td><td><input type="input" name="product" value="{{ record.product }}"></td></tr>
+      <tr><td><span class="red"><b>{{ headerform.product.label }}:</b></span></td><td><input type="input" id="id_product" name="product" value="{{ record.product }}"></td></tr>
       <tr><td>{{ headerform.product.errors }}</td><td></td></tr>
-      <tr><td><span class="red"><b>{{ headerform.version.label }}:</b></span></td><td><input type="input" name="version" value="{{ record.version }}"></td></tr>
+      <tr><td><span class="red"><b>{{ headerform.version.label }}:</b></span></td><td><input type="input" id="id_version" name="version" value="{{ record.version }}"></td></tr>
       <tr><td>{{ headerform.version.errors }}</td><td></td></tr>
-      <tr><td><span class="red"><b>{{ headerform.release.label }}:</b></span></td><td><input type="input" name="release" value="{{ record.release }}"></td></tr>
+      <tr><td><span class="red"><b>{{ headerform.release.label }}:</b></span></td><td><input type="input" id="id_release" name="release" value="{{ record.release }}"></td></tr>
       <tr><td>{{ headerform.release.errors }}</td><td></td></tr>
-      <tr><td><b>{{ headerform.contact.label }}:</b></td><td><input type="input" name="contact" value="{{ record.contact }}"></td></tr>
-      <tr><td><b>{{ headerform.email.label }}:</b></td><td><input type="input" name="email" value="{{ record.email }}"></td></tr>
+      <tr><td><b>{{ headerform.contact.label }}:</b></td><td><input type="input" id="id_contact" name="contact" value="{{ record.contact }}"></td></tr>
+      <tr><td><b>{{ headerform.email.label }}:</b></td><td><input type="input" id="id_email" name="email" value="{{ record.email }}"></td></tr>
       <tr><td>{{ headerform.email.errors }}</td><td></td></tr>
-      <tr><td><b>{{ headerform.commit_message.label }}:</b></td><td><input type="submit" name="submit_header" value="Update Header"></td></tr>
-      <tr><td>{{ headerform.commit_message.errors }}</td><td></td></tr>
-      <tr><td colspan="2">{{ headerform.commit_message }}</td></tr>
+      <tr>
+        <td><b>{{ headerform.header_commit_message.label }}:</b></td>
+        <td><input type="submit" name="submit" value="Update Header" onclick="return submit_header_validate();"></td>
+      </tr>
+      <tr><td>{{ headerform.header_commit_message.errors }}</td><td></td></tr>
+      <tr><td colspan="2">{{ headerform.header_commit_message }}</td></tr>
     </table>
   </form>
 </div>
