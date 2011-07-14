@@ -247,6 +247,9 @@ def input(request):
             else:
                 error_message += "Checksum generation failed...<br>"
 
+            # Commit the whole thing to version control
+            recorddata.commit("Created new record from form.")
+
             if error_message == '':
                 return HttpResponseRedirect('/barcode/' + str(recordid) + '/detail/')
 

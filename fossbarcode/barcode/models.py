@@ -8,6 +8,8 @@ import shutil
 import pickle
 import time
 import hashlib
+from dulwich.repo import Repo
+from dulwich.objects import parse_timezone
 
 # Custom exceptions.
 class FileDataMixinCreateError(StandardError):
@@ -96,6 +98,7 @@ class FileDataMixin:
             self.__dict__.update(read_from)
 
     def write_to_fn(self):
+        self.set_master_class()
         self.set_data_path()
         self.set_data_fn()
 
@@ -104,12 +107,15 @@ class FileDataMixin:
             if key in self._file_fields:
                 to_write[key] = self.__dict__[key]
 
-        if not os.path.exists(self._file_path):
-            os.makedirs(self._file_path)
         path = os.path.join(self._file_path, self._file_name)
+        new_file = os.path.exists(path)
         f = open(path, "w")
         pickle.dump(to_write, f)
         f.close()
+        if new_file:
+            self._master_class.register_new_file(self._file_name)
+        else:
+            self._master_class.register_modified_file(self._file_name)
 
 # This mixin class actually manages the files being created by the
 # FileDataMixin class.  Whichever model ends up being the "master"
@@ -118,9 +124,13 @@ class FileDataMixin:
 # commits and history.
 class FileDataDirMixin:
     _subdirs = None
+    current_changes = []
 
     def file_path(self):
         return os.path.join(settings.USERDATA_ROOT, str(self.id))
+
+    def get_repo(self):
+        return Repo(self.file_path())
 
     def setup_directory(self):
         file_path = self.file_path()
@@ -134,23 +144,54 @@ class FileDataDirMixin:
                 if os.path.exists(file_path):
                     shutil.rmtree(file_path)
                 return False
+
+            repo = Repo.init(file_path)
+
         return True
 
     def remove_directory(self):
         shutil.rmtree(self.file_path())
 
+    def _add_blob_from_file(self, subpath):
+        self.current_changes.append(subpath)
+
     def new_file_from_existing(self, orig_path, subdir=None):
         if subdir:
             dest_path = os.path.join(self.file_path(), subdir)
+            dest_subpath = os.path.join(subdir, os.path.basename(orig_path))
         else:
             dest_path = self.file_path()
+            dest_subpath = os.path.basename(orig_path)
         shutil.copy(orig_path, dest_path)
 
-    def register_new_file(self, subpath):
-        pass
+        self._add_blob_from_file(dest_subpath)
 
-    def commit(self):
-        pass
+    def register_new_file(self, subpath):
+        self._add_blob_from_file(subpath)
+
+    def register_modified_file(self, subpath):
+        self._add_blob_from_file(subpath)
+
+    def commit(self, commit_msg):
+        if not self.current_changes:
+            return False
+
+        # FIXME: get real values for these.
+        author = "FOSS Barcode <foss-barcode@linuxfoundation.org>"
+        tz = parse_timezone('-0400')[0]
+
+        repo = self.get_repo()
+        try:
+            parent_commit = repo.commit(repo.head())
+        except KeyError:
+            parent_commit = None
+
+        repo.stage(self.current_changes)
+        commit_id = repo.do_commit(commit_msg, committer=author,
+                                   commit_timezone=tz, encoding="UTF-8")
+
+        self.current_changes = []
+        return True
 
 class Product_Record(models.Model, FileDataDirMixin):
     _subdirs = ["spdx_files", "patches"]
