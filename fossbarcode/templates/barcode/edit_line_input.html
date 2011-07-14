@@ -4,31 +4,114 @@
   <!-- form needs to be inside the div -->
   <form id="itemform" method="post" action="" enctype="multipart/form-data">
     <h3>Edit Line Item, id# <span id="line_item_no">N</span>:</h3>
-    <table>
-      <tr><td><b>{{ itemform.foss_component.label }}:</b></td><td>{{ itemform.foss_component }}</td></tr>
-      <tr><td>{{ itemform.foss_component.errors }}</td><td></td></tr>
-      <tr><td><b>{{ itemform.foss_version.label }}:</b></td><td>{{ itemform.foss_version }}</td></tr>
-      <tr><td>{{ itemform.foss_version.errors }}</td><td></td></tr>
-      <tr><td><b>{{ itemform.foss_copyright.label }}:</b></td><td>{{ itemform.foss_copyright }}</td></tr>
-      <tr><td>{{ itemform.foss_copyright.errors }}</td><td></td></tr>
-      <tr><td><b>{{ itemform.foss_attribution.label }}:</b></td><td>{{ itemform.foss_attribution }}</td></tr>
-      <tr><td>{{ itemform.foss_attributions.errors }}</td><td></td></tr>
-      <tr><td><b>{{ itemform.foss_license.label }}:</b></td><td>{{ itemform.foss_license }}</td></tr>
-      <tr><td>{{ itemform.foss_license.errors }}</td><td></td></tr>
-      <tr><td><b>{{ itemform.foss_license_url.label }}:</b></td><td>{{ itemform.foss_license_url }}</td></tr>
-      <tr><td>{{ itemform.foss_license_url.errors }}</td><td></td></tr>
-      <tr><td><b>{{ itemform.foss_url.label }}:</b></td><td>{{ itemform.foss_url }}</td></tr>
-      <tr><td>{{ itemform.foss_url.errors }}</td><td></td></tr>
-      <tr><td><b>{% autoescape off %}{{ itemform.foss_spdx.label }}{% endautoescape %}:</b></td><td>{{ itemform.foss_spdx }}</td></tr>
-      <tr><td><b>{{ itemform.foss_patches.label }}:</b></td><td>{{ itemform.foss_patches }}</td></tr>
+    <!-- usual "container" stype wasn't working here, use containerm -->
+    <div class="containerm" id="modal_entry_form">
+     <table width="100%">
       <tr>
+        <td><b>{{ itemform.foss_component.label }}:</b></td>
         <td></td>
-        <td><input type="button" name="submit" value="Update Item" onclick="line_validate_change();"></td>
+        <td>{{ itemform.foss_component }}</td>
       </tr>
-    </table>
-    <!-- so the back end knows which record to update -->
-    <input type="hidden" name="foss_record_id" id="foss_record_id" value="">
+      <tr>
+        <td colspan="3">{{ itemform.foss_component.errors }}</td>
+      </tr>
+      <tr>
+        <td><b>{{ itemform.foss_version.label }}:</b></td>
+        <td></td>
+        <td>{{ itemform.foss_version }}</td>
+        </tr>
+      <tr>
+        <td colspan="3">{{ itemform.foss_version.errors }}</td>
+      </tr>
+      <tr>
+        <td><b>{{ itemform.foss_copyright.label }}:</b></td>
+        <td></td>
+        <td>{{ itemform.foss_copyright }}</td>
+      </tr>
+      <tr>
+        <td colspan="3">{{ itemform.foss_copyright.errors }}</td>
+      </tr>
+      <tr>
+        <td><b>{{ itemform.foss_attribution.label }}:</b></td>
+        <td></td>
+        <td>{{ itemform.foss_attribution }}</td>
+      </tr>
+      <tr>
+        <td colspan="3">{{ itemform.foss_attributions.errors }}</td>
+      </tr>
+      <tr>
+        <td><b>{{ itemform.foss_license.label }}:</b></td>
+        <td></td>
+        <td>{{ itemform.foss_license }}</td>
+      </tr>
+      <tr>
+        <td colspan="3">{{ itemform.foss_license.errors }}</td>
+      </tr>
+      <tr>
+        <td><b>{{ itemform.foss_license_url.label }}:</b></td>
+        <td></td>
+        <td>{{ itemform.foss_license_url }}</td>
+      </tr>
+      <tr>
+        <td colspan="3">{{ itemform.foss_license_url.errors }}</td>
+      </tr>
+      <tr>
+        <td><b>{{ itemform.foss_url.label }}:</b></td>
+        <td></td>
+        <td>{{ itemform.foss_url }}</td>
+      </tr>
+      <tr>
+        <td colspan="3">{{ itemform.foss_url.errors }}</td>
+      </tr>
+      <tr>
+        <td><b>{% autoescape off %}{{ itemform.foss_spdx.label }}{% endautoescape %}:</b></td>
+        <td><input type="button" name="select_spdx" value="Select" 
+                   title="Open a File/Directory Selector" 
+                   onclick="toggle_visibility('target_select_modal');set_destination('foss_spdx_m');toggle_enabled('select_patch');"></td>
+        <td>{{ itemform.foss_spdx }}</td>
+      </tr>
+      <tr>
+        <td valign="top"><b>{{ itemform.foss_patches.label }}:</b></td>
+        <td valign="top"><input type="button" name="select_patch" value="Select"
+                                title="Open a File/Directory Selector" 
+                                onclick="toggle_visibility('target_select_modal');set_destination('foss_patches_m');toggle_enabled('select_spdx');"></td>
+        <td rowspan="2">{{ itemform.foss_patches }}</td>
+      </tr>
+     </table>
+    </div>
+    <div class="containerm" id="target_select_modal" style="display: none;">
+	    <div id="targetm" class="browser"></div> 
+    </div>
+    <div class="commit_table">
+       <table width="100%">
+          <tr>
+            <td align="center"><input type="button" name="submit" value="Update Item" onclick="line_validate_change();"></td>
+          </tr>
+        </table>       
+        <!-- so the back end knows which record to update -->
+        <input type="hidden" name="foss_record_id" id="foss_record_id" value="">
+    </div>
   </form>
 </div>
+{% endblock %}
+{% block scripts %}
+<script language="JavaScript">
+// we load one of these for the main page, need "targetm" for the modal dialog
+    $(document).ready( function() {
+        $('#targetm').fileTree({
+            root: '/',
+            script: '/barcode/dirlist/',
+            loadMessage: 'waiting to load'
+            }, function(file) {
+                filenametoentry(file);
+        });
+    });
+    // no manual entry for spdx_files, patches
+    document.getElementById('id_m_foss_spdx').setAttribute('readonly', 'true');
+    document.getElementById('id_m_foss_patches').setAttribute('readonly', 'true');
+    // name clashes with the main form
+    document.getElementById('id_m_foss_spdx').setAttribute('name', 'foss_spdx_m');
+    document.getElementById('id_m_foss_patches').setAttribute('name', 'foss_patches_m');
+</script>
 {% endblock %}
 

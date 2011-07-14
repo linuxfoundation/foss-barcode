@@ -33,4 +33,6 @@
 #simplemodal-content table {color: #bbb; font: x-small/1.5em Georgia,Serif; font-size: small;}
 /* and we lose our "red" class in these iframes */
 #simplemodal-content .red {color: red;}
-
+/* filetree text gets greyed out by #simplemodal-container */
+#target.browser a {color:#333;}
+#targetm.browser a {color:#333;}

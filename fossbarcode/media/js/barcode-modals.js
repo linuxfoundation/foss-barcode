@@ -49,9 +49,9 @@ jQuery(function ($) {
             line_edit_fill(row, record);       
 		    $('#line-item-modal-content').modal({
                 containerCss:{
-                    height:450,
+                    height:520,
                     padding:0,
-                    width:700
+                    width:850
                 }
             });
         } else {
