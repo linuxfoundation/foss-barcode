@@ -82,10 +82,22 @@ def detail(request, record_id):
                                                                  email = request.POST.get('email', ''),
                                                                  record_date = str(datetime.datetime.now()))
 
-                # FIXME - compute the new checksum, compare with the old and update if needed
+                # compute the new checksum, compare with the old and update if needed
+                pr = Product_Record.objects.get(id = record_id)
+                checksum = pr.checksum
+                new_checksum = pr.calc_checksum()
+                if checksum != new_checksum:
+                    pr.checksum = new_checksum
+                    pr.save()
+                    result = pr.checksum_to_barcode()
+                else: 
+                    # QR+ code changes with any change (record_date)
+                    if pr.codetype == 'qr+':                
+                        result = pr.checksum_to_barcode()              
+                  
+                # commit changes to version control
+                pr.commit(request.POST.get('header_commit_message', ''))
 
-                # FIXME - do something interesting with request.POST.get('header_commit_message', '')
- 
                 return HttpResponseRedirect('/barcode/' + record_id + '/detail/')
 
             else:
@@ -106,14 +118,22 @@ def detail(request, record_id):
                                            spdx_file = request.POST.get('foss_spdx', ''))
                 
                 fossdata.save()
+
                 # FIXME do we need to save new SPDXs now?
 
                 # FIXME update/save patches
 
                 # update the master record "last updated"         
                 Product_Record.objects.filter(id = record_id).update(record_date = str(datetime.datetime.now()))
+                
+                pr = Product_Record.objects.get(id = record_id)
 
-                # FIXME - do something interesting with request.POST.get('item_commit_message', '')
+                # QR+ code changes with any change (record_date, components)
+                if pr.codetype == 'qr+':                
+                    result = pr.checksum_to_barcode()              
+
+                # commit changes to version control
+                pr.commit(request.POST.get('item_commit_message', ''))
 
                 return HttpResponseRedirect('/barcode/' + record_id + '/detail/')
 
@@ -175,19 +195,14 @@ def input(request):
     foss_spdxs = ''
     foss_patches = ''
     component_error = ''
-    codetype = 'barcode'
     needs_setup = 0
+
     # we don't do anything with this content, just used to format the modal popup
     # because it's also a subset of Recordform, change out the id string id_foo -> id_m_foo
     itemform = ItemForm(auto_id='id_m_%s') # An unbound form
 
     if request.method == 'POST': # If the form has been submitted...
         recordform = RecordForm(request.POST) # A form bound to the POST data      
-
-        # barcode or qrcode?
-        do_qr = request.POST.get('submit_qrcode', '')
-        if do_qr != "":
-            codetype = 'qrcode'
  
         # we need these whether it's valid or not to repopulate on a bad submit        
         foss_components = request.POST.get('foss_components', '')
@@ -214,6 +229,13 @@ def input(request):
         if recordform.is_valid() and component_error == '': # All validation rules pass
             recorddata = recordform.save(commit=False)       
             recorddata.save()
+ 
+            # barcode or qrcode or...?
+            do_128 = request.POST.get('submit_barcode', '')
+            if do_128 != "":
+                recorddate.codetype = '128'
+                recorddata.save()
+ 
             recordid = recorddata.id
             data_dest = recorddata.file_path()
             if not recorddata.setup_directory():
@@ -274,7 +296,7 @@ def input(request):
             if checksum:
                 recorddata.checksum = checksum
                 recorddata.save()
-                result = recorddata.checksum_to_barcode(codetype)
+                result = recorddata.checksum_to_barcode()
                 if result:
                     error_message += "Barcode generation failed...<br>"
             else:
@@ -286,9 +308,11 @@ def input(request):
             if error_message == '':
                 return HttpResponseRedirect('/barcode/' + str(recordid) + '/detail/')
 
+        else:
+            error_message = recordform.errors
     else:
         recordform = RecordForm() # An unbound form
-
+        
         # check if the user has done basic setup
         settings_done = System_Settings.objects.filter(user_updated = True).count()
         if (settings_done) == 0:

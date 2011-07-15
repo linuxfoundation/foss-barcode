@@ -201,10 +201,16 @@ class Product_Record(models.Model, FileDataDirMixin):
     version = models.CharField('Product Version', max_length=20)
     release = models.CharField('Product Release', max_length=20)
     checksum = models.CharField('Checksum', max_length=200, blank=True)
+    # FIXME - we need a method to handle "all" if we use it, this isn't exposed to the user right now
+    codetype = models.CharField('Code Type', max_length=3, default='qr+', 
+                    choices=(('qt+', 'detailed QR code'), ('qr', 'basic QR code'), 
+                             ('128', 'code 128 1D barcode'), ('all', 'generate all codes')))
     website = models.CharField('Company Website', max_length=200)
     record_date = models.DateTimeField('Last Updated', auto_now=True)
     contact = models.CharField('Compliance Contact Name (optional)', max_length=200, blank=True)
     email = models.CharField('Compliance Contact Email', max_length=200)
+    # for future fine tuning of how things can be changed
+    released = models.BooleanField('Released to Production', default=False)
 
     def __unicode__(self):
         return self.product
@@ -224,7 +230,7 @@ class Product_Record(models.Model, FileDataDirMixin):
         return checksum
 
     # create eps and png files from a checksum
-    def checksum_to_barcode(self, codetype):
+    def checksum_to_barcode(self):
         import Image
 
         if not self.checksum:
@@ -239,10 +245,16 @@ class Product_Record(models.Model, FileDataDirMixin):
         png_file = os.path.join(file_path, png_filename)
         foss_file = os.path.join(settings.STATIC_DOC_ROOT, "images/foss.png")
 
-        if codetype == "barcode":
-            result = os.system("barcode -b " + self.checksum + " -e 128 -m '0,0' -E > " + ps_file)
+        if self.codetype == "128":
+            result = os.system("barcode -b " + self.checksum + " -e 128 -m '0,0' -E > " + ps_file)        
         else:
-            mecard = self.record_to_mecard()
+            if self.codetype == "qr":
+                # basic qr
+                mecard = ""
+            else:
+                # qr+ with details
+                mecard = self.record_to_mecard()
+
             result = os.system("qrencode -v 6 -l Q -m 0 -o " + png_file + " " + mecard)
             if result == 0:
                 # overlay the foss.png image for branding
@@ -258,7 +270,7 @@ class Product_Record(models.Model, FileDataDirMixin):
             # image conversion tries to use root's settings, if started as root
             os.putenv('TMP', '/tmp')
             os.putenv('TMPDIR', '/tmp')
-            if codetype == "barcode":
+            if self.codetype == "128":
                 result = os.system("pstopnm -xsize 500 -portrait -stdout " + ps_file + " | pnmtopng > " + png_file)
             else:
                 result = os.system("sam2p " + png_file + " PS: " + ps_file)
@@ -280,6 +292,7 @@ class Product_Record(models.Model, FileDataDirMixin):
 
         mecard = "MECARD:N:" + self.company + ";URL:" + self.website + ";EMAIL:" + self.email
         mecard += ";NOTE:" + self.product + ", Version: " + self.version + ", Release: " + self.release
+        mecard += ", Updated: " + self.record_date.strftime('%Y-%m-%d')
         # FOSS BoM
         has_foss = FOSS_Components.objects.filter(brecord = self).count()
         if has_foss:
@@ -347,6 +360,8 @@ class System_Settings(models.Model):
 class RecordForm(ModelForm):   
     class Meta:
         model = Product_Record
+        # FIXME - exclude these for now until we decide how to expose them
+        exclude = ('codetype', 'released')
 
     foss_component = forms.CharField(label="Component", max_length=200, required=False)
     foss_version = forms.CharField(label="Version", max_length=20, required=False)
@@ -361,13 +376,15 @@ class RecordForm(ModelForm):
 class HeaderForm(ModelForm):
     class Meta:
         model = Product_Record
+        # FIXME - exclude these for now until we decide how to expose them
+        exclude = ('codetype', 'released')
 
     header_commit_message = forms.CharField(label="Change Comments (for change history, required)",
                                             widget=forms.Textarea(attrs={'cols': 80, 'rows': 4}))
 
 class ItemForm(RecordForm):
     class Meta(RecordForm.Meta):
-        exclude = ('company', 'product', 'version', 'release', 'checksum', 'website', 'record_date' 'contact', 'email')
+        exclude = ('company', 'product', 'version', 'release', 'checksum', 'codetype', 'website', 'record_date' 'contact', 'email', 'released')
 
     item_commit_message = forms.CharField(label="Change Comments (for change history, required)",
                                           widget=forms.Textarea(attrs={'cols': 80, 'rows': 4}))
