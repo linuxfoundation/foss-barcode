@@ -42,6 +42,10 @@ class FileDataMixin:
     # which then can be accessed via self.foo.
     _file_fields = None
 
+    # This should be set to a revision ID from the version control
+    # system, or None to use the current head revision.
+    _revision = None
+
     # These are calculated based on a number of things, including
     # the _master_class_path setting above.
     _master_class = None
@@ -73,6 +77,9 @@ class FileDataMixin:
                 fn = fn_base % filenum
             self._file_name = fn
 
+    def set_revision(self, revision):
+        self._revision = revision
+
     def sanitize_init(self, kwargs):
         new_kwargs = kwargs.copy()
         for key in kwargs:
@@ -90,11 +97,19 @@ class FileDataMixin:
             if field not in self.__dict__:
                 self.__dict__[field] = self._file_fields[field][1]
 
-        path = os.path.join(self._file_path, self._file_name)
-        if os.path.exists(path):
-            f = open(path)
-            read_from = pickle.load(f)
-            f.close()
+        repo = self.brecord.get_repo()
+        not_found = False
+        try:
+            if not self._revision:
+                revision = repo.head()
+            else:
+                revision = self._revision
+            tree = repo.tree(repo.commit(revision).tree)
+            blob = repo.get_blob(tree[self._file_name][1])
+        except KeyError:
+            not_found = True
+        if not not_found:
+            read_from = pickle.loads(blob.data)
             self.__dict__.update(read_from)
 
     def write_to_fn(self):
@@ -313,9 +328,15 @@ class FOSS_Components(models.Model, FileDataMixin):
 
     def __init__(self, *args, **kwargs):
         sanitized_kwargs = self.sanitize_init(kwargs)
+        if "revision" in sanitized_kwargs:
+            revision = sanitized_kwargs["revision"]
+            del sanitized_kwargs["revision"]
+        else:
+            revision = None
         super(FOSS_Components, self).__init__(*args, **sanitized_kwargs)
         if self.data_file_name:
             self._file_name = self.data_file_name
+        self.set_revision(revision)
         self.load_from_fn()
         if not self.data_file_name:
             self.data_file_name = self._file_name

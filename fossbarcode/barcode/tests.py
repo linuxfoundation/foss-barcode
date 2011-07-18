@@ -46,6 +46,10 @@ class BarCodeHarness(TestCase):
         self.assertEqual(self.product.company, "Test Company")
         self.assertTrue(os.path.exists(self.source_path))
 
+        self.addComponent()
+        self.assertIsNotNone(self.component)
+        self.assertEqual(self.component.license, "Test License 1.0")
+
 class TestFileDataDirMixin(BarCodeHarness):
     def testSetupDirectoryNew(self):
         product_path = os.path.join(settings.USERDATA_ROOT,
@@ -58,6 +62,30 @@ class TestFileDataDirMixin(BarCodeHarness):
 
         repo = self.product.get_repo()
         self.assertIsNotNone(repo)
+
+    def testCommit(self):
+        self.addComponent()
+
+        self.component.license = "Test License 2.0"
+        self.component.save()
+        self.product.commit("Change component license.")
+
+        repo = self.product.get_repo()
+        self.assertEqual(len(repo.revision_history(repo.head())), 2)
+
+    def testMultipleCommits(self):
+        self.addComponent()
+        self.component.license = "Test License 2.0"
+        self.component.save()
+        self.product.commit("First change to component license.")
+        self.component.license = "Test License 3.0"
+        self.component.save()
+        self.product.commit("Second change to component license.")
+
+        repo = self.product.get_repo()
+        self.assertEqual(len(repo.revision_history(repo.head())), 3)
+
+        self.assertTrue(False, "not done with this test yet")
 
     def testNewFileFromExisting(self):
         dest_path = os.path.join(self.product.file_path(),
@@ -102,6 +130,19 @@ class TestFileDataMixin(BarCodeHarness):
         self.assertEqual(loaded_component.package, self.component.package)
         self.assertEqual(loaded_component.license, self.component.license)
         self.assertEqual(loaded_component.url, self.component.url)
+
+    def testLoadObjectRevision(self):
+        self.addComponent()
+        self.component.license = "Test License 2.0"
+        self.component.save()
+        self.product.commit("Change component license.")
+
+        repo = self.product.get_repo()
+        commit_id = repo.revision_history(repo.head())[-1]
+        old_component = FOSS_Components.objects.get(id=self.component.id,
+                                                    revision=commit_id)
+        self.assertEqual(old_component.id, self.component.id)
+        self.assertEqual(old_component.license, "Test License 1.0")
 
 class TestProductRecord(BarCodeHarness):
     def testChecksum(self):
