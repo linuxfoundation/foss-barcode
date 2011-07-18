@@ -186,7 +186,7 @@ class FileDataDirMixin:
         except KeyError:
             parent_commit = None
 
-        repo.stage(self.current_changes)
+        repo.stage([str(x) for x in self.current_changes])
         commit_id = repo.do_commit(commit_msg, committer=author,
                                    commit_timezone=tz, encoding="UTF-8")
 
