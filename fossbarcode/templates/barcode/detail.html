@@ -163,7 +163,17 @@
                 var dest = "id_" + f;
                 var src = f + row;
                 if (document.getElementById(src).children.length > 0) {
-                    document.getElementById(dest).value = document.getElementById(src).children[0].innerHTML;
+                    var items = document.getElementById(src).children.length;
+                    // clear anything from a previous call
+                    document.getElementById(dest).value = '';
+                    // patches are a set of values
+                    if (f == "foss_patches") {
+                        for (i = 0; i < items; i = i+2) {
+                            document.getElementById(dest).value += document.getElementById(src).children[i].innerHTML + "\n";
+                        }
+                    } else {
+                        document.getElementById(dest).value += document.getElementById(src).children[0].innerHTML
+                    }
                 } else {
                     document.getElementById(dest).value = document.getElementById(src).innerHTML;
                 }

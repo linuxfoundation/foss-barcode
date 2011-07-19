@@ -75,16 +75,23 @@
       </tr>
       <tr>
         <td><b>{% autoescape off %}{{ itemform.foss_spdx.label }}{% endautoescape %}:</b></td>
-        <td><input type="button" name="select_spdx" value="Select" 
+        <td>
+            <input type="button" name="select_spdx" value="Select" 
                    title="Open a File/Directory Selector" 
-                   onclick="toggle_visibility('target_select_modal');set_destination('foss_spdx');toggle_enabled('select_patch');"></td>
+                   onclick="toggle_visibility('target_select_modal');set_destination('foss_spdx');toggle_enabled('select_patch');">
+            <a href="#" id="clear spdx"><img src="/site_media/images/edit-delete.png" 
+                        title="Clear SPDX" onclick="clear_field('spdx')";></a>
+        </td>
         <td>{{ itemform.foss_spdx }}</td>
       </tr>
       <tr>
         <td valign="top"><b>{{ itemform.foss_patches.label }}:</b></td>
-        <td valign="top"><input type="button" name="select_patch" value="Select"
-                                title="Open a File/Directory Selector" 
-                                onclick="toggle_visibility('target_select_modal');set_destination('foss_patches');toggle_enabled('select_spdx');"></td>
+        <td valign="top">
+            <input type="button" name="select_patch" value="Select"title="Open a File/Directory Selector" 
+                   onclick="toggle_visibility('target_select_modal');set_destination('foss_patches');toggle_enabled('select_spdx');">
+            <a href="#" id="clear patches"><img src="/site_media/images/edit-delete.png" 
+                        title="Clear Patches" onclick="clear_field('patches');"></a>
+        </td>
         <td rowspan="2">{{ itemform.foss_patches }}</td>
       </tr>
       <tr>
@@ -122,6 +129,10 @@
     // no manual entry for spdx_files, patches
     document.getElementById('id_foss_spdx').setAttribute('readonly', 'true');
     document.getElementById('id_foss_patches').setAttribute('readonly', 'true');
+    function clear_field(fname) {
+        var to_clear = 'id_foss_' + fname;
+        document.getElementById(to_clear).value = '';
+    }
 </script>
 {% endblock %}
 
