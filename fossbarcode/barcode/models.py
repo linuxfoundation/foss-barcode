@@ -172,6 +172,10 @@ class FileDataDirMixin:
     def register_modified_file(self, subpath):
         self._add_blob_from_file(subpath)
 
+    def delete_file(self, subpath):
+        os.unlink(os.path.join(self.file_path(), subpath))
+        self.current_changes.append(subpath)
+
     def commit(self, commit_msg):
         if not self.current_changes:
             return False
@@ -181,11 +185,6 @@ class FileDataDirMixin:
         tz = parse_timezone('-0400')[0]
 
         repo = self.get_repo()
-        try:
-            parent_commit = repo.commit(repo.head())
-        except KeyError:
-            parent_commit = None
-
         repo.stage([str(x) for x in self.current_changes])
         commit_id = repo.do_commit(commit_msg, committer=author,
                                    commit_timezone=tz, encoding="UTF-8")
