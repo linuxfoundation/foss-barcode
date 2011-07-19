@@ -119,17 +119,16 @@ def detail(request, record_id):
 
                 if (mode == "Update Item"):
                     # line item data is in a file, so we alter/save rather than update
-                    fossdata = FOSS_Components(brecord_id = record_id, id = foss_id, 
-                                           package = request.POST.get('foss_component', ''),
-                                           version = request.POST.get('foss_version', ''),
-                                           copyright = request.POST.get('foss_copyright', ''), 
-                                           attribution = request.POST.get('foss_attribution', ''),
-                                           license = request.POST.get('foss_license', ''), 
-                                           license_url = request.POST.get('foss_license_url', ''), 
-                                           url = request.POST.get('foss_url', ''), 
-                                           spdx_file = os.path.basename(new_spdx))
+                    fd.package = request.POST.get('foss_component', '')
+                    fd.version = request.POST.get('foss_version', '')
+                    fd.copyright = request.POST.get('foss_copyright', '')
+                    fd.attribution = request.POST.get('foss_attribution', '')
+                    fd.license = request.POST.get('foss_license', '')
+                    fd.license_url = request.POST.get('foss_license_url', '')
+                    fd.url = request.POST.get('foss_url', '')
+                    fd.spdx_file = os.path.basename(new_spdx)
 
-                    fossdata.save()
+                    fd.save()
                 
                 if (mode == "Add Item"):
                     fossdata = FOSS_Components(brecord_id = record_id, 
