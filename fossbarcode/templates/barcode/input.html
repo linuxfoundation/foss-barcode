@@ -341,7 +341,7 @@
         // all text fields, just loop through input object
         for(var f in bom_fields){
             var td = document.createElement("TD");
-            td.setAttribute("https://bugs.mageia.org/show_bug.cgi?id=1973valign", "top");
+            td.setAttribute("valign", "top");
             td.setAttribute("id", f + cvalue);
             if (f == sfield)
                 td.setAttribute("colspan", "2");
@@ -469,9 +469,8 @@
             } else {
                 var record = xmlhttp.responseText;
                 var answer = confirm("There appears to already be an entry with that company, product, version, release. Would you care to edit that entry instead?")
-	            if (answer){
+	            if (answer)
 		            window.location = "/barcode/" + record + "/detail/";
-	            }
             }
         }
     }
