@@ -155,14 +155,6 @@ class FileDataDirMixin:
     def _add_blob_from_file(self, subpath):
         self.current_changes.append(subpath)
 
-    def remove_file(self, path, subdir=None):
-        # FIXME: deprecate this.
-        if subdir:
-            dest_subpath = os.path.join(subdir, os.path.basename(path))
-        else:
-            dest_subpath = path
-        self.delete_file(dest_path)
-
     def new_file_from_existing(self, orig_path, subdir=None):
         if subdir:
             dest_path = os.path.join(self.file_path(), subdir)

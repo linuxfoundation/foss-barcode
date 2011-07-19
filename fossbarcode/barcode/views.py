@@ -92,7 +92,7 @@ def detail(request, record_id):
                     pr.save()
                     result = pr.checksum_to_barcode()
                     for extension in (".png", ".ps"):
-                        pr.remove_file(checksum + extension)
+                        pr.delete_file(checksum + extension)
                     
                 else: 
                     # QR+ code changes with any change (record_date)
@@ -147,11 +147,9 @@ def detail(request, record_id):
                 pr = Product_Record.objects.get(id = record_id)
 
                 if (mode == "Delete Item"):
-                    foss_id = request.POST.get('foss_record_id', '')
-                    fossdata = FOSS_Components(brecord_id = record_id, id = foss_id)
-                    fossdata.delete()
+                    fd.delete()
                     # FIXME - should this happen automagically over in models.py?
-                    pr.remove_file(pickle_file)
+                    pr.delete_file(pickle_file)
 
                 # save and/or delete SPDX file
                 if new_spdx != '':
@@ -161,7 +159,7 @@ def detail(request, record_id):
                         error_message += "Failed to copy spdx file:" + new_spdx + "<br>"
 
                 if old_spdx != new_spdx and old_spdx != '':
-                    pr.remove_file(old_spdx, "spdx_files")
+                    pr.delete_file("spdx_files/" + old_spdx)
 
                 # update/save/del patches
                 patch_files = request.POST.get('foss_patches', '')
@@ -178,7 +176,7 @@ def detail(request, record_id):
                     # remove patches no longer listed 
                     old_patches = Patch_Files.objects.extra(where=['frecord_id = ' + foss_id + ' AND path NOT IN (' + patch_list + ')'])
                     for p in old_patches:
-                        pr.remove_file(p.path, "patches")
+                        pr.delete_file("patches/" + p.path)
                     old_patches.delete()
 
                     # and add any new ones
@@ -196,7 +194,7 @@ def detail(request, record_id):
                     # no patches specified, remove any that might be present
                     patchdata = Patch_Files(frecord_id = foss_id)
                     for patch in patchdata:
-                        pr.remove_file(patch.path, "patch_files")
+                        pr.delete_file("patches/" + patch.path)
                     patchdata.delete()
 
                 # update the master record "last updated"         
