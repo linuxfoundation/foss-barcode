@@ -20,6 +20,7 @@
     {% endautoescape %}
 {% endif %}
 
+{% if enable_edits %}
   <div id="print">
   <br>
   <table width = "100%" border = "1">
@@ -104,12 +105,15 @@
   {% endfor %}
   </table>
   </div>
+  <div id="noprint">
   <!-- this is the modal popup content for editing the header data -->
   {% include "barcode/edit_header.html" %}
   <!-- this is the modal popup content for viewing the history data -->
   {% include "barcode/history.html" %}
   <!-- this is the modal popup content for editing/adding the line item data -->
   {% include "barcode/edit_line.html" %}
+  </div>
+{% endif %}
 {% endblock %}
 
 {% block scripts %}
@@ -163,7 +167,17 @@
                 var dest = "id_" + f;
                 var src = f + row;
                 if (document.getElementById(src).children.length > 0) {
-                    document.getElementById(dest).value = document.getElementById(src).children[0].innerHTML;
+                    var items = document.getElementById(src).children.length;
+                    // clear anything from a previous call
+                    document.getElementById(dest).value = '';
+                    // patches are a set of values
+                    if (f == "foss_patches") {
+                        for (i = 0; i < items; i = i+2) {
+                            document.getElementById(dest).value += document.getElementById(src).children[i].innerHTML + "\n";
+                        }
+                    } else {
+                        document.getElementById(dest).value += document.getElementById(src).children[0].innerHTML
+                    }
                 } else {
                     document.getElementById(dest).value = document.getElementById(src).innerHTML;
                 }

@@ -61,10 +61,16 @@ def sysconfig(request):
 # record detail page - this is a multiform too with the edit additions
 def detail(request, record_id):
     error_message = ''
+    old_spdx = ''
+    enable_edits = True
     foss = render_detail(record_id)
     record_list = Product_Record.objects.filter(id = record_id)
-    record = record_list[0]
-    old_spdx = ''
+    if record_list.count() != 0:
+        record = record_list[0]
+    else:
+        record = ''
+        error_message = "No data for record " + record_id
+        enable_edits = False
 
     if request.method == 'POST': # If the form has been submitted...
         mode = urllib.unquote(request.POST.get('submit'))
@@ -92,7 +98,10 @@ def detail(request, record_id):
                     pr.save()
                     result = pr.checksum_to_barcode()
                     for extension in (".png", ".ps"):
-                        pr.remove_file(checksum + extension)
+                        try:
+                            pr.delete_file(checksum + extension)
+                        except:
+                            error_message += "Failed to delete: " + checksum + extension + "<br>"
                     
                 else: 
                     # QR+ code changes with any change (record_date)
@@ -115,21 +124,19 @@ def detail(request, record_id):
                     foss_id = request.POST.get('foss_record_id', '')
                     fd = FOSS_Components.objects.get(brecord = record_id, id = foss_id)
                     old_spdx = fd.spdx_file
-                    pickle_file = fd.data_file_name
 
                 if (mode == "Update Item"):
                     # line item data is in a file, so we alter/save rather than update
-                    fossdata = FOSS_Components(brecord_id = record_id, id = foss_id, 
-                                           package = request.POST.get('foss_component', ''),
-                                           version = request.POST.get('foss_version', ''),
-                                           copyright = request.POST.get('foss_copyright', ''), 
-                                           attribution = request.POST.get('foss_attribution', ''),
-                                           license = request.POST.get('foss_license', ''), 
-                                           license_url = request.POST.get('foss_license_url', ''), 
-                                           url = request.POST.get('foss_url', ''), 
-                                           spdx_file = os.path.basename(new_spdx))
+                    fd.package = request.POST.get('foss_component', '')
+                    fd.version = request.POST.get('foss_version', '')
+                    fd.copyright = request.POST.get('foss_copyright', '')
+                    fd.attribution = request.POST.get('foss_attribution', '')
+                    fd.license = request.POST.get('foss_license', '')
+                    fd.license_url = request.POST.get('foss_license_url', '')
+                    fd.url = request.POST.get('foss_url', '')
+                    fd.spdx_file = os.path.basename(new_spdx)
 
-                    fossdata.save()
+                    fd.save()
                 
                 if (mode == "Add Item"):
                     fossdata = FOSS_Components(brecord_id = record_id, 
@@ -148,57 +155,64 @@ def detail(request, record_id):
                 pr = Product_Record.objects.get(id = record_id)
 
                 if (mode == "Delete Item"):
-                    foss_id = request.POST.get('foss_record_id', '')
-                    fossdata = FOSS_Components(brecord_id = record_id, id = foss_id)
-                    fossdata.delete()
-                    # FIXME - should this happen automagically over in models.py?
-                    pr.remove_file(pickle_file)
+                    fd.delete()
 
-                # save and/or delete SPDX file
-                if new_spdx != '':
-                    try:
-                        pr.new_file_from_existing(new_spdx, "spdx_files")
-                    except:
-                        error_message += "Failed to copy spdx file:" + new_spdx + "<br>"
+                # save and/or delete SPDX file if there's a change
+                if old_spdx != os.path.basename(new_spdx):
+                    if new_spdx != '':
+                        try:
+                            pr.new_file_from_existing(new_spdx, "spdx_files")
+                        except:
+                            error_message += "Failed to copy spdx file:" + new_spdx + "<br>"
 
-                if old_spdx != new_spdx and old_spdx != '':
-                    pr.remove_file(old_spdx, "spdx_files")
+                    if old_spdx != '':
+                        try:
+                            pr.delete_file("spdx_files/" + old_spdx)
+                        except:
+                            error_message += "Failed to delete: " + old_spdx + "<br>"
 
                 # update/save/del patches
                 patch_files = request.POST.get('foss_patches', '')
-                print patch_files
                 if patch_files != '':
-                    patches = patch_files.split("\n")
+                    patches = patch_files.split("\r\n")
                     patch_list = ''
+                    # build a list for a query against what we have
                     for patch in patches:
-                        patch = patch[:-1]
                         if patch != '':
-                            patch_list += '"' + patch + '",'
+                            patch_list += '"' + os.path.basename(patch) + '",'
                     patch_list = patch_list[:-1]
 
                     # remove patches no longer listed 
                     old_patches = Patch_Files.objects.extra(where=['frecord_id = ' + foss_id + ' AND path NOT IN (' + patch_list + ')'])
                     for p in old_patches:
-                        pr.remove_file(p.path, "patches")
+                        try:
+                            pr.delete_file("patches/" + p.path)
+                        except:
+                            error_message += "Failed to delete: " + p.path + "<br>"
                     old_patches.delete()
 
                     # and add any new ones
                     for patch in patches:
-                        patch = patch[:-1]
                         if patch != '':
-                            patchdata = Patch_Files(frecord_id = foss_id, path = os.path.basename(patch))
-                            patchdata.save()
-                            try:
-                                pr.new_file_from_existing(patch, "patches")
-                            except:
-                                error_message += "Failed to copy patch file: " + str(patch) + "<br>"
+                            patch_in = Patch_Files.objects.filter(frecord = foss_id, path = os.path.basename(patch))
+                            if patch_in.count() == 0:
+                                patchdata = Patch_Files(frecord_id = foss_id, path = os.path.basename(patch))
+                                patchdata.save()
+                                try:
+                                    pr.new_file_from_existing(patch, "patches")
+                                except:
+                                    error_message += "Failed to copy patch file: " + str(patch) + "<br>"
                     
                 else:
                     # no patches specified, remove any that might be present
-                    patchdata = Patch_Files(frecord_id = foss_id)
-                    for patch in patchdata:
-                        pr.remove_file(patch.path, "patch_files")
-                    patchdata.delete()
+                    if (mode != "Add Item"):
+                        patchdata = Patch_Files.objects.filter(frecord = foss_id)
+                        for patch in patchdata:
+                            try:
+                                pr.delete_file("patches/" + patch.path)
+                            except:
+                                error_message += "Failed to delete: " + patch.path + "<br>"
+                        patchdata.delete()
 
                 # update the master record "last updated"         
                 Product_Record.objects.filter(id = record_id).update(record_date = str(datetime.datetime.now()))
@@ -213,18 +227,20 @@ def detail(request, record_id):
                 else:
                     pr.commit(request.POST.get('item_commit_message', ''))
 
-                return HttpResponseRedirect('/barcode/' + record_id + '/detail/')
+                # back to the page, with a clean slate and any error messages, we need to re-render to pickup changes
+                foss = render_detail(record_id)
+                record_list = Product_Record.objects.filter(id = record_id)
+                record = record_list[0]
 
             else:
                 error_message = "Invalid line item update data, see item dialog..."
 
-    else:
-        headerform = HeaderForm() # An unbound form
-        itemform = ItemForm() # An unbound form
+    headerform = HeaderForm() # An unbound form
+    itemform = ItemForm() # An unbound form
 
     return render_to_response('barcode/detail.html', {'record': record, 'foss': foss, 
                                                       'host_site': host_site, 'tab_results': True,
-                                                      'error_message': error_message, 
+                                                      'error_message': error_message, 'enable_edits': enable_edits,
                                                       'headerform': headerform, 'itemform': itemform })
 
 # record search page
@@ -325,7 +341,7 @@ def input(request):
             # barcode or qrcode or...?
             do_128 = request.POST.get('submit_barcode', '')
             if do_128 != "":
-                recorddate.codetype = '128'
+                recorddata.codetype = '128'
                 recorddata.save()
  
             recordid = recorddata.id
@@ -406,7 +422,7 @@ def input(request):
         # check if the user has done basic setup
         settings_done = System_Settings.objects.filter(user_updated = True).count()
         if (settings_done) == 0:
-            error_message = 'Please Configure Basic System Settings <a href="../sysconfig/">Here</a>'
+            error_message = 'Please Configure Basic System Settings <a href="/barcode/sysconfig/">Here</a>'
             needs_setup = 1
 
     return render_to_response('barcode/input.html', {

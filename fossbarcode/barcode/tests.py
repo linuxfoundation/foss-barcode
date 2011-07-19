@@ -201,3 +201,16 @@ class TestProductRecord(BarCodeHarness):
         self.product.checksum_to_barcode()
         self.assertTrue(os.path.exists(partial_path + ".ps"))
         self.assertTrue(os.path.exists(partial_path + ".png"))
+
+class TestFOSSComponents(BarCodeHarness):
+    def testDelete(self):
+        self.addComponent()
+        component_fn = self.component.data_file_name
+        self.assertTrue(os.path.exists(os.path.join(self.product.file_path(),
+                                                    component_fn)))
+
+        self.component.delete()
+        self.assertTrue(self.product.commit("Remove component."))
+
+        self.assertFalse(os.path.exists(os.path.join(self.product.file_path(),
+                                                     component_fn)))
