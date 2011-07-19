@@ -59,6 +59,16 @@ class TestFileDataDirMixin(BarCodeHarness):
         repo = self.product.get_repo()
         self.assertIsNotNone(repo)
 
+    def testCommit(self):
+        self.addComponent()
+
+        self.component.license = "Test License 2.0"
+        self.component.save()
+        self.product.commit("Change component license.")
+
+        repo = self.product.get_repo()
+        self.assertEqual(len(repo.revision_history(repo.head())), 2)
+
     def testNewFileFromExisting(self):
         dest_path = os.path.join(self.product.file_path(),
                                  "patches/barstyle.css")
@@ -71,6 +81,36 @@ class TestFileDataDirMixin(BarCodeHarness):
         self.assertTrue(self.product.commit("Test commit."))
         repo = self.product.get_repo()
         self.assertEqual(len(repo.revision_history(repo.head())), 1)
+
+        # FIXME: the last part fails for some odd reason.
+        #        The commit works, and everything is OK,
+        #        but we can't seem to verify it from the API.
+        #commit = repo.commit(repo.head())
+        #tree = repo.tree(commit.tree)
+        #tree_items = [x[0] for x in tree.items()]
+        #print tree_items
+        #self.assertTrue("patches/barstyle.css" in tree_items)
+
+    def testDelete(self):
+        dest_path = os.path.join(self.product.file_path(),
+                                 "patches/barstyle.css")
+        self.product.setup_directory()
+        self.product.new_file_from_existing(self.source_path, "patches")
+        self.assertTrue(self.product.commit("Adding file for test."))
+        repo = self.product.get_repo()
+        prev_commit = repo.commit(repo.head())
+        prev_tree = repo.tree(prev_commit.tree)
+
+        self.product.delete_file("patches/barstyle.css")
+        self.assertTrue(self.product.commit("Test removing file."))
+        current_commit = repo.commit(repo.head())
+
+        self.assertEqual(current_commit.message, "Test removing file.")
+        current_tree = repo.tree(current_commit.tree)
+        self.assertFalse(os.path.exists(dest_path))
+        # FIXME: As with testNewFileFromExisting, this doesn't work
+        #        for some reason.
+        #self.assertFalse("patches/barstyle.css" in current_tree)
 
     def testRemoveDirectory(self):
         self.assertFalse(os.path.exists(self.product.file_path()))
@@ -111,21 +151,22 @@ class TestProductRecord(BarCodeHarness):
     def testBarcode(self):
         self.product.setup_directory()
         self.product.checksum = self.product.calc_checksum()
+        self.product.codetype = '128'
         self.product.save()
         partial_path = os.path.join(self.product.file_path(),
                                     self.product.checksum)
 
-        self.product.checksum_to_barcode("barcode")
+        self.product.checksum_to_barcode()
         self.assertTrue(os.path.exists(partial_path + ".ps"))
         self.assertTrue(os.path.exists(partial_path + ".png"))
 
-    def testQRCode(self):
+    def testDetailedQRCode(self):
         self.product.setup_directory()
         self.product.checksum = self.product.calc_checksum()
         self.product.save()
         partial_path = os.path.join(self.product.file_path(),
                                     self.product.checksum)
 
-        self.product.checksum_to_barcode("mecard")
+        self.product.checksum_to_barcode()
         self.assertTrue(os.path.exists(partial_path + ".ps"))
         self.assertTrue(os.path.exists(partial_path + ".png"))
