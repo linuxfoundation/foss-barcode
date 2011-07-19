@@ -100,14 +100,11 @@ class TestFileDataDirMixin(BarCodeHarness):
         repo = self.product.get_repo()
         self.assertEqual(len(repo.revision_history(repo.head())), 1)
 
-        # FIXME: the last part fails for some odd reason.
-        #        The commit works, and everything is OK,
-        #        but we can't seem to verify it from the API.
-        #commit = repo.commit(repo.head())
-        #tree = repo.tree(commit.tree)
-        #tree_items = [x[0] for x in tree.items()]
-        #print tree_items
-        #self.assertTrue("patches/barstyle.css" in tree_items)
+        commit = repo.commit(repo.head())
+        tree = repo.tree(commit.tree)
+        self.assertTrue("patches" in tree)
+        subtree = repo.tree(tree["patches"][1])
+        self.assertTrue("barstyle.css" in subtree)
 
     def testDelete(self):
         dest_path = os.path.join(self.product.file_path(),
@@ -118,6 +115,8 @@ class TestFileDataDirMixin(BarCodeHarness):
         repo = self.product.get_repo()
         prev_commit = repo.commit(repo.head())
         prev_tree = repo.tree(prev_commit.tree)
+        self.assertTrue("patches" in prev_tree)
+        self.assertTrue("barstyle.css" in repo.tree(prev_tree["patches"][1]))
 
         self.product.delete_file("patches/barstyle.css")
         self.assertTrue(self.product.commit("Test removing file."))
@@ -126,9 +125,7 @@ class TestFileDataDirMixin(BarCodeHarness):
         self.assertEqual(current_commit.message, "Test removing file.")
         current_tree = repo.tree(current_commit.tree)
         self.assertFalse(os.path.exists(dest_path))
-        # FIXME: As with testNewFileFromExisting, this doesn't work
-        #        for some reason.
-        #self.assertFalse("patches/barstyle.css" in current_tree)
+        self.assertFalse("patches" in current_tree)
 
     def testRemoveDirectory(self):
         self.assertFalse(os.path.exists(self.product.file_path()))
