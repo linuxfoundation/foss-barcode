@@ -205,13 +205,14 @@ def detail(request, record_id):
                     
                 else:
                     # no patches specified, remove any that might be present
-                    patchdata = Patch_Files.objects.filter(frecord = foss_id)
-                    for patch in patchdata:
-                        try:
-                            pr.delete_file("patches/" + patch.path)
-                        except:
-                            error_message += "Failed to delete: " + patch.path + "<br>"
-                    patchdata.delete()
+                    if (mode != "Add Item"):
+                        patchdata = Patch_Files.objects.filter(frecord = foss_id)
+                        for patch in patchdata:
+                            try:
+                                pr.delete_file("patches/" + patch.path)
+                            except:
+                                error_message += "Failed to delete: " + patch.path + "<br>"
+                        patchdata.delete()
 
                 # update the master record "last updated"         
                 Product_Record.objects.filter(id = record_id).update(record_date = str(datetime.datetime.now()))
@@ -340,7 +341,7 @@ def input(request):
             # barcode or qrcode or...?
             do_128 = request.POST.get('submit_barcode', '')
             if do_128 != "":
-                recorddate.codetype = '128'
+                recorddata.codetype = '128'
                 recorddata.save()
  
             recordid = recorddata.id
