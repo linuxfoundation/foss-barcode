@@ -118,7 +118,6 @@ def detail(request, record_id):
                     foss_id = request.POST.get('foss_record_id', '')
                     fd = FOSS_Components.objects.get(brecord = record_id, id = foss_id)
                     old_spdx = fd.spdx_file
-                    pickle_file = fd.data_file_name
 
                 if (mode == "Update Item"):
                     # line item data is in a file, so we alter/save rather than update
@@ -151,14 +150,8 @@ def detail(request, record_id):
 
                 if (mode == "Delete Item"):
                     fd.delete()
-                    # FIXME - should this happen automagically over in models.py?
-                    try:
-                        pr.delete_file(pickle_file)
-                    except:
-                        error_message += "Failed to delete: " + pickle_file + "<br>"
 
                 # save and/or delete SPDX file if there's a change
-                print old_spdx, new_spdx
                 if old_spdx != os.path.basename(new_spdx):
                     if new_spdx != '':
                         try:
@@ -232,20 +225,11 @@ def detail(request, record_id):
                 record_list = Product_Record.objects.filter(id = record_id)
                 record = record_list[0]
 
-                headerform = HeaderForm() # An unbound form
-                itemform = ItemForm() # An unbound form
-
-                return render_to_response('barcode/detail.html', {'record': record, 'foss': foss, 
-                                                      'host_site': host_site, 'tab_results': True,
-                                                      'error_message': error_message, 
-                                                      'headerform': headerform, 'itemform': itemform })
-
             else:
                 error_message = "Invalid line item update data, see item dialog..."
 
-    else:
-        headerform = HeaderForm() # An unbound form
-        itemform = ItemForm() # An unbound form
+    headerform = HeaderForm() # An unbound form
+    itemform = ItemForm() # An unbound form
 
     return render_to_response('barcode/detail.html', {'record': record, 'foss': foss, 
                                                       'host_site': host_site, 'tab_results': True,
