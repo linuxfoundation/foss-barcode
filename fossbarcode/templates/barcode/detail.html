@@ -20,6 +20,7 @@
     {% endautoescape %}
 {% endif %}
 
+{% if enable_edits %}
   <div id="print">
   <br>
   <table width = "100%" border = "1">
@@ -110,6 +111,8 @@
   {% include "barcode/history.html" %}
   <!-- this is the modal popup content for editing/adding the line item data -->
   {% include "barcode/edit_line.html" %}
+  
+{% endif %}
 {% endblock %}
 
 {% block scripts %}

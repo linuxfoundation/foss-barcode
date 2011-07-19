@@ -61,10 +61,16 @@ def sysconfig(request):
 # record detail page - this is a multiform too with the edit additions
 def detail(request, record_id):
     error_message = ''
+    old_spdx = ''
+    enable_edits = True
     foss = render_detail(record_id)
     record_list = Product_Record.objects.filter(id = record_id)
-    record = record_list[0]
-    old_spdx = ''
+    if record_list.count() != 0:
+        record = record_list[0]
+    else:
+        record = ''
+        error_message = "No data for record " + record_id
+        enable_edits = False
 
     if request.method == 'POST': # If the form has been submitted...
         mode = urllib.unquote(request.POST.get('submit'))
@@ -233,7 +239,7 @@ def detail(request, record_id):
 
     return render_to_response('barcode/detail.html', {'record': record, 'foss': foss, 
                                                       'host_site': host_site, 'tab_results': True,
-                                                      'error_message': error_message, 
+                                                      'error_message': error_message, 'enable_edits': enable_edits,
                                                       'headerform': headerform, 'itemform': itemform })
 
 # record search page
