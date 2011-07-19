@@ -341,7 +341,7 @@ def input(request):
             # barcode or qrcode or...?
             do_128 = request.POST.get('submit_barcode', '')
             if do_128 != "":
-                recorddate.codetype = '128'
+                recorddata.codetype = '128'
                 recorddata.save()
  
             recordid = recorddata.id
