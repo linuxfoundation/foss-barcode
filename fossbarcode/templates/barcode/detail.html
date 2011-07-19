@@ -105,13 +105,14 @@
   {% endfor %}
   </table>
   </div>
+  <div id="noprint">
   <!-- this is the modal popup content for editing the header data -->
   {% include "barcode/edit_header.html" %}
   <!-- this is the modal popup content for viewing the history data -->
   {% include "barcode/history.html" %}
   <!-- this is the modal popup content for editing/adding the line item data -->
   {% include "barcode/edit_line.html" %}
-  
+  </div>
 {% endif %}
 {% endblock %}
 
