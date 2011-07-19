@@ -339,6 +339,11 @@ class FOSS_Components(models.Model, FileDataMixin):
         super(FOSS_Components, self).save(*args, **kwargs)
         self.write_to_fn()
 
+    def delete(self, *args, **kwargs):
+        if self.data_file_name:
+            self.brecord.delete_file(self.data_file_name)
+        super(FOSS_Components, self).delete(*args, **kwargs)
+
 class Patch_Files(models.Model):
     frecord = models.ForeignKey(FOSS_Components)
     path = models.CharField(max_length=400)
