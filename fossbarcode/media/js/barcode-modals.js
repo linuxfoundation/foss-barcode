@@ -59,4 +59,29 @@ jQuery(function ($) {
         }
 		return false;
 	});
+
+    // line delete modal
+    $('#line-delete-modal .basic').click(function (e) {
+        var clicked = $(this).attr("name");
+        var record = $(this).attr("id");
+        if (clicked.search("line_item") != -1 ) {
+            var row = clicked.replace("line_item", "");
+            var body_html =  '<form id="itemform" method="post" action="" enctype="multipart/form-data">' +
+                             '<h3>Delete line item ' + row + '?</h3>' +
+                             '<input type="submit" name="submit" id="delete_item" value="Delete Item">' +
+                             '<input type="hidden" name="foss_record_id" id="foss_record_id" value="' + record + '">' +
+                             '</form>'
+            $.modal(body_html, {
+                containerCss:{
+                    height:100,
+                    padding:0,
+                    width:200,
+                    "text-align": "center",
+                }
+            });
+        } else {
+            $.modal('<h3>Unable to retrieve line_item...</h3>');
+        }
+        return false;
+    });
 });

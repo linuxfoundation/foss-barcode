@@ -12,7 +12,7 @@
 <div id="line-item-modal-content">
   <!-- form needs to be inside the div -->
   <form id="itemform" method="post" action="" enctype="multipart/form-data">
-    <h3>Edit Line Item, id# <span id="line_item_no">N</span>:</h3>
+    <h3><span id="item_edit_mode">Edit</span> Line Item, id# <span id="line_item_no">N</span>:</h3>
 
     <!-- usual "container" stype wasn't working here, use containerm -->
     <div class="containerm" id="modal_entry_form">
@@ -106,7 +106,7 @@
             <td>{{ itemform.item_commit_message }}</td>
           </tr>
           <tr>
-            <td align="center"><input type="submit" name="submit" value="Update Item" onclick="return submit_line_validate();"></td>
+            <td align="center"><input type="submit" name="submit" id="submit_item" value="Update Item" onclick="return submit_line_validate();"></td>
           </tr>
         </table>
         <!-- so the back end knows which record to update -->

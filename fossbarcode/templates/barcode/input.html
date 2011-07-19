@@ -62,7 +62,11 @@
   <tr align="left">
     <td align="right"><b>{{ recordform.email.label }}:</b></td>
     <td>{{ recordform.email }}</td>
-    <td>{{ recordform.email.errors }}</td>   
+    <td>
+      <a href="#" id="dupe_search" onclick="search_dupes();">
+      <img src="/site_media/images/system-search.png" title="Check for Match to Continue"></a>
+      {{ recordform.email.errors }}
+    </td>   
   </tr>      
 </table>
 </div> <!-- entry_form -->
@@ -149,7 +153,8 @@
 
 <div class="cfooter">
 <hr>
-<table width="100%">
+<span id="header_mode" align="center"><h3>BoM and Submit buttons will be visible after checking for a unique record</h3></span>
+<table width="100%" id="submit_buttons">
   <tr>
     <td align="center"><input style="width: 200px" type="submit" name="submit_qrcode" value="Create Checksum/QRcode" /></td>
   </tr>
@@ -169,6 +174,14 @@
 {% block scripts %}
 <script language="JavaScript">
     // pfield, sfield, modal are defined in file-select-ops.js
+
+    var header_fields = { "company": "",
+                          "website": "",
+                          "product": "",
+                          "version": "",
+                          "release": "",
+                          "contact": "",
+                          "email": "" };
 
     // order matters here - needs to be the same as the table columns
     var bom_fields = { "foss_component": "",
@@ -197,7 +210,9 @@
                     p.value = fossp[i];                
             }
         } else {
+            hide_element("foss_list");
             hide_element("bom_editor");
+            hide_element("submit_buttons");
         }
     }
     function update_patch_list(src) {
@@ -326,7 +341,7 @@
         // all text fields, just loop through input object
         for(var f in bom_fields){
             var td = document.createElement("TD");
-            td.setAttribute("valign", "top");
+            td.setAttribute("https://bugs.mageia.org/show_bug.cgi?id=1973valign", "top");
             td.setAttribute("id", f + cvalue);
             if (f == sfield)
                 td.setAttribute("colspan", "2");
@@ -425,6 +440,39 @@
             replace_bom_values(row);
             // close the modal dialog
             $.modal.close();
+        }
+    }
+
+    function search_dupes() {
+        var filled = true;
+        for(var f in header_fields){
+            var src = "id_" + f;
+            if (document.getElementById(src).value == "" && f != "contact")
+                filled = false;
+        }
+        // refuse to continue unless all required fields are filled       
+        if (filled == false) {      
+            alert("Please fill all required header fields");
+        } else {        
+            xmlhttp = new XMLHttpRequest();
+            var query = "company=" + document.getElementById('id_company').value;
+            query += ";product=" + document.getElementById('id_product').value;
+            query += ";version=" + document.getElementById('id_version').value;
+            query += ";release=" + document.getElementById('id_release').value;
+            xmlhttp.open("GET", "/barcode/search_dupes?" + query, false);
+            xmlhttp.send();
+            if (xmlhttp.responseText == "None") {
+                show_none("foss_list");
+                show_none("submit_buttons");
+                hide_element("dupe_search");
+                hide_element("header_mode");
+            } else {
+                var record = xmlhttp.responseText;
+                var answer = confirm("There appears to already be an entry with that company, product, version, release. Would you care to edit that entry instead?")
+	            if (answer){
+		            window.location = "/barcode/" + record + "/detail/";
+	            }
+            }
         }
     }
 

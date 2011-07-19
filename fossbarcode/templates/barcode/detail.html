@@ -62,7 +62,11 @@
   <table border = "1" width = "100%">
     <tr><th colspan = "10">FOSS Bill of Material for {{record.product }}-{{ record.version }}-{{ record.release }}</th></tr>
     <tr>
-      <td></td>
+      <td align="center" width="45">
+        <div id="line-item-modal">    
+          <a href="#" class="basic" name="line_item_add" id="{{ foss|length }}"><img src="/site_media/images/list-add.png" title="Add Line Item"></a>
+        </div>
+      </td>
       <th>Component</th>
       <th>Version</th>
       <th>Copyright<br>Information</th>
@@ -75,11 +79,14 @@
     </tr>
     {% for row in foss %}
     <tr valign = "top">   
-      <td align="center" width="30">
+      <td align="center" width="45">
       <span id="noprint">
-        <div id="line-item-modal">
+        <span id="line-item-modal">
             <a href="#" class="basic" name="line_item{{ forloop.counter }}" id="{{ row.id }}"><img src="/site_media/images/filetree/edit.png" title="Edit Line Item"></a>
-        </div>
+        </span>
+        <span id="line-delete-modal">
+            <a href="#" class="basic" name="line_item{{ forloop.counter }}" id="{{ row.id }}"><img src="/site_media/images/edit-delete.png" title="Delete Line Item"></a>
+        </span>
       </span>     
       </td>
       <td id="foss_component{{ forloop.counter }}">{{ row.component }}</td>
@@ -101,7 +108,7 @@
   {% include "barcode/edit_header.html" %}
   <!-- this is the modal popup content for viewing the history data -->
   {% include "barcode/history.html" %}
-  <!-- this is the modal popup content for editing the line item data -->
+  <!-- this is the modal popup content for editing/adding the line item data -->
   {% include "barcode/edit_line.html" %}
 {% endblock %}
 
@@ -148,18 +155,33 @@
     }
 
     function line_edit_fill(row, record) {
-        document.getElementById('line_item_no').innerHTML = row;
-        // walk through the table row and plug the values into the edit form, called when we click the icon, before the form appears
-        for(var f in bom_fields){
-            var dest = "id_" + f;
-            var src = f + row;
-            if (document.getElementById(src).children.length > 0) {
-                document.getElementById(dest).value = document.getElementById(src).children[0].innerHTML;
-            } else {
-                document.getElementById(dest).value = document.getElementById(src).innerHTML;
+        // different behavior for add vs edit
+        if (row.search("add") == -1) {
+            document.getElementById('line_item_no').innerHTML = row;
+            // walk through the table row and plug the values into the edit form, called when we click the icon, before the form appears
+            for(var f in bom_fields){
+                var dest = "id_" + f;
+                var src = f + row;
+                if (document.getElementById(src).children.length > 0) {
+                    document.getElementById(dest).value = document.getElementById(src).children[0].innerHTML;
+                } else {
+                    document.getElementById(dest).value = document.getElementById(src).innerHTML;
+                }
             }
+            document.getElementById('foss_record_id').value = record;
+            document.getElementById('item_edit_mode').innerHTML = "Edit";
+            document.getElementById('submit_item').value = "Update Item";
+        } else {
+            // start with an empty form
+            for(var f in bom_fields){
+                var dest = "id_" + f;
+                document.getElementById(dest).value = "";
+            }
+            document.getElementById('line_item_no').innerHTML = parseInt(record) + 1;
+            document.getElementById('foss_record_id').value = parseInt(record) + 1;
+            document.getElementById('item_edit_mode').innerHTML = "Add";
+            document.getElementById('submit_item').value = "Add Item";
         }
-        document.getElementById('foss_record_id').value = record;
     }
 
     function submit_line_validate() {
