@@ -2,13 +2,14 @@
 {% block header %}
   <!-- for the file browser -->
   <style type="text/css" media="screen">@import "/site_media/css/jqueryFileTree.css";</style>
-  <!-- CSS file for modal dialog -->
   <style type="text/css">@import "/site_media/css/containers.css";</style>
+  <!-- CSS file for modal dialog -->
   <style type="text/css" media="screen">@import "/site_media/css/barcode-modals.css";</style>
   <script type="text/javascript" src="/site_media/js/jquery-1.4.2.min.js"></script>
   <script type='text/javascript' src='/site_media/js/jquery.simplemodal.1.4.1.min.js'></script>
   <script type='text/javascript' src='/site_media/js/barcode-modals.js'></script>
   <script type="text/javascript" src="/site_media/js/jqueryFileTree.js"></script>
+  <script type='text/javascript' src='/site_media/js/file-select-ops.js'></script>
   <script type="text/javascript" src="/site_media/js/visibility.js"></script>
   <script type="text/javascript" src="/site_media/js/checklist.js"></script>
 </head>
@@ -61,7 +62,11 @@
   <tr align="left">
     <td align="right"><b>{{ recordform.email.label }}:</b></td>
     <td>{{ recordform.email }}</td>
-    <td>{{ recordform.email.errors }}</td>   
+    <td>
+      <a href="#" id="dupe_search" onclick="search_dupes();">
+      <img src="/site_media/images/system-search.png" title="Check for Match to Continue"></a>
+      {{ recordform.email.errors }}
+    </td>   
   </tr>      
 </table>
 </div> <!-- entry_form -->
@@ -122,8 +127,7 @@
                                         value="Add Component" 
                                         onclick="get_bom_values();add_bom_row('foss_list', 'add')"/></td>
   </tr>
-  <div id="bom_editor">
-  <tr>
+  <tr id="bom_editor">
     <td align="left" colspan="2"><input type="checkbox" name="selectall"
                     title="Select/Deselect All Records" 
                     onclick="toggleall(this.form,'bomcheck','selectall')" />
@@ -132,8 +136,7 @@
     <td align="center" colspan="2"><input type="button" name="delete_rows" value="Delete Selected Components"
                 onclick="delete_bom_components('foss_list')" />
     </td>
-  </tr>
-  </div> <!-- editor -->
+  </tr> <!-- editor -->
 <!-- TODO - loop and fill this from SPDX? -->
 </table>
 </div> <!-- foss_table -->
@@ -150,7 +153,8 @@
 
 <div class="cfooter">
 <hr>
-<table width="100%">
+<span id="header_mode" align="center"><h3>BoM and Submit buttons will be visible after checking for a unique record</h3></span>
+<table width="100%" id="submit_buttons">
   <tr>
     <td align="center"><input style="width: 200px" type="submit" name="submit_qrcode" value="Create Checksum/QRcode" /></td>
   </tr>
@@ -169,10 +173,15 @@
 
 {% block scripts %}
 <script language="JavaScript">
-    var path_dest = "";
-    // used in several places to differentiate which field we're selecting files for
-    var pfield = "foss_patches";
-    var sfield = "foss_spdx";
+    // pfield, sfield, modal are defined in file-select-ops.js
+
+    var header_fields = { "company": "",
+                          "website": "",
+                          "product": "",
+                          "version": "",
+                          "release": "",
+                          "contact": "",
+                          "email": "" };
 
     // order matters here - needs to be the same as the table columns
     var bom_fields = { "foss_component": "",
@@ -183,16 +192,6 @@
                        "foss_license_url": "", 
                        "foss_url": "", 
                        "foss_spdx": "" };
-
-    $(document).ready( function() {
-        $('#target').fileTree({
-            root: '/',
-            script: '/barcode/dirlist/',
-            loadMessage: 'waiting to load'
-            }, function(file) {
-                filenametoentry(file);
-        });
-    });
 
     function setdefaults() {
         // if the user submitted with missing data, we lose the FOSS table content, repopulate
@@ -211,33 +210,9 @@
                     p.value = fossp[i];                
             }
         } else {
-            // FIXME - hide the editor portion of the BOM if we have no data
-            var e = document.getElementById("bom_editor");
-            e.style.display = 'none';
-        }
-    }
-    function set_destination(dest) {
-        path_dest = dest;
-    }
-    function toggle_enabled(button) { 
-        var e = document.getElementsByName(button)[0];
-        if (e.disabled == true)
-            e.disabled = false;
-        else
-            e.disabled = true;     
-    }
-    function filenametoentry(filename) {
-        lastchar = filename.slice(-1);
-        // only files, no dirs
-        if (lastchar != '/') {
-            if (path_dest == sfield) {
-                // replace, don't append
-                document.getElementsByName(path_dest)[0].value = filename;
-            } else {
-                document.getElementsByName(path_dest)[0].value += filename + "\n";
-            }
-            if (path_dest.indexOf(pfield) != -1)
-                update_patch_list(path_dest);
+            hide_element("foss_list");
+            hide_element("bom_editor");
+            hide_element("submit_buttons");
         }
     }
     function update_patch_list(src) {
@@ -273,7 +248,11 @@
             // table is 1-indexed, hidden lists are zero indexed
             rarray[row] = document.getElementById(src).value;
             document.getElementById(fh).value = rarray.join(",");
-        } 
+        }
+        // and the patches
+        var src = "id_m_" + pfield;
+        var dest = "id_" + pfield + row;
+        document.getElementById(dest).value = document.getElementById(src).value;
     }
     function clear_bom_values() {
         for(var f in bom_fields){
@@ -303,6 +282,7 @@
                 }
             }
             document.getElementsByName("selectall")[0].checked = false;
+            hide_element("bom_editor");
         } else {
             return;
         }
@@ -373,6 +353,7 @@
         var td9 = document.createElement("TD");        
         var ch9 = document.createElement("textarea");
         ch9.setAttribute("type", "textarea");
+        ch9.setAttribute("id", "id_" + patch_tag);
         ch9.setAttribute("name", patch_tag);
         ch9.setAttribute("readonly", "true");
         td9.appendChild(ch9);   
@@ -406,6 +387,9 @@
         for(var f in bom_fields){
             bom_fields[f] = "";
         }
+        
+        // show our "select all" controls
+        show_none("bom_editor");
     }
 
     function line_edit_fill(row) {
@@ -420,6 +404,10 @@
                 document.getElementById(dest).value = document.getElementById(src).innerHTML;
             }
         }
+        // and the patches
+        var dest = "id_m_" + pfield;
+        var src = "id_" + pfield + row;
+        document.getElementById(dest).value = document.getElementById(src).value;
     }
 
     function line_edit_init(row) {
@@ -431,7 +419,7 @@
              containerCss:{
                  height:450,
                  padding:0,
-                 width:700
+                 width:750
              }
         });
     }
@@ -455,7 +443,38 @@
         }
     }
 
-</script>
+    function search_dupes() {
+        var filled = true;
+        for(var f in header_fields){
+            var src = "id_" + f;
+            if (document.getElementById(src).value == "" && f != "contact")
+                filled = false;
+        }
+        // refuse to continue unless all required fields are filled       
+        if (filled == false) {      
+            alert("Please fill all required header fields");
+        } else {        
+            xmlhttp = new XMLHttpRequest();
+            var query = "company=" + document.getElementById('id_company').value;
+            query += ";product=" + document.getElementById('id_product').value;
+            query += ";version=" + document.getElementById('id_version').value;
+            query += ";release=" + document.getElementById('id_release').value;
+            xmlhttp.open("GET", "/barcode/search_dupes?" + query, false);
+            xmlhttp.send();
+            if (xmlhttp.responseText == "None") {
+                show_none("foss_list");
+                show_none("submit_buttons");
+                hide_element("dupe_search");
+                hide_element("header_mode");
+            } else {
+                var record = xmlhttp.responseText;
+                var answer = confirm("There appears to already be an entry with that company, product, version, release. Would you care to edit that entry instead?")
+	            if (answer)
+		            window.location = "/barcode/" + record + "/detail/";
+            }
+        }
+    }
 
+</script>
 {% endblock %}
 

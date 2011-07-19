@@ -1,3 +1,4 @@
+/* for the input tab */
 .container {
     float: left;
     margin: 5px;
@@ -17,6 +18,25 @@
   font-size: 50%;
 }
 
+/* for the modal dialog version */
+.containerm {
+    float: left;
+    margin: 1px;
+    padding: 1px;
+}
+
+.containerm select {
+    width: 95%;
+}
+
+.containerm textarea {
+    width: 95%;
+}
+
+.containerm sup {
+  font-size: 50%;
+}
+
 .halfdiv {
     float: left;
     margin: 5px;
@@ -29,6 +49,10 @@
 }
 
 .foss_table {
+    clear: both;
+}
+
+.commit_table {
     clear: both;
 }
 

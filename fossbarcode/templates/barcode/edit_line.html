@@ -1,36 +1,128 @@
 <!-- we don't extend base for this one as we don't want the overall tabs/styling -->
+<header>  
+    <!-- for the file browser -->
+    <style type="text/css" media="screen">@import "/site_media/css/jqueryFileTree.css";</style>
+    <style type="text/css">@import "/site_media/css/containers.css";</style>
+    <script type="text/javascript" src="/site_media/js/jquery-1.4.2.min.js"></script>
+    <script type="text/javascript" src="/site_media/js/jqueryFileTree.js"></script>
+    <script type="text/javascript" src="/site_media/js/file-select-ops.js"></script>
+    <script type="text/javascript" src="/site_media/js/visibility.js"></script>
+</header>
 {% block content %}
 <div id="line-item-modal-content">
   <!-- form needs to be inside the div -->
   <form id="itemform" method="post" action="" enctype="multipart/form-data">
-    <h3>Edit Line Item, id# <span id="line_item_no">N</span>:</h3>
-    <table>
-      <tr><td><b>{{ itemform.foss_component.label }}:</b></td><td>{{ itemform.foss_component }}</td></tr>
-      <tr><td>{{ itemform.foss_component.errors }}</td><td></td></tr>
-      <tr><td><b>{{ itemform.foss_version.label }}:</b></td><td>{{ itemform.foss_version }}</td></tr>
-      <tr><td>{{ itemform.foss_version.errors }}</td><td></td></tr>
-      <tr><td><b>{{ itemform.foss_copyright.label }}:</b></td><td>{{ itemform.foss_copyright }}</td></tr>
-      <tr><td>{{ itemform.foss_copyright.errors }}</td><td></td></tr>
-      <tr><td><b>{{ itemform.foss_attribution.label }}:</b></td><td>{{ itemform.foss_attribution }}</td></tr>
-      <tr><td>{{ itemform.foss_attributions.errors }}</td><td></td></tr>
-      <tr><td><b>{{ itemform.foss_license.label }}:</b></td><td>{{ itemform.foss_license }}</td></tr>
-      <tr><td>{{ itemform.foss_license.errors }}</td><td></td></tr>
-      <tr><td><b>{{ itemform.foss_license_url.label }}:</b></td><td>{{ itemform.foss_license_url }}</td></tr>
-      <tr><td>{{ itemform.foss_license_url.errors }}</td><td></td></tr>
-      <tr><td><b>{{ itemform.foss_url.label }}:</b></td><td>{{ itemform.foss_url }}</td></tr>
-      <tr><td>{{ itemform.foss_url.errors }}</td><td></td></tr>
-      <tr><td><b>{% autoescape off %}{{ itemform.foss_spdx.label }}{% endautoescape %}:</b></td><td>{{ itemform.foss_spdx }}</td></tr>
-      <tr><td><b>{{ itemform.foss_patches.label }}:</b></td><td>{{ itemform.foss_patches }}</td></tr>
+    <h3><span id="item_edit_mode">Edit</span> Line Item, id# <span id="line_item_no">N</span>:</h3>
+
+    <!-- usual "container" stype wasn't working here, use containerm -->
+    <div class="containerm" id="modal_entry_form">
+     <table width="100%">
       <tr>
-        <td><b>{{ itemform.item_commit_message.label }}:</b></td>
-        <td><input type="submit" name="submit" value="Update Item" onclick="return submit_line_validate();"></td>
+        <td><b>{{ itemform.foss_component.label }}:</b></td>
+        <td></td>
+        <td>{{ itemform.foss_component }}</td>
       </tr>
-      <tr><td>{{ itemform.item_commit_message.errors }}</td><td></td></tr>
-      <tr><td colspan="2">{{ itemform.item_commit_message }}</td></tr>
-    </table>
-    <!-- so the back end knows which record to update -->
-    <input type="hidden" name="foss_record_id" id="foss_record_id" value="">
+      <tr>
+        <td colspan="3">{{ itemform.foss_component.errors }}</td>
+      </tr>
+      <tr>
+        <td><b>{{ itemform.foss_version.label }}:</b></td>
+        <td></td>
+        <td>{{ itemform.foss_version }}</td>
+        </tr>
+      <tr>
+        <td colspan="3">{{ itemform.foss_version.errors }}</td>
+      </tr>
+      <tr>
+        <td><b>{{ itemform.foss_copyright.label }}:</b></td>
+        <td></td>
+        <td>{{ itemform.foss_copyright }}</td>
+      </tr>
+      <tr>
+        <td colspan="3">{{ itemform.foss_copyright.errors }}</td>
+      </tr>
+      <tr>
+        <td><b>{{ itemform.foss_attribution.label }}:</b></td>
+        <td></td>
+        <td>{{ itemform.foss_attribution }}</td>
+      </tr>
+      <tr>
+        <td colspan="3">{{ itemform.foss_attributions.errors }}</td>
+      </tr>
+      <tr>
+        <td><b>{{ itemform.foss_license.label }}:</b></td>
+        <td></td>
+        <td>{{ itemform.foss_license }}</td>
+      </tr>
+      <tr>
+        <td colspan="3">{{ itemform.foss_license.errors }}</td>
+      </tr>
+      <tr>
+        <td><b>{{ itemform.foss_license_url.label }}:</b></td>
+        <td></td>
+        <td>{{ itemform.foss_license_url }}</td>
+      </tr>
+      <tr>
+        <td colspan="3">{{ itemform.foss_license_url.errors }}</td>
+      </tr>
+      <tr>
+        <td><b>{{ itemform.foss_url.label }}:</b></td>
+        <td></td>
+        <td>{{ itemform.foss_url }}</td>
+      </tr>
+      <tr>
+        <td colspan="3">{{ itemform.foss_url.errors }}</td>
+      </tr>
+      <tr>
+        <td><b>{% autoescape off %}{{ itemform.foss_spdx.label }}{% endautoescape %}:</b></td>
+        <td><input type="button" name="select_spdx" value="Select" 
+                   title="Open a File/Directory Selector" 
+                   onclick="toggle_visibility('target_select_modal');set_destination('foss_spdx');toggle_enabled('select_patch');"></td>
+        <td>{{ itemform.foss_spdx }}</td>
+      </tr>
+      <tr>
+        <td valign="top"><b>{{ itemform.foss_patches.label }}:</b></td>
+        <td valign="top"><input type="button" name="select_patch" value="Select"
+                                title="Open a File/Directory Selector" 
+                                onclick="toggle_visibility('target_select_modal');set_destination('foss_patches');toggle_enabled('select_spdx');"></td>
+        <td rowspan="2">{{ itemform.foss_patches }}</td>
+      </tr>
+      <tr>
+        <td colspan="2">
+            <b>{{ itemform.item_commit_message.label }}:</b>
+        </td>
+     </tr>
+     </table>
+    </div>
+    <div class="containerm" id="target_select_modal" style="display: none;"> 
+	    <div id="target" class="browser"></div> 
+    </div>
+    <div>
+        {{ itemform.item_commit_message.errors }}
+    </div>
+    <div class="commit_table">
+        <table width="100%">
+          <tr>
+            <td>{{ itemform.item_commit_message }}</td>
+          </tr>
+          <tr>
+            <td align="center"><input type="submit" name="submit" id="submit_item" value="Update Item" onclick="return submit_line_validate();"></td>
+          </tr>
+        </table>
+        <!-- so the back end knows which record to update -->
+        <input type="hidden" name="foss_record_id" id="foss_record_id" value="">
+    </div>
   </form>
-</div>
+</div> <!-- modal content -->
 {% endblock %}
+{% block scripts %}
+<script language="JavaScript">
+    // filenametoentry doesn't need to update_patch_list in the modal form
+    var modal = true;
+    // no manual entry for spdx_files, patches
+    document.getElementById('id_foss_spdx').setAttribute('readonly', 'true');
+    document.getElementById('id_foss_patches').setAttribute('readonly', 'true');
+</script>
+{% endblock %}
+
 

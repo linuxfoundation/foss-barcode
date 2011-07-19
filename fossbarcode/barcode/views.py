@@ -64,7 +64,8 @@ def detail(request, record_id):
     foss = render_detail(record_id)
     record_list = Product_Record.objects.filter(id = record_id)
     record = record_list[0]
- 
+    old_spdx = ''
+
     if request.method == 'POST': # If the form has been submitted...
         mode = urllib.unquote(request.POST.get('submit'))
 
@@ -82,20 +83,43 @@ def detail(request, record_id):
                                                                  email = request.POST.get('email', ''),
                                                                  record_date = str(datetime.datetime.now()))
 
-                # FIXME - compute the new checksum, compare with the old and update if needed
+                # compute the new checksum, compare with the old and update if needed
+                pr = Product_Record.objects.get(id = record_id)
+                checksum = pr.checksum
+                new_checksum = pr.calc_checksum()
+                if checksum != new_checksum:
+                    pr.checksum = new_checksum
+                    pr.save()
+                    result = pr.checksum_to_barcode()
+                    for extension in (".png", ".ps"):
+                        pr.remove_file(checksum + extension)
+                    
+                else: 
+                    # QR+ code changes with any change (record_date)
+                    if pr.codetype == 'qr+':                
+                        result = pr.checksum_to_barcode()              
+                  
+                # commit changes to version control
+                pr.commit(request.POST.get('header_commit_message', ''))
 
-                # FIXME - do something interesting with request.POST.get('header_commit_message', '')
- 
                 return HttpResponseRedirect('/barcode/' + record_id + '/detail/')
 
             else:
                 error_message = "Invalid header update data, see header dialog..."
 
-        if (mode == "Update Item"):
-            if itemform.is_valid(): # All validation rules pass
-                # line item data is in a file, so we alter/save rather than update
-                foss_id = request.POST.get('foss_record_id', '')
-                fossdata = FOSS_Components(brecord_id = record_id, id = foss_id, 
+        if (mode == "Update Item" or mode == "Add Item" or mode == "Delete Item"):
+            if itemform.is_valid() or mode == "Delete Item": # All validation rules pass, or we're deleting
+ 
+                new_spdx = request.POST.get('foss_spdx', '')
+                if (mode == "Update Item" or mode == "Delete Item"):               
+                    foss_id = request.POST.get('foss_record_id', '')
+                    fd = FOSS_Components.objects.get(brecord = record_id, id = foss_id)
+                    old_spdx = fd.spdx_file
+                    pickle_file = fd.data_file_name
+
+                if (mode == "Update Item"):
+                    # line item data is in a file, so we alter/save rather than update
+                    fossdata = FOSS_Components(brecord_id = record_id, id = foss_id, 
                                            package = request.POST.get('foss_component', ''),
                                            version = request.POST.get('foss_version', ''),
                                            copyright = request.POST.get('foss_copyright', ''), 
@@ -103,17 +127,91 @@ def detail(request, record_id):
                                            license = request.POST.get('foss_license', ''), 
                                            license_url = request.POST.get('foss_license_url', ''), 
                                            url = request.POST.get('foss_url', ''), 
-                                           spdx_file = request.POST.get('foss_spdx', ''))
-                
-                fossdata.save()
-                # FIXME do we need to save new SPDXs now?
+                                           spdx_file = os.path.basename(new_spdx))
 
-                # FIXME update/save patches
+                    fossdata.save()
+                
+                if (mode == "Add Item"):
+                    fossdata = FOSS_Components(brecord_id = record_id, 
+                                           package = request.POST.get('foss_component', ''),
+                                           version = request.POST.get('foss_version', ''),
+                                           copyright = request.POST.get('foss_copyright', ''), 
+                                           attribution = request.POST.get('foss_attribution', ''),
+                                           license = request.POST.get('foss_license', ''), 
+                                           license_url = request.POST.get('foss_license_url', ''), 
+                                           url = request.POST.get('foss_url', ''), 
+                                           spdx_file = os.path.basename(new_spdx))
+
+                    fossdata.save()            
+
+                # needed for file/change control operations below
+                pr = Product_Record.objects.get(id = record_id)
+
+                if (mode == "Delete Item"):
+                    foss_id = request.POST.get('foss_record_id', '')
+                    fossdata = FOSS_Components(brecord_id = record_id, id = foss_id)
+                    fossdata.delete()
+                    # FIXME - should this happen automagically over in models.py?
+                    pr.remove_file(pickle_file)
+
+                # save and/or delete SPDX file
+                if new_spdx != '':
+                    try:
+                        pr.new_file_from_existing(new_spdx, "spdx_files")
+                    except:
+                        error_message += "Failed to copy spdx file:" + new_spdx + "<br>"
+
+                if old_spdx != new_spdx and old_spdx != '':
+                    pr.remove_file(old_spdx, "spdx_files")
+
+                # update/save/del patches
+                patch_files = request.POST.get('foss_patches', '')
+                print patch_files
+                if patch_files != '':
+                    patches = patch_files.split("\n")
+                    patch_list = ''
+                    for patch in patches:
+                        patch = patch[:-1]
+                        if patch != '':
+                            patch_list += '"' + patch + '",'
+                    patch_list = patch_list[:-1]
+
+                    # remove patches no longer listed 
+                    old_patches = Patch_Files.objects.extra(where=['frecord_id = ' + foss_id + ' AND path NOT IN (' + patch_list + ')'])
+                    for p in old_patches:
+                        pr.remove_file(p.path, "patches")
+                    old_patches.delete()
+
+                    # and add any new ones
+                    for patch in patches:
+                        patch = patch[:-1]
+                        if patch != '':
+                            patchdata = Patch_Files(frecord_id = foss_id, path = os.path.basename(patch))
+                            patchdata.save()
+                            try:
+                                pr.new_file_from_existing(patch, "patches")
+                            except:
+                                error_message += "Failed to copy patch file: " + str(patch) + "<br>"
+                    
+                else:
+                    # no patches specified, remove any that might be present
+                    patchdata = Patch_Files(frecord_id = foss_id)
+                    for patch in patchdata:
+                        pr.remove_file(patch.path, "patch_files")
+                    patchdata.delete()
 
                 # update the master record "last updated"         
                 Product_Record.objects.filter(id = record_id).update(record_date = str(datetime.datetime.now()))
+                
+                # QR+ code changes with any change (record_date, components)
+                if pr.codetype == 'qr+':                
+                    result = pr.checksum_to_barcode()              
 
-                # FIXME - do something interesting with request.POST.get('item_commit_message', '')
+                # commit changes to version control
+                if (mode == "Delete Item"):
+                    pr.commit('Delete line item record for "' + fd.package + '"' )
+                else:
+                    pr.commit(request.POST.get('item_commit_message', ''))
 
                 return HttpResponseRedirect('/barcode/' + record_id + '/detail/')
 
@@ -142,6 +240,20 @@ def search(request):
             return HttpResponseRedirect('/barcode/' + str(id) + '/detail/')
 
     return render_to_response('barcode/search.html', {'error_message': error_message, 'tab_search': True})
+
+# used to see if user is entering a duplicate record in the input tab, no search_dupes.html
+def search_dupes(request):
+    scompany = request.GET.get('company', '')
+    sproduct = request.GET.get('product', '')
+    sversion = request.GET.get('version', '')
+    srelease = request.GET.get('release', '')
+    record_list = Product_Record.objects.filter(company = scompany, product = sproduct, version = sversion, release = srelease)
+    if record_list.count() == 0:
+        r = "None"
+    else:
+        r = record_list[0].id
+    
+    return HttpResponse(''.join(str(r)))
  
 # record list page - this is also a form, for record deletions
 def records(request):
@@ -175,19 +287,14 @@ def input(request):
     foss_spdxs = ''
     foss_patches = ''
     component_error = ''
-    codetype = 'barcode'
     needs_setup = 0
+
     # we don't do anything with this content, just used to format the modal popup
     # because it's also a subset of Recordform, change out the id string id_foo -> id_m_foo
     itemform = ItemForm(auto_id='id_m_%s') # An unbound form
 
     if request.method == 'POST': # If the form has been submitted...
         recordform = RecordForm(request.POST) # A form bound to the POST data      
-
-        # barcode or qrcode?
-        do_qr = request.POST.get('submit_qrcode', '')
-        if do_qr != "":
-            codetype = 'qrcode'
  
         # we need these whether it's valid or not to repopulate on a bad submit        
         foss_components = request.POST.get('foss_components', '')
@@ -214,6 +321,13 @@ def input(request):
         if recordform.is_valid() and component_error == '': # All validation rules pass
             recorddata = recordform.save(commit=False)       
             recorddata.save()
+ 
+            # barcode or qrcode or...?
+            do_128 = request.POST.get('submit_barcode', '')
+            if do_128 != "":
+                recorddate.codetype = '128'
+                recorddata.save()
+ 
             recordid = recorddata.id
             data_dest = recorddata.file_path()
             if not recorddata.setup_directory():
@@ -247,8 +361,7 @@ def input(request):
                     # check for SPDX files and save in user_data
                     if spdxs[i] != '':
                         try:
-                            recorddata.new_file_from_existing(spdxs[i],
-                                                              "spdx_files")
+                            recorddata.new_file_from_existing(spdxs[i], "spdx_files")
                         except:
                             error_message += "Failed to copy " + str(spdxs[i]) + "to " + spdx_dest + "<br>"
                     
@@ -262,8 +375,7 @@ def input(request):
                                 patchdata = Patch_Files(frecord_id = fossid, path = os.path.basename(patch))
                                 patchdata.save()
                                 try:
-                                    recorddata.new_file_from_existing(patch,
-                                                                      "patches")
+                                    recorddata.new_file_from_existing(patch, "patches")
                                 except:
                                     error_message += "Failed to copy " + str(patch) + "to " + patch_dest + "<br>"
                     i = i + 1
@@ -274,7 +386,7 @@ def input(request):
             if checksum:
                 recorddata.checksum = checksum
                 recorddata.save()
-                result = recorddata.checksum_to_barcode(codetype)
+                result = recorddata.checksum_to_barcode()
                 if result:
                     error_message += "Barcode generation failed...<br>"
             else:
@@ -286,9 +398,11 @@ def input(request):
             if error_message == '':
                 return HttpResponseRedirect('/barcode/' + str(recordid) + '/detail/')
 
+        else:
+            error_message = recordform.errors
     else:
         recordform = RecordForm() # An unbound form
-
+        
         # check if the user has done basic setup
         settings_done = System_Settings.objects.filter(user_updated = True).count()
         if (settings_done) == 0:
