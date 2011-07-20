@@ -7,7 +7,12 @@ var sfield = "foss_spdx";
 // filenametoentry needs to update_patch_list in the normal form, not the modal one
 var modal = false;
 
+// while the old setup (with reload_filetree code in the .ready) works on the input page
+// had issues in the detail/modal edit, so make it callable
 $(document).ready( function() {
+    reload_filetree();
+});
+function reload_filetree() {
     $('#target').fileTree({
         root: '/',
         script: '/barcode/dirlist/',
@@ -15,7 +20,7 @@ $(document).ready( function() {
         }, function(file) {
             filenametoentry(file);
     });
-});
+}
 function set_destination(dest) {
     path_dest = dest;
 }
