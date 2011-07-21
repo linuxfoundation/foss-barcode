@@ -185,6 +185,8 @@
             document.getElementById('foss_record_id').value = record;
             document.getElementById('item_edit_mode').innerHTML = "Edit";
             document.getElementById('submit_item').value = "Update Item";
+            // filetree isn't working on a second display of the form, force it to reload here
+            reload_filetree();
         } else {
             // start with an empty form
             for(var f in bom_fields){
