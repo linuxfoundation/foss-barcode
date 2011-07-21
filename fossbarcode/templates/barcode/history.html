@@ -4,7 +4,7 @@
   <h3>Change History, record #{{ record.id }}:</h3>
   <ul>
 {% for commit_id, commit_date, commit_msg in history %}
-       <li><a href="#">{{ commit_date.isoformat }}</a>: {{ commit_msg }}</li>
+       <li><a href="{% url detail-revision-url record.id commit_id %}">{{ commit_date.isoformat }}</a>: {{ commit_msg }}</li>
 {% endfor %}
   </ul>
 </div>

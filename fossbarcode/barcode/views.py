@@ -245,7 +245,7 @@ def detail(request, record_id, revision=None):
     itemform = ItemForm() # An unbound form
 
     return render_to_response('barcode/detail.html', {'record': record, 'foss': foss, 'history': record_history,
-                                                      'host_site': host_site, 'tab_results': True,
+                                                      'host_site': host_site, 'tab_results': True, 'revision': revision,
                                                       'error_message': error_message, 'enable_edits': enable_edits,
                                                       'headerform': headerform, 'itemform': itemform })
 

@@ -42,7 +42,9 @@
         <b>Last Updated: </b>{{ record.record_date|date:"M d, Y H:i:s" }}<br>
         <b>Compliance Contact Name: </b>{{ record.contact }}<br>
         <b>Compliance Contact Email: </b><a href="mailto:{{ record.email }}" target="_blank">{{ record.email }}</a><br>
-        
+{% if revision %}
+	<p><i>This is a historic record, showing the state of the record as it existed in revision {{ revision }}.</i></p>
+{% endif %}        
       </td>
       <td align = "center" id = "noprint">
         <input type="button" name="doprint" value="Print BoM Compliance Record" onClick="javascript:window.print()">
