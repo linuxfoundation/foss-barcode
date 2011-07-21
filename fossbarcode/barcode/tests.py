@@ -136,6 +136,12 @@ class TestFileDataDirMixin(BarCodeHarness):
         self.assertEquals("test content\n",
                           self.product.get_file_content("test"))
 
+    def testHistory(self):
+        self.addComponent()
+        history = [x for x in self.product.iter_history()]
+        self.assertEqual(len(history), 1)
+        self.assertEqual(history[0][2], "Add test component.")
+
 class TestFileDataMixin(BarCodeHarness):
     def testNewObject(self):
         self.addComponent()

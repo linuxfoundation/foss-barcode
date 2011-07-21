@@ -180,6 +180,11 @@ class FileDataDirMixin:
         os.unlink(os.path.join(self.file_path(), subpath))
         self.current_changes.append(subpath)
 
+    def iter_history(self):
+        repo = self.get_repo()
+        for commit in repo.revision_history(repo.head()):
+            yield (commit.id, commit.commit_time, commit.message)
+
     def get_file_content(self, subpath, revision=None):
         repo = self.get_repo()
         if not revision:
