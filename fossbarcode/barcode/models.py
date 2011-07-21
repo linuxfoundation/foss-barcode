@@ -97,20 +97,13 @@ class FileDataMixin:
             if field not in self.__dict__:
                 self.__dict__[field] = self._file_fields[field][1]
 
-        repo = self.brecord.get_repo()
-        not_found = False
+
         try:
-            if not self._revision:
-                revision = repo.head()
-            else:
-                revision = self._revision
-            tree = repo.tree(repo.commit(revision).tree)
-            blob = repo.get_blob(tree[self._file_name][1])
-        except KeyError:
-            not_found = True
-        if not not_found:
-            read_from = pickle.loads(blob.data)
+            read_from = pickle.loads(
+                self.brecord.get_file_content(self._file_name))
             self.__dict__.update(read_from)
+        except KeyError:
+            pass
 
     def write_to_fn(self):
         self.set_master_class()
@@ -139,6 +132,7 @@ class FileDataMixin:
 # commits and history.
 class FileDataDirMixin:
     _subdirs = None
+    _revision = None
     current_changes = []
 
     def file_path(self):
@@ -163,6 +157,9 @@ class FileDataDirMixin:
             repo = Repo.init(file_path)
 
         return True
+
+    def set_revision(self, revision):
+        self._revision = revision
 
     def remove_directory(self):
         shutil.rmtree(self.file_path())
@@ -190,6 +187,19 @@ class FileDataDirMixin:
     def delete_file(self, subpath):
         os.unlink(os.path.join(self.file_path(), subpath))
         self.current_changes.append(subpath)
+
+    def get_file_content(self, subpath):
+        if self._revision:
+            revision = self._revision
+        else:
+            repo = self.get_repo()
+            revision = repo.head()
+
+        traverse = repo.commit(revision).tree
+        for path_component in os.path.split(subpath):
+            if path_component:
+                traverse = repo.tree(traverse)[path_component][1]
+        return repo.get_blob(traverse).data
 
     def commit(self, commit_msg):
         if not self.current_changes:

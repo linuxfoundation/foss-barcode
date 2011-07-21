@@ -139,6 +139,17 @@ class TestFileDataDirMixin(BarCodeHarness):
         self.product.remove_directory()
         self.assertFalse(os.path.exists(self.product.file_path()))
 
+    def testGetFileContent(self):
+        self.product.setup_directory()
+        f = open(os.path.join(self.product.file_path(), "test"), "w")
+        f.write("test content\n")
+        f.close()
+        self.product.register_new_file("test")
+        self.assertTrue(self.product.commit("Adding test file."))
+
+        self.assertEquals("test content\n",
+                          self.product.get_file_content("test"))
+
 class TestFileDataMixin(BarCodeHarness):
     def testNewObject(self):
         self.addComponent()
@@ -157,19 +168,6 @@ class TestFileDataMixin(BarCodeHarness):
         self.assertEqual(loaded_component.package, self.component.package)
         self.assertEqual(loaded_component.license, self.component.license)
         self.assertEqual(loaded_component.url, self.component.url)
-
-    def testLoadObjectRevision(self):
-        self.addComponent()
-        self.component.license = "Test License 2.0"
-        self.component.save()
-        self.product.commit("Change component license.")
-
-        repo = self.product.get_repo()
-        commit_id = repo.revision_history(repo.head())[-1]
-        old_component = FOSS_Components.objects.get(id=self.component.id,
-                                                    revision=commit_id)
-        self.assertEqual(old_component.id, self.component.id)
-        self.assertEqual(old_component.license, "Test License 1.0")
 
 class TestProductRecord(BarCodeHarness):
     def testChecksum(self):
@@ -211,3 +209,16 @@ class TestFOSSComponents(BarCodeHarness):
 
         self.assertFalse(os.path.exists(os.path.join(self.product.file_path(),
                                                      component_fn)))
+
+    def testLoadObjectRevision(self):
+        self.addComponent()
+        commit_id = self.product.get_repo().head()
+        self.component.license = "Test License 2.0"
+        self.component.save()
+        self.product.commit("Change component license.")
+
+        self.product.set_revision(commit_id)
+
+        old_component = self.product.foss_components_set.all()[0]
+        self.assertEqual(old_component.id, self.component.id)
+        self.assertEqual(old_component.license, "Test License 1.0")
