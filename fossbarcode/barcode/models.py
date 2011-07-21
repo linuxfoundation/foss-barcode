@@ -15,6 +15,9 @@ from dulwich.objects import parse_timezone
 class FileDataMixinCreateError(StandardError):
     pass
 
+class ReadOnlyError(StandardError):
+    pass
+
 # Utility functions.
 
 # strip 'pk' entry from serialized data
@@ -41,10 +44,6 @@ class FileDataMixin:
     #   "foo": (str, "")
     # which then can be accessed via self.foo.
     _file_fields = None
-
-    # This should be set to a revision ID from the version control
-    # system, or None to use the current head revision.
-    _revision = None
 
     # These are calculated based on a number of things, including
     # the _master_class_path setting above.
@@ -77,9 +76,6 @@ class FileDataMixin:
                 fn = fn_base % filenum
             self._file_name = fn
 
-    def set_revision(self, revision):
-        self._revision = revision
-
     def sanitize_init(self, kwargs):
         new_kwargs = kwargs.copy()
         for key in kwargs:
@@ -88,7 +84,7 @@ class FileDataMixin:
                 del new_kwargs[key]
         return new_kwargs
 
-    def load_from_fn(self):
+    def load_from_fn(self, revision=None):
         self.set_data_path()
         self.set_data_fn()
 
@@ -100,7 +96,7 @@ class FileDataMixin:
 
         try:
             read_from = pickle.loads(
-                self.brecord.get_file_content(self._file_name))
+                self.brecord.get_file_content(self._file_name, revision))
             self.__dict__.update(read_from)
         except KeyError:
             pass
@@ -132,7 +128,6 @@ class FileDataMixin:
 # commits and history.
 class FileDataDirMixin:
     _subdirs = None
-    _revision = None
     current_changes = []
 
     def file_path(self):
@@ -157,9 +152,6 @@ class FileDataDirMixin:
             repo = Repo.init(file_path)
 
         return True
-
-    def set_revision(self, revision):
-        self._revision = revision
 
     def remove_directory(self):
         shutil.rmtree(self.file_path())
@@ -188,11 +180,9 @@ class FileDataDirMixin:
         os.unlink(os.path.join(self.file_path(), subpath))
         self.current_changes.append(subpath)
 
-    def get_file_content(self, subpath):
-        if self._revision:
-            revision = self._revision
-        else:
-            repo = self.get_repo()
+    def get_file_content(self, subpath, revision=None):
+        repo = self.get_repo()
+        if not revision:
             revision = repo.head()
 
         traverse = repo.commit(revision).tree
@@ -344,21 +334,16 @@ class FOSS_Components(models.Model, FileDataMixin):
         "url": (str, ""),
         "spdx_file": (str, "")
     }
+    _read_only = False
 
     brecord = models.ForeignKey(Product_Record)
     data_file_name = models.CharField(max_length=100, blank=True)
 
     def __init__(self, *args, **kwargs):
         sanitized_kwargs = self.sanitize_init(kwargs)
-        if "revision" in sanitized_kwargs:
-            revision = sanitized_kwargs["revision"]
-            del sanitized_kwargs["revision"]
-        else:
-            revision = None
         super(FOSS_Components, self).__init__(*args, **sanitized_kwargs)
         if self.data_file_name:
             self._file_name = self.data_file_name
-        self.set_revision(revision)
         self.load_from_fn()
         if not self.data_file_name:
             self.data_file_name = self._file_name
@@ -366,7 +351,18 @@ class FOSS_Components(models.Model, FileDataMixin):
     def __unicode__(self):
         return self.package
 
+    def switch_revision(self, revision):
+        if revision == None:
+            repo = self.brecord.get_repo()
+            revision = repo.head()
+            self._read_only = False
+        else:
+            self._read_only = True
+        self.load_from_fn(revision)
+
     def save(self, *args, **kwargs):
+        if self._read_only:
+            raise ReadOnlyError, "cannot modify object not on HEAD revision"
         super(FOSS_Components, self).save(*args, **kwargs)
         self.write_to_fn()
 

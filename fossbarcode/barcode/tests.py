@@ -73,20 +73,6 @@ class TestFileDataDirMixin(BarCodeHarness):
         repo = self.product.get_repo()
         self.assertEqual(len(repo.revision_history(repo.head())), 2)
 
-    def testMultipleCommits(self):
-        self.addComponent()
-        self.component.license = "Test License 2.0"
-        self.component.save()
-        self.product.commit("First change to component license.")
-        self.component.license = "Test License 3.0"
-        self.component.save()
-        self.product.commit("Second change to component license.")
-
-        repo = self.product.get_repo()
-        self.assertEqual(len(repo.revision_history(repo.head())), 3)
-
-        self.assertTrue(False, "not done with this test yet")
-
     def testNewFileFromExisting(self):
         dest_path = os.path.join(self.product.file_path(),
                                  "patches/barstyle.css")
@@ -217,8 +203,24 @@ class TestFOSSComponents(BarCodeHarness):
         self.component.save()
         self.product.commit("Change component license.")
 
-        self.product.set_revision(commit_id)
-
-        old_component = self.product.foss_components_set.all()[0]
+        old_component = FOSS_Components.objects.get(id=self.component.id)
+        old_component.switch_revision(commit_id)
         self.assertEqual(old_component.id, self.component.id)
         self.assertEqual(old_component.license, "Test License 1.0")
+
+    def testReadOnly(self):
+        self.addComponent()
+        commit_id = self.product.get_repo().head()
+        self.component.license = "Test License 2.0"
+        self.component.save()
+        self.product.commit("Change component license.")
+        old_component = FOSS_Components.objects.get(id=self.component.id)
+        old_component.switch_revision(commit_id)
+
+        old_component.license = "Test License 3.0"
+        write_failed = False
+        try:
+            old_component.save()
+        except ReadOnlyError:
+            write_failed = True
+        self.assertTrue(write_failed)
