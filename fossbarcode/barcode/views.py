@@ -59,11 +59,11 @@ def sysconfig(request):
                                                         'tab_sysconfig': True })
 
 # record detail page - this is a multiform too with the edit additions
-def detail(request, record_id):
+def detail(request, record_id, revision=None):
     error_message = ''
     old_spdx = ''
     enable_edits = True
-    foss = render_detail(record_id)
+    foss = render_detail(record_id, revision)
     record_list = Product_Record.objects.filter(id = record_id)
     if record_list.count() != 0:
         record = record_list[0]
@@ -71,6 +71,12 @@ def detail(request, record_id):
         record = ''
         error_message = "No data for record " + record_id
         enable_edits = False
+
+    # Create the history.
+    record_history = []
+    if record:
+        for (commit, commit_time, msg) in record.iter_history():
+            record_history.append((commit, datetime.date.fromtimestamp(commit_time), msg))
 
     if request.method == 'POST': # If the form has been submitted...
         mode = urllib.unquote(request.POST.get('submit'))
@@ -238,7 +244,7 @@ def detail(request, record_id):
     headerform = HeaderForm() # An unbound form
     itemform = ItemForm() # An unbound form
 
-    return render_to_response('barcode/detail.html', {'record': record, 'foss': foss, 
+    return render_to_response('barcode/detail.html', {'record': record, 'foss': foss, 'history': record_history,
                                                       'host_site': host_site, 'tab_results': True,
                                                       'error_message': error_message, 'enable_edits': enable_edits,
                                                       'headerform': headerform, 'itemform': itemform })
@@ -547,11 +553,13 @@ def delete_records(table, rlist):
             q.delete()
 
 # pre-render some of the record detail
-def render_detail(id):
+def render_detail(id, revision=None):
     media_root = '<a href="/site_media/user_data/'
     foss = []
     foss_list = FOSS_Components.objects.filter(brecord = id)
     for f in foss_list:
+        if revision:
+            f.switch_revision(revision)
         fossid = f.id
         if f.spdx_file != '':
             spdx_file = media_root + str(id) + "/spdx_files/" + os.path.basename(f.spdx_file) + '">' + f.spdx_file + "</a><br>"

@@ -2,11 +2,10 @@
 {% block content %}
 <div id="history-modal-content">
   <h3>Change History, record #{{ record.id }}:</h3>
-  <p>This is just dummy data, diff links don't do anything yet</p>
-  <!-- FIXME - just dummy data for now - fill with per-record data, links to diffs -->
   <ul>
-       <li>7/2/2011 - changed foo to bar <a href="#">diff</a></li>
-       <li>6/22/2011 - changed bar to baz <a href="#">diff</a></li>
+{% for commit_id, commit_date, commit_msg in history %}
+       <li><a href="#">{{ commit_date.isoformat }}</a>: {{ commit_msg }}</li>
+{% endfor %}
   </ul>
 </div>
 {% endblock %}
