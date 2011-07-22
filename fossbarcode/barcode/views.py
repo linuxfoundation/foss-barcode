@@ -29,6 +29,11 @@ def taskstatus(request):
     tm = task.TaskManager()
     return HttpResponse(tm.read_status())
 
+# dynamically generate history.js file
+def history_js(request):
+    return render_to_response('media/js/history.js', { "idtag": 31337 },
+                              mimetype="application/javascript")
+
 # history - returns JSON, intended for calling from javascript
 def history_json(request, record_id):
     p = Product_Record.objects.get(id=record_id)
