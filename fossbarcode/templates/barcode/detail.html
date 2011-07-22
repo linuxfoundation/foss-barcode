@@ -33,10 +33,10 @@
           <span id="header-modal">    
             <a href="#" class="basic"><img src="/site_media/images/filetree/edit.png" title="Edit Record Header"></a>
           </span>
+          {% endif %}
           <span id="history-modal" float="left">
             <a href="#" name="history1" id="{{ record.id }}" class="basic"><img src="/site_media/images/filetree/code.png" title="Change History"></a>
           </span>
-          {% endif %}
         </span>
         <b>Company Name: </b>{{ record.company }}<br>
         <b>FOSS Website: </b><a href="{{ record.website }}" target="_blank">{{ record.website }}</a><br>
