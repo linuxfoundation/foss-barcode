@@ -28,12 +28,14 @@
       <td rowspan = "3" width = "40%">
         <span id="noprint">
           &nbsp;&nbsp;
+          {% if not revision %}
           <span id="header-modal">    
             <a href="#" class="basic"><img src="/site_media/images/filetree/edit.png" title="Edit Record Header"></a>
           </span>
           <span id="history-modal" float="left">
             <a href="#" class="basic"><img src="/site_media/images/filetree/code.png" title="Change History"></a>
           </span>
+          {% endif %}
         </span>
         <b>Company Name: </b>{{ record.company }}<br>
         <b>FOSS Website: </b><a href="{{ record.website }}" target="_blank">{{ record.website }}</a><br>
@@ -66,9 +68,13 @@
     <tr><th colspan = "10">FOSS Bill of Material for {{record.product }}-{{ record.version }}-{{ record.release }}</th></tr>
     <tr>
       <td align="center" width="45">
+        <span id="noprint">
+        {% if not revision %}
         <div id="line-item-modal">    
           <a href="#" class="basic" name="line_item_add" id="{{ foss|length }}"><img src="/site_media/images/list-add.png" title="Add Line Item"></a>
         </div>
+        {% endif %}
+        </span>
       </td>
       <th>Component</th>
       <th>Version</th>
@@ -84,12 +90,14 @@
     <tr valign = "top">   
       <td align="center" width="45">
       <span id="noprint">
+        {% if not revision %}
         <span id="line-item-modal">
             <a href="#" class="basic" name="line_item{{ forloop.counter }}" id="{{ row.id }}"><img src="/site_media/images/filetree/edit.png" title="Edit Line Item"></a>
         </span>
         <span id="line-delete-modal">
             <a href="#" class="basic" name="line_item{{ forloop.counter }}" id="{{ row.id }}"><img src="/site_media/images/edit-delete.png" title="Delete Line Item"></a>
         </span>
+        {% endif %}
       </span>     
       </td>
       <td id="foss_component{{ forloop.counter }}">{{ row.component }}</td>
