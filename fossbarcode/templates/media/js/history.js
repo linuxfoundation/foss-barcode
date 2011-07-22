@@ -14,8 +14,13 @@ function history_fill(record) {
 	var items = [];
 
 	$.each(data, function(index) {
-	    items.push('<li><a href="' + record_url + $(this)[0] + '">' + 
-		       $(this)[1] + '</a>: ' + $(this)[2] + "</li>");
+	    if (index == 0) {
+		items.push('<li><a href="' + record_url + '">' + 
+			   $(this)[1] + '</a>: ' + $(this)[2] + "</li>");
+	    } else {
+		items.push('<li><a href="' + record_url + $(this)[0] + '">' + 
+			   $(this)[1] + '</a>: ' + $(this)[2] + "</li>");
+	    }
 	});
 
 	$('#history-modal-content-list').html('<ul>' + items.join('') + "</ul>");
