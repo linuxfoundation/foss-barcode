@@ -5,6 +5,7 @@ from fossbarcode.barcode.models import Product_Record, FOSS_Components, Patch_Fi
 from django.http import HttpResponse, HttpResponseRedirect
 from django.http import Http404
 from django.conf import settings
+from django.utils import simplejson as json
 
 from fossbarcode import task
 
@@ -27,6 +28,13 @@ for s in settings_list:
 def taskstatus(request):
     tm = task.TaskManager()
     return HttpResponse(tm.read_status())
+
+# history - returns JSON, intended for calling from javascript
+def history_json(request, record_id):
+    p = Product_Record.objects.get(id=record_id)
+    hist = [(x[0], datetime.date.fromtimestamp(x[1]).isoformat(), x[2])
+            for x in p.iter_history()]
+    return HttpResponse(json.dumps(hist), content_type="application/json")
 
 # system configuration settings
 def sysconfig(request):

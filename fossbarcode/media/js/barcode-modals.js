@@ -33,7 +33,7 @@ jQuery(function ($) {
           var record = $(this).attr("id");
           if (clicked.search("history") != -1 ) {
             var row = clicked.replace("history", "");
-            history_fill(row, record);       
+            history_fill(record);       
             $('#history-modal-content').modal({
               containerCss:{
                 height:450,
