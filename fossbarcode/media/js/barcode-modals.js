@@ -29,14 +29,22 @@ jQuery(function ($) {
 
     // history popup
 	$('#history-modal .basic').click(function (e) {
-		$('#history-modal-content').modal({
-            containerCss:{
+          var clicked = $(this).attr("name");
+          var record = $(this).attr("id");
+          if (clicked.search("history") != -1 ) {
+            var row = clicked.replace("history", "");
+            history_fill(row, record);       
+            $('#history-modal-content').modal({
+              containerCss:{
                 height:450,
                 padding:0,
                 width:700
-            }
-        });
-		return false;
+              }
+            });
+          } else {
+            $.modal('<h3>Unable to retrieve line_item...</h3>');
+          }
+          return false;
 	});
 
     // line edit modal popup

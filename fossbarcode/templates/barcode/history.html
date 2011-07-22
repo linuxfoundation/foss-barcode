@@ -1,11 +1,9 @@
 <!-- we don't extend base for this one as we don't want the overall tabs/styling -->
 {% block content %}
 <div id="history-modal-content">
-  <h3>Change History, record #{{ record.id }}:</h3>
-  <ul>
-{% for commit_id, commit_date, commit_msg in history %}
-       <li><a href="{% url detail-revision-url record.id commit_id %}">{{ commit_date.isoformat }}</a>: {{ commit_msg }}</li>
-{% endfor %}
-  </ul>
+  <h3>Change History, record #<span id="history-modal-content-id"></span>:</h3>
+  <div id="history-modal-content-list">
+    <p>Retrieving history...</p>
+  </div>
 </div>
 {% endblock %}

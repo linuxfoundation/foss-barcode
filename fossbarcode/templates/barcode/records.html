@@ -7,6 +7,7 @@
     <script type="text/javascript" src="/site_media/js/jquery-1.4.2.min.js"></script>
     <script type='text/javascript' src='/site_media/js/jquery.simplemodal.1.4.1.min.js'></script>
     <script type='text/javascript' src='/site_media/js/barcode-modals.js'></script>
+    <script type='text/javascript' src='/site_media/js/history.js'></script>
 </head>
 {% endblock %}
 
@@ -44,7 +45,7 @@
         <td align="center">
             <input type="checkbox" name="recordcheck" value="{{ record.id }}" /><br>
             <div id="history-modal">
-                <a href='#' class='basic' name="history{{ record.id }}"><img src="/site_media/images/filetree/code.png" title="Change History"></a>
+                <a href='#' class='basic' name="history{{ forloop.counter }}" id="{{ record.id }}"><img src="/site_media/images/filetree/code.png" title="Change History"></a>
             </div>
         </td>
         <td><a href="/barcode/{{ record.id }}/detail">{{ record.id }}</a>
