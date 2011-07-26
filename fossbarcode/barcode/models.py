@@ -337,7 +337,8 @@ class FOSS_Components(models.Model, FileDataMixin):
         "license": (str, ""),
         "license_url": (str, ""),
         "url": (str, ""),
-        "spdx_file": (str, "")
+        "spdx_file": (str, ""),
+        "patch_files": (list, [])
     }
     _read_only = False
 
@@ -375,12 +376,6 @@ class FOSS_Components(models.Model, FileDataMixin):
         if self.data_file_name:
             self.brecord.delete_file(self.data_file_name)
         super(FOSS_Components, self).delete(*args, **kwargs)
-
-class Patch_Files(models.Model):
-    frecord = models.ForeignKey(FOSS_Components)
-    path = models.CharField(max_length=400)
-    def __unicode__(self):
-        return self.path
 
 class System_Settings(models.Model):
     name = models.CharField(max_length=32, db_index=True)
