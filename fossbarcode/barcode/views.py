@@ -1,7 +1,7 @@
 # Create your views here.
 from django.template import Context, loader
 from django.shortcuts import render_to_response, get_object_or_404
-from fossbarcode.barcode.models import Product_Record, FOSS_Components, Patch_Files, System_Settings, RecordForm, HeaderForm, ItemForm
+from fossbarcode.barcode.models import Product_Record, FOSS_Components, System_Settings, RecordForm, HeaderForm, ItemForm
 from django.http import HttpResponse, HttpResponseRedirect
 from django.http import Http404
 from django.conf import settings
@@ -138,11 +138,30 @@ def detail(request, record_id, revision=None):
         if (mode == "Update Item" or mode == "Add Item" or mode == "Delete Item"):
             if itemform.is_valid() or mode == "Delete Item": # All validation rules pass, or we're deleting
  
+                # needed for file/change control operations below
+                pr = Product_Record.objects.get(id = record_id)
+
                 new_spdx = request.POST.get('foss_spdx', '')
                 if (mode == "Update Item" or mode == "Delete Item"):               
                     foss_id = request.POST.get('foss_record_id', '')
                     fd = FOSS_Components.objects.get(brecord = record_id, id = foss_id)
                     old_spdx = fd.spdx_file
+
+                elif (mode == "Add Item"):
+                    fd = FOSS_Components(brecord_id = record_id, 
+                                         package = request.POST.get('foss_component', ''),
+                                         version = request.POST.get('foss_version', ''),
+                                         copyright = request.POST.get('foss_copyright', ''), 
+                                         attribution = request.POST.get('foss_attribution', ''),
+                                         license = request.POST.get('foss_license', ''), 
+                                         license_url = request.POST.get('foss_license_url', ''), 
+                                         url = request.POST.get('foss_url', ''), 
+                                         spdx_file = os.path.basename(new_spdx))
+
+                    fd.save()
+                    foss_id = fd.id
+                else:
+                    error_message += "Unknown request made<br>"
 
                 if (mode == "Update Item"):
                     # line item data is in a file, so we alter/save rather than update
@@ -154,25 +173,7 @@ def detail(request, record_id, revision=None):
                     fd.license_url = request.POST.get('foss_license_url', '')
                     fd.url = request.POST.get('foss_url', '')
                     fd.spdx_file = os.path.basename(new_spdx)
-
-                    fd.save()
                 
-                if (mode == "Add Item"):
-                    fossdata = FOSS_Components(brecord_id = record_id, 
-                                           package = request.POST.get('foss_component', ''),
-                                           version = request.POST.get('foss_version', ''),
-                                           copyright = request.POST.get('foss_copyright', ''), 
-                                           attribution = request.POST.get('foss_attribution', ''),
-                                           license = request.POST.get('foss_license', ''), 
-                                           license_url = request.POST.get('foss_license_url', ''), 
-                                           url = request.POST.get('foss_url', ''), 
-                                           spdx_file = os.path.basename(new_spdx))
-
-                    fossdata.save()            
-
-                # needed for file/change control operations below
-                pr = Product_Record.objects.get(id = record_id)
-
                 if (mode == "Delete Item"):
                     fd.delete()
 
@@ -194,47 +195,43 @@ def detail(request, record_id, revision=None):
                 patch_files = request.POST.get('foss_patches', '')
                 if patch_files != '':
                     patches = patch_files.split("\r\n")
-                    patch_list = ''
-                    # build a list for a query against what we have
-                    for patch in patches:
-                        if patch != '':
-                            patch_list += '"' + os.path.basename(patch) + '",'
-                    patch_list = patch_list[:-1]
 
                     # remove patches no longer listed 
-                    old_patches = Patch_Files.objects.extra(where=['frecord_id = ' + foss_id + ' AND path NOT IN (' + patch_list + ')'])
+                    old_patches = [x for x in fd.patch_files
+                                   if x not in patches]
                     for p in old_patches:
                         try:
-                            pr.delete_file("patches/" + p.path)
+                            pr.delete_file("patches/" + p)
                         except:
-                            error_message += "Failed to delete: " + p.path + "<br>"
-                    old_patches.delete()
+                            error_message += "Failed to delete: " + p + "<br>"
+                        fd.patch_files.remove(p)
 
                     # and add any new ones
                     for patch in patches:
-                        if patch != '':
-                            patch_in = Patch_Files.objects.filter(frecord = foss_id, path = os.path.basename(patch))
-                            if patch_in.count() == 0:
-                                patchdata = Patch_Files(frecord_id = foss_id, path = os.path.basename(patch))
-                                patchdata.save()
-                                try:
-                                    pr.new_file_from_existing(patch, "patches")
-                                except:
-                                    error_message += "Failed to copy patch file: " + str(patch) + "<br>"
-                    
+                        if patch != '' and patch not in fd.patch_files:
+                            try:
+                                pr.new_file_from_existing(patch, "patches")
+                                fd.patch_files.append(os.path.basename(patch))
+                            except:
+                                error_message += "Failed to copy patch file: " + str(patch) + "<br>"
+
                 else:
                     # no patches specified, remove any that might be present
                     if (mode != "Add Item"):
-                        patchdata = Patch_Files.objects.filter(frecord = foss_id)
-                        for patch in patchdata:
+                        for patch in fd.patch_files:
                             try:
-                                pr.delete_file("patches/" + patch.path)
+                                pr.delete_file("patches/" + patch)
                             except:
-                                error_message += "Failed to delete: " + patch.path + "<br>"
-                        patchdata.delete()
+                                error_message += "Failed to delete: " + patch + "<br>"
+                        fd.patch_files = []
+
+                # save changes to component
+                if mode not in ["Delete Item", "Add Item"]:
+                    fd.save()
 
                 # update the master record "last updated"         
-                Product_Record.objects.filter(id = record_id).update(record_date = str(datetime.datetime.now()))
+                pr.record_date = datetime.datetime.now()
+                pr.save()
                 
                 # QR+ code changes with any change (record_date, components)
                 if pr.codetype == 'qr+':                
@@ -390,29 +387,33 @@ def input(request):
                                                    copyright = copyrights[i], attribution = attributions[i],
                                                    license = licenses[i], license_url = license_urls[i], 
                                                    url = urls[i], spdx_file = os.path.basename(spdxs[i]))
+
+                        # check for SPDX files and save in user_data
+                        if spdxs[i] != '':
+                            try:
+                                recorddata.new_file_from_existing(spdxs[i], "spdx_files")
+                            except:
+                                error_message += "Failed to copy " + str(spdxs[i]) + "to " + spdx_dest + "<br>"
+
+                        # check for patches and save in user_data
+                        patch_files = request.POST.get('foss_patches' + str(i), '')
+                        if patch_files != "":
+                            patches = patch_files.split("\n")
+                            for patch in patches:
+                                patch = patch[:-1]
+                                if patch != "":
+                                    try:
+                                        recorddata.new_file_from_existing(patch, "patches")
+                                        fossdata.patch_files.append(os.path.basename(patch))
+                                    except:
+                                        error_message += "Failed to copy " + str(patch) + "to " + patch_dest + "<br>"
+
+                        # save information after everything's collected
                         fossdata.save()
                         fossid = fossdata.id
 
-                    # check for SPDX files and save in user_data
-                    if spdxs[i] != '':
-                        try:
-                            recorddata.new_file_from_existing(spdxs[i], "spdx_files")
-                        except:
-                            error_message += "Failed to copy " + str(spdxs[i]) + "to " + spdx_dest + "<br>"
-                    
-                    # check for patches and save in user_data
-                    patch_files = request.POST.get('foss_patches' + str(i), '')
-                    if patch_files != "":
-                        patches = patch_files.split("\n")
-                        for patch in patches:
-                            patch = patch[:-1]
-                            if patch != "":
-                                patchdata = Patch_Files(frecord_id = fossid, path = os.path.basename(patch))
-                                patchdata.save()
-                                try:
-                                    recorddata.new_file_from_existing(patch, "patches")
-                                except:
-                                    error_message += "Failed to copy " + str(patch) + "to " + patch_dest + "<br>"
+                    else:
+                        error_message += "Cannot save blank FOSS record<br>"
                     i = i + 1
 
             # generate the checksum/barcode
@@ -579,10 +580,9 @@ def render_detail(id, revision=None):
         else:
             spdx_file = ''
 
-        patch_list = Patch_Files.objects.filter(frecord = fossid)
         patches = ""
-        for p in patch_list:
-            patches += media_root + str(id) + "/patches/" + os.path.basename(p.path) + '">' + p.path + "</a><br>"
+        for p in f.patch_files:
+            patches += media_root + str(id) + "/patches/" + os.path.basename(p) + '">' + p + "</a><br>"
         foss.append({'id': f.id, 'component': f.package, 'version': f.version, 
                      'copyright': f.copyright, 'attribution': f.attribution, 
                      'license': f.license, 'license_url': f.license_url, 
