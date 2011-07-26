@@ -41,6 +41,16 @@ def history_json(request, record_id):
             for x in p.iter_history()]
     return HttpResponse(json.dumps(hist), content_type="application/json")
 
+# history_file - returns the file data for the path at revision
+def history_file(request, record_id, revision, path):
+    p = Product_Record.objects.get(id=record_id)
+    repo = p.get_repo()
+    traverse = repo.commit(revision).tree
+    for path_component in os.path.split(path):
+        traverse = repo.tree(traverse)[path_component][1]
+    blob = repo.get_blob(traverse)
+    return HttpResponse(blob.data, content_type="text/plain")
+
 # system configuration settings
 def sysconfig(request):
     info_message = ""
@@ -569,6 +579,7 @@ def delete_records(table, rlist):
 # pre-render some of the record detail
 def render_detail(id, revision=None):
     media_root = '<a href="/site_media/user_data/'
+    history_root = '<a href="/barcode/'
     foss = []
     foss_list = FOSS_Components.objects.filter(brecord = id)
     for f in foss_list:
@@ -581,8 +592,12 @@ def render_detail(id, revision=None):
             spdx_file = ''
 
         patches = ""
-        for p in f.patch_files:
-            patches += media_root + str(id) + "/patches/" + os.path.basename(p) + '">' + p + "</a><br>"
+        if revision:
+            for p in f.patch_files:
+                patches += history_root + str(id) + "/detail/" + revision + "/patches/" + os.path.basename(p) + '">' + p + "</a><br>"
+        else:
+            for p in f.patch_files:
+                patches += media_root + str(id) + "/patches/" + os.path.basename(p) + '">' + p + "</a><br>"
         foss.append({'id': f.id, 'component': f.package, 'version': f.version, 
                      'copyright': f.copyright, 'attribution': f.attribution, 
                      'license': f.license, 'license_url': f.license_url, 
