@@ -1,8 +1,12 @@
 {% extends "barcode/base.html" %}
 {% block header %}
+    <!-- tree style ul -->
+    <style type="text/css" media="screen">@import "/site_media/css/mktree.css";</style>
     <!-- CSS file for modal dialog -->
     <style type="text/css" media="screen">@import "/site_media/css/barcode-modals.css";</style>
     <script type="text/javascript" src="/site_media/js/checklist.js"></script>
+    <!-- tree style ul -->
+    <script type="text/javascript" src="/site_media/js/mktree.js"></script>
     <!-- used for modal dialog -->
     <script type="text/javascript" src="/site_media/js/jquery-1.4.2.min.js"></script>
     <script type='text/javascript' src='/site_media/js/jquery.simplemodal.1.4.1.min.js'></script>
@@ -19,55 +23,35 @@
     {% endautoescape %}
 {% endif %}
 
-{% if not latest_record_list %}
+{% if not rendered_list %}
    <p><b>No records are available.</b></p>
 {% else %}
     <br>
-    <form name="resultsform" method="post" action="" enctype="multipart/form-data">   
-    <table width = "100%" border="1">
-      <tr align="left">
-        <td align="center"><input type="checkbox" name="selectall"
+    <form name="resultsform" method="post" action="" enctype="multipart/form-data">
+    <table border="1" cellpadding="5" style="margin-left: 140px;" width="900px">
+      <tr align="center">
+        <td width="45" align="center"><input type="checkbox" name="selectall"
                     title="Select/Deselect All Records" 
                     onclick="toggleall(this.form,'recordcheck','selectall')" />
         </td>
-        <td></td>
         <td><input type="submit" name="submit" value="Delete Selected Records"
                     onclick="buildlist(this.form,'recordcheck','recordlist')" />
         </td>
       </tr>
-      <tr align="left">
+      <tr align="center">
         <td></td>
-        <th>Id/Checksum</th>
-        <th>Information</th>
+        <th>Release/Information (Website, Contact Email/Name, Last Updated)</th>
       </tr>
-    {% for record in latest_record_list %}
-      <tr valign="top">
-        <td align="center">
-            <input type="checkbox" name="recordcheck" value="{{ record.id }}" /><br>
-            <div id="history-modal">
-                <a href='#' class='basic' name="history{{ forloop.counter }}" id="{{ record.id }}"><img src="/site_media/images/filetree/code.png" title="Change History"></a>
-            </div>
-        </td>
-        <td><a href="/barcode/{{ record.id }}/detail">{{ record.id }}</a>
-            {% if record.checksum %}<br>{{ record.checksum }}{% endif %} 
-        </td>
-        <td>
-            <i>Company Name:</i> {{ record.company }}<br>
-            <i>FOSS Website:</i> <a href="{{ record.website }}" target="_blank">{{ record.website }}</a><br>
-            <i>Product Name:</i> {{ record.product }}<br>
-            <i>Product Version-Release:</i> {{ record.version }}-{{ record.release }}<br>
-            <i>Last Updated:</i> {{ record.record_date|date:"M d, Y H:i:s" }}<br>
-            <i>Compliance Contact Name:</i> {{ record.contact }}<br>
-            <i>Compliance Contact Email:</i> {{ record.email }}<br>
-        </td>
-      </tr>
-    {% endfor %}
     </table>
+    <ul class="mktree" id="tree1">
+    <!-- just blob out the pre-rendered html - fastest way --> 
+    {% for row in rendered_list %}
+    {% autoescape off %}{{ row }}{% endautoescape %}
+    {% endfor %} 
+    </ul>    
     <input type="hidden", name="recordlist", value="" />
-
     </form>
     <!-- this is the modal popup content for viewing the history data -->
-    <!-- FIXME - need to populate for the requested record -->
     {% include "barcode/history.html" %}
 {% endif %}
 {% endblock %}

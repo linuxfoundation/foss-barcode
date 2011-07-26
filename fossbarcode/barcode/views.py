@@ -303,8 +303,47 @@ def records(request):
                 if record != '':
                     error_message = delete_record(record)
 
-    latest_record_list = Product_Record.objects.order_by('-record_date')
-    return render_to_response('barcode/records.html', {'latest_record_list': latest_record_list,
+    rendered = []
+    himage = '<img src="/site_media/images/filetree/code.png" title="Change History">'
+    liclose = "</ul></li>"
+    ctr = 1
+
+    # pre-render the outline display for speed, uses mktree.js for a collapsible list
+    companies = Product_Record.objects.values_list('company').distinct()
+    if companies.count() != 0:
+        for c in companies:
+            # use <li class="liOpen"> to force open state
+            rendered.append("<li><b>" + c[0] + ":</b><ul>")
+            products = Product_Record.objects.values_list('product').filter(company = c[0]).distinct()
+            for p in products:
+                rendered.append("<li>" + p[0] + ":<ul>")
+                versions = Product_Record.objects.values_list('version').filter(company = c[0], product = p[0]).distinct()
+                for v in versions:
+                    rendered.append("<li>Version " + v[0] + ":<ul>")
+                    releases = Product_Record.objects.filter(company = c[0], product = p[0], version = v[0])
+                    if releases.count() != 0:
+                        rendered.append('<table border="1" cellpadding="5" width="900px">')
+                        for r in releases:
+                            recid = str(r.id)
+                            rendered.append('<tr>')
+                            rendered.append('<td width="45" valign="center"><input type="checkbox" name="recordcheck" value="' + recid + '">')
+                            rendered.append('<span id="history-modal">')
+                            rendered.append('<a href="#" class="basic" name="history' + str(ctr) +'"')
+                            rendered.append('id="' + recid + '">' + himage + '</a>')
+                            rendered.append('</span></td>')
+                            rendered.append('<td><a href="/barcode/' + recid + '/detail/">Release ' + r.release + '</a></td>')
+                            rendered.append('<td><a href="' + r.website + '" target="_blank">' + r.website + '</a></td>')
+                            rendered.append('<td><a href="mailto:' + r.email + '" target="_blank">' + r.email + '</a></td>')
+                            rendered.append('<td>' + r.contact + '</td>')
+                            rendered.append('<td>' + r.record_date.strftime("%m/%d/%Y %I:%m %p") + '</td>')
+                            rendered.append('</tr>')
+                            ctr += 1
+                        rendered.append('</table>')
+                    rendered.append(liclose)
+                rendered.append(liclose)
+            rendered.append(liclose)
+    
+    return render_to_response('barcode/records.html', {'rendered_list': rendered,
                                                        'error_message': error_message, 
                                                        'tab_records': True })
 
