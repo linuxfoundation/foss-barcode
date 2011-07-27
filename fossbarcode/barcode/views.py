@@ -461,8 +461,6 @@ def input(request):
                         fossdata.save()
                         fossid = fossdata.id
 
-                    else:
-                        error_message += "Cannot save blank FOSS record<br>"
                     i = i + 1
 
             # generate the checksum/barcode

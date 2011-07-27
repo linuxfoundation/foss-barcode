@@ -189,6 +189,38 @@ class TestProductRecord(BarCodeHarness):
         self.assertTrue(os.path.exists(partial_path + ".ps"))
         self.assertTrue(os.path.exists(partial_path + ".png"))
 
+    def testClone(self):
+        self.addComponent()
+        self.product.checksum_to_barcode()
+        self.assertTrue(self.product.commit("Add QR code."))
+
+        clone_product = self.product.clone(release="2")
+
+        self.assertIsNotNone(clone_product)
+        self.assertEqual(Product_Record.objects.all().count(), 2)
+        self.assertEqual(clone_product.company, self.product.company)
+        self.assertEqual(clone_product.product, self.product.product)
+        self.assertEqual(clone_product.version, self.product.version)
+        self.assertNotEqual(clone_product.release, self.product.release)
+        self.assertEqual(clone_product.foss_components_set.count(),
+                         self.product.foss_components_set.count())
+
+        clone_component = clone_product.foss_components_set.all()[0]
+        self.assertEqual(clone_component.package, self.component.package)
+
+        old_repo = self.product.get_repo()
+        clone_repo = clone_product.get_repo()
+        self.assertEqual(len(clone_repo.revision_history(clone_repo.head())),
+                         len(old_repo.revision_history(old_repo.head())) + 1)
+
+    def testNoExactClone(self):
+        clone_failed = False
+        try:
+            self.product.clone(release=self.product.release)
+        except ValueError:
+            clone_failed = True
+        self.assertTrue(clone_failed)
+
 class TestFOSSComponents(BarCodeHarness):
     def testDelete(self):
         self.addComponent()

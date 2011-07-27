@@ -234,6 +234,44 @@ class Product_Record(models.Model, FileDataDirMixin):
     def __unicode__(self):
         return self.product
 
+    def clone(self, company=None, product=None, version=None, release=None):
+        # Create a clone of this product, including the same components,
+        # patches, etc.  Must provide at least one different value for
+        # company, product, version, or release.  Returns the new product.
+        if not company:
+            company = self.company
+        if not product:
+            product = self.product
+        if not version:
+            version = self.version
+        if not release:
+            release = self.release
+
+        if company == self.company and product == self.product and \
+                version == self.version and release == self.release:
+            raise ValueError, "cannot make an identical clone of a product"
+
+        new_product = Product_Record(company=company, product=product,
+                                     version=version, release=release,
+                                     codetype=self.codetype, 
+                                     website=self.website,
+                                     contact=self.contact, email=self.email)
+        new_product.save()
+
+        shutil.copytree(self.file_path(), new_product.file_path())
+
+        for component in self.foss_components_set.all():
+            new_component = FOSS_Components(brecord=new_product,
+                                            data_file_name=component.data_file_name)
+            new_component.save()
+
+        if self.checksum:
+            new_product.checksum = new_product.calc_checksum()
+            new_product.checksum_to_barcode()
+            new_product.commit("Create new barcode after clone from product %d." % self.id)
+
+        return new_product
+
     def calc_checksum(self):
         # create an xml file of the database data
         # FIXME - do we even need an xml dataset now with just these 4 fields?
