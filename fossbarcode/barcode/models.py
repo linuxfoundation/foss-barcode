@@ -267,6 +267,7 @@ class Product_Record(models.Model, FileDataDirMixin):
 
         if self.checksum:
             new_product.checksum = new_product.calc_checksum()
+            new_product.save()
             new_product.checksum_to_barcode()
             new_product.commit("Create new barcode after clone from product %d." % self.id)
 

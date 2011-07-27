@@ -107,6 +107,18 @@ def detail(request, record_id, revision=None):
         headerform = HeaderForm(request.POST) # A form bound to the POST data
         itemform = ItemForm(request.POST) # A form bound to the POST data
 
+        if (mode == "Clone Record"):
+            if headerform.is_valid(): # All validation rules pass            
+                pr = Product_Record.objects.get(id = record_id)
+                try:
+                    newpr = pr.clone( company=request.POST.get('company', ''),
+                                      product = request.POST.get('product', ''), 
+                                      version = request.POST.get('version', ''),
+                                      release = request.POST.get('release', ''))
+                    record_id = str(newpr.id)
+                except:
+                    error_message += "Record clone failed..."
+
         if (mode == "Update Header"):
             if headerform.is_valid(): # All validation rules pass            
                 Product_Record.objects.filter(id = record_id).update(company = request.POST.get('company', ''),
@@ -139,11 +151,13 @@ def detail(request, record_id, revision=None):
                   
                 # commit changes to version control
                 pr.commit(request.POST.get('header_commit_message', ''))
-
-                return HttpResponseRedirect('/barcode/' + record_id + '/detail/')
-
+ 
             else:
-                error_message = "Invalid header update data, see header dialog..."
+                error_message += "Invalid header update data, see header dialog..."
+
+        if (mode == "Clone Record" or mode == "Update Header"):
+            if (error_message == ''):
+                return HttpResponseRedirect('/barcode/' + record_id + '/detail/') 
 
         if (mode == "Update Item" or mode == "Add Item" or mode == "Delete Item"):
             if itemform.is_valid() or mode == "Delete Item": # All validation rules pass, or we're deleting
