@@ -17,6 +17,8 @@ jQuery(function ($) {
 
     // header edit modal popup
 	$('#header-modal .basic').click(function (e) {
+        var clicked = $(this).attr("name");
+        header_edit_mode(clicked);
 		$('#header-modal-content').modal({
             containerCss:{
                 height:450,

@@ -31,7 +31,10 @@
           &nbsp;&nbsp;
           {% if not revision %}
           <span id="header-modal">    
-            <a href="#" class="basic"><img src="/site_media/images/filetree/edit.png" title="Edit Record Header"></a>
+            <a href="#" name="edit_header" class="basic"><img src="/site_media/images/filetree/edit.png" title="Edit Record Header"></a>
+          </span>
+          <span id="header-modal">    
+            <a href="#" name="clone_record" class="basic"><img src="/site_media/images/edit-copy.png" title="Clone Record"></a>
           </span>
           {% endif %}
           <span id="history-modal" float="left">
@@ -227,6 +230,24 @@
         } else {
             return true;
         }
+    }
+    
+    function header_edit_mode(mode) {
+        if (mode == "clone_record") {
+            var warning_txt = "<b>Warning</b> - to clone this record, please change at least one of the highlighted fields";
+            var title_txt = "Clone Record:";
+            var commit_txt = "Modified clone of record {{ record.id }}";
+            var submit_txt = "Clone Record";
+        } else {
+            var warning_txt = "<b>Warning</b> - changing these fields will cause the checksum/barcode to be regenerated!";
+            var title_txt = "Edit Header:";
+            var commit_txt = "";
+            var submit_txt = "Update Header";
+        }
+        document.getElementById('header_warning').innerHTML = warning_txt;
+        document.getElementById('header_title').innerHTML = title_txt;
+        document.getElementById('id_header_commit_message').value = commit_txt;
+        document.getElementById('submit_header').value = submit_txt;
     }
 </script>
 {% endblock %}
