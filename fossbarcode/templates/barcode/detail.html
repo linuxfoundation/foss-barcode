@@ -8,6 +8,7 @@
   <script type='text/javascript' src='/site_media/js/jquery.simplemodal.1.4.1.min.js'></script>
   <script type='text/javascript' src='/site_media/js/barcode-modals.js'></script>
   <script type='text/javascript' src='/site_media/js/history.js'></script>
+  <script type="text/javascript" src="/site_media/js/record-check.js"></script>
 </head>
 {% endblock %}
 
@@ -45,7 +46,7 @@
         <b>FOSS Website: </b><a href="{{ record.website }}" target="_blank">{{ record.website }}</a><br>
         <b>Product Name: </b>{{ record.product }}<br>
         <b>Product Version/Release: </b>{{ record.version }}-{{ record.release }}<br>
-        <b>Last Updated: </b>{{ record.record_date|date:"M d, Y H:i:s" }}<br>
+        <b>Last Updated: </b>{% if not revision %}{{ record.record_date|date:"M d, Y H:i:s" }}{% else %}<i>**HISTORICAL RECORD**</i>{% endif %}<br>
         <b>Compliance Contact Name: </b>{{ record.contact }}<br>
         <b>Compliance Contact Email: </b><a href="mailto:{{ record.email }}" target="_blank">{{ record.email }}</a><br>
 {% if revision %}
@@ -168,7 +169,17 @@
             alert("Please fill all required header fields, including the commit message");
             return false;
         } else {
+            return search_dupes();
+        }
+    }
+
+    function search_dupes() {
+        var record = check_for_record();
+        if (record == "None") {
             return true;
+        } else {
+            alert("There appears to already be an entry with that company, product, version, release. Please change one of these values.")
+            return false;
         }
     }
 

@@ -12,6 +12,7 @@
   <script type='text/javascript' src='/site_media/js/file-select-ops.js'></script>
   <script type="text/javascript" src="/site_media/js/visibility.js"></script>
   <script type="text/javascript" src="/site_media/js/checklist.js"></script>
+  <script type="text/javascript" src="/site_media/js/record-check.js"></script>
 </head>
 {% endblock %}
 
@@ -443,6 +444,7 @@
         }
     }
 
+
     function search_dupes() {
         var filled = true;
         for(var f in header_fields){
@@ -453,21 +455,14 @@
         // refuse to continue unless all required fields are filled       
         if (filled == false) {      
             alert("Please fill all required header fields");
-        } else {        
-            xmlhttp = new XMLHttpRequest();
-            var query = "company=" + document.getElementById('id_company').value;
-            query += ";product=" + document.getElementById('id_product').value;
-            query += ";version=" + document.getElementById('id_version').value;
-            query += ";release=" + document.getElementById('id_release').value;
-            xmlhttp.open("GET", "/barcode/search_dupes?" + query, false);
-            xmlhttp.send();
-            if (xmlhttp.responseText == "None") {
+        } else {
+            var record = check_for_record();
+            if (record == "None") {
                 show_none("foss_list");
                 show_none("submit_buttons");
                 hide_element("dupe_search");
                 hide_element("header_mode");
             } else {
-                var record = xmlhttp.responseText;
                 var answer = confirm("There appears to already be an entry with that company, product, version, release. Would you care to edit that entry instead?")
 	            if (answer)
 		            window.location = "/barcode/" + record + "/detail/";
