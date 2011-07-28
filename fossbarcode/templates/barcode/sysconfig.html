@@ -28,12 +28,30 @@ Below are are list of user configurable settings. At a minumum you should set <i
   <tr>
     <td>{{ record.name }}</td>
     {% if record.ftype == 'b' %}
-        <td>
+    <td>
         <input type="radio" name="{{ record.name }}" value="True" {% if record.value == "True" %} checked {% endif %}> True
         <input type="radio" name="{{ record.name }}" value="False" {% if record.value == "False" %} checked {% endif %}> False</td>
-        </td>
+    </td>
     {% else %}
-    <td><input type="input" name="{{ record.name }}" size="80" value="{{ record.value }}"></td>
+      {% if record.ftype == 'c' %}
+        <td>
+        {% for name, values in config_choices %}
+          {% if name == record.name %}
+            <select name="{{ record.name }}">
+            {% for value, display in values %}
+              {% if value == record.value %}
+                <option value="{{ value }}" selected>{{ value }} - {{ display }}</option>
+              {% else %}
+                <option value="{{ value }}">{{ value }} - {{ display }}</option>
+              {% endif %}
+            {% endfor %}
+            </select>
+          {% endif %}
+        {% endfor %}        
+        </td>
+      {% else %}
+        <td><input type="input" name="{{ record.name }}" size="80" value="{{ record.value }}"></td>
+      {% endif %}
     {% endif %}
     <td>{{ record.descr }}</td>
     <td>{{ record.last_updated|date:"M d, Y H:i:s"  }}</td>

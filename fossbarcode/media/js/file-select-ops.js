@@ -37,7 +37,7 @@ function filenametoentry(filename) {
     lastchar = filename.slice(-1);
     // only files, no dirs
     if (lastchar != '/') {
-        if (path_dest == sfield) {
+        if ((path_dest == sfield) || (path_dest == "spdx_file")) {
             // replace, don't append
             document.getElementsByName(path_dest)[0].value = filename;
         } else {

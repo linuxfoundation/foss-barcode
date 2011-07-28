@@ -68,7 +68,15 @@
       <img src="/site_media/images/system-search.png" title="Check for Match to Continue"></a>
       {{ recordform.email.errors }}
     </td>   
-  </tr>      
+  </tr>
+  <tr align="left">
+    <td align="right"><b>{% autoescape off %}{{ recordform.spdx_file.label }}{% endautoescape %}:</b></td>
+    <td>{{ recordform.spdx_file }}</td>
+    <td align="center"><input type="button" name="spdxfilename" value="Select"
+                            title="Open a File/Directory Selector"
+                            onclick="toggle_visibility('target_select');set_destination('spdx_file');"/>
+    </td>    
+  </tr>     
 </table>
 </div> <!-- entry_form -->
 
@@ -157,10 +165,7 @@
 <span id="header_mode" align="center"><h3>BoM and Submit buttons will be visible after checking for a unique record</h3></span>
 <table width="100%" id="submit_buttons">
   <tr>
-    <td align="center"><input style="width: 200px" type="submit" name="submit_qrcode" value="Create Checksum/QRcode" /></td>
-  </tr>
-  <tr>
-    <td align="center"><input style="width: 200px" type="submit" name="submit_barcode" value="Create Checksum/Barcode" /></td>
+    <td align="center"><input style="width: 200px" type="submit" name="submit_code" value="Create Checksum/Code Image" /></td>
   </tr>
 </table>
 <hr>
@@ -215,6 +220,8 @@
             hide_element("bom_editor");
             hide_element("submit_buttons");
         }
+        // disable manual input for the spdx_file field
+        document.getElementById("id_spdx_file").setAttribute("readonly", "true");
     }
     function update_patch_list(src) {
         var findex = src.replace(pfield,"");

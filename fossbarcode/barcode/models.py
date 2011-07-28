@@ -220,14 +220,11 @@ class Product_Record(models.Model, FileDataDirMixin):
     version = models.CharField('Product Version', max_length=20)
     release = models.CharField('Product Release', max_length=20)
     checksum = models.CharField('Checksum', max_length=200, blank=True)
-    # FIXME - we need a method to handle "all" if we use it, this isn't exposed to the user right now
-    codetype = models.CharField('Code Type', max_length=3, default='qr+', 
-                    choices=(('qt+', 'detailed QR code'), ('qr', 'basic QR code'), 
-                             ('128', 'code 128 1D barcode'), ('all', 'generate all codes')))
     website = models.CharField('Company Website', max_length=200)
     record_date = models.DateTimeField('Last Updated', auto_now=True)
     contact = models.CharField('Compliance Contact Name (optional)', max_length=200, blank=True)
     email = models.CharField('Compliance Contact Email', max_length=200)
+    spdx_file = models.CharField('SPDX<sup>TM</sup> File', max_length=200, blank=True)
     # for future fine tuning of how things can be changed
     released = models.BooleanField('Released to Production', default=False)
 
@@ -253,12 +250,11 @@ class Product_Record(models.Model, FileDataDirMixin):
 
         new_product = Product_Record(company=company, product=product,
                                      version=version, release=release,
-                                     codetype=self.codetype, 
                                      website=self.website,
                                      contact=self.contact, email=self.email)
         new_product.save()
 
-        shutil.copytree(self.file_path(), new_product.file_path())
+        shutil.copytree(self.file_path(), new_product.file_path(), ignore=shutil.ignore_patterns('*.png', '*.ps'))
 
         for component in self.foss_components_set.all():
             new_component = FOSS_Components(brecord=new_product,
@@ -269,7 +265,7 @@ class Product_Record(models.Model, FileDataDirMixin):
             new_product.checksum = new_product.calc_checksum()
             new_product.save()
             new_product.checksum_to_barcode()
-            new_product.commit("Create new barcode after clone from product %d." % self.id)
+            new_product.commit("Create new barcode after clone from record %d." % self.id)
 
         return new_product
 
@@ -295,52 +291,54 @@ class Product_Record(models.Model, FileDataDirMixin):
             self.checksum = self.calc_checksum()
             self.save()
 
-        # FIXME - can any user write the file to here?
+        # FIXME - this is all in a state of flux, make them all, make some?
+        # latest call is to make qr+ and 128 always, show the one selected in sysconfig
+        # doing qr also, since the config end is all setup
         file_path = self.file_path()
-        ps_filename = self.checksum + ".ps"
-        ps_file = os.path.join(file_path, ps_filename)
-        png_filename = self.checksum + ".png"
-        png_file = os.path.join(file_path, png_filename)
+        base_filename = self.checksum + "-"
         foss_file = os.path.join(settings.STATIC_DOC_ROOT, "images/foss.png")
-
-        if self.codetype == "128":
-            result = os.system("barcode -b " + self.checksum + " -e 128 -m '0,0' -E > " + ps_file)        
-        else:
-            if self.codetype == "qr":
-                # basic qr
-                mecard = ""
+        gen_types = [ "128", "qr", "qr+" ]
+ 
+        for t in gen_types:
+            ps_filename = base_filename + t + ".ps"
+            ps_file = os.path.join(file_path, ps_filename)
+            png_filename = base_filename + t + ".png"
+            png_file = os.path.join(file_path, png_filename)
+            if t == "128":
+                result = os.system("barcode -b " + self.checksum + " -e 128 -m '0,0' -E > " + ps_file)
             else:
-                # qr+ with details
-                mecard = self.record_to_mecard()
+                # mecard data will either be basic (just the product url), or enhanced
+                mecard = self.record_to_mecard(t)
 
-            result = os.system("qrencode -v 6 -l Q -m 0 -o " + png_file + " " + mecard)
+                result = os.system("qrencode -v 6 -l Q -m 0 -o " + png_file + " " + mecard)
+                if result == 0:
+                    # overlay the foss.png image for branding
+                    qrcode = Image.open(png_file)
+                    overlay = Image.open(foss_file)
+
+                    (xdim,ydim) = qrcode.size
+
+                    qrcode.paste(overlay,((xdim-1)/2-28,(ydim-1)/2-13))
+                    qrcode.save(png_file,"PNG")
+
             if result == 0:
-                # overlay the foss.png image for branding
-                qrcode = Image.open(png_file)
-                overlay = Image.open(foss_file)
+                # image conversion tries to use root's settings, if started as root
+                os.putenv('TMP', '/tmp')
+                os.putenv('TMPDIR', '/tmp')
+                if t == "128":
+                    result = os.system("pstopnm -xsize 500 -portrait -stdout " + ps_file + " | pnmtopng > " + png_file)
+                else:
+                    result = os.system("sam2p " + png_file + " PS: " + ps_file)
 
-                (xdim,ydim) = qrcode.size
-
-                qrcode.paste(overlay,((xdim-1)/2-28,(ydim-1)/2-13))
-                qrcode.save(png_file,"PNG")
-
-        if result == 0:
-            # image conversion tries to use root's settings, if started as root
-            os.putenv('TMP', '/tmp')
-            os.putenv('TMPDIR', '/tmp')
-            if self.codetype == "128":
-                result = os.system("pstopnm -xsize 500 -portrait -stdout " + ps_file + " | pnmtopng > " + png_file)
-            else:
-                result = os.system("sam2p " + png_file + " PS: " + ps_file)
-
-        self.register_new_file(ps_filename)
-        self.register_new_file(png_filename)
+                self.register_new_file(ps_filename)
+                self.register_new_file(png_filename)
 
         return result
 
     # convert a record to a MECARD string
     # see http://www.nttdocomo.co.jp/english/service/imode/make/content/barcode/function/application/addressbook/
-    def record_to_mecard(self):
+    def record_to_mecard(self, metype):
+        mecard = 'MECARD:'
         settings_list = System_Settings.objects.all()
         for s in settings_list:
             if s.name == "host_site":
@@ -348,19 +346,21 @@ class Product_Record(models.Model, FileDataDirMixin):
             if s.name == "host_site_in_qrcode":
                 host_site_in_qrcode = s.value
 
-        mecard = "MECARD:N:" + self.company + ";URL:" + self.website + ";EMAIL:" + self.email
-        mecard += ";NOTE:" + self.product + ", Version: " + self.version + ", Release: " + self.release
-        mecard += ", Updated: " + self.record_date.strftime('%Y-%m-%d')
-        # FOSS BoM
-        has_foss = FOSS_Components.objects.filter(brecord = self).count()
-        if has_foss:
-            mecard += ", BoM: "
-            foss_list = FOSS_Components.objects.filter(brecord = self)
-            for f in foss_list:
-                mecard += "(" + f.package + " " + f.version + " " + f.license + "), "
-            mecard = mecard[:-2] + ";"
-        # extra url to central site
-        if host_site_in_qrcode == "True":
+        if metype == "qr+":
+            mecard += "N:" + self.company + ";URL:" + self.website + ";EMAIL:" + self.email
+            mecard += ";NOTE:" + self.product + ", Version: " + self.version + ", Release: " + self.release
+            mecard += ", Updated: " + self.record_date.strftime('%Y-%m-%d')
+            # FOSS BoM
+            has_foss = FOSS_Components.objects.filter(brecord = self).count()
+            if has_foss:
+                mecard += ", BoM: "
+                foss_list = FOSS_Components.objects.filter(brecord = self)
+                for f in foss_list:
+                    mecard += "(" + f.package + " " + f.version + " " + f.license + "), "
+                    mecard = mecard[:-2] + ";"
+
+        # url to central site
+        if host_site_in_qrcode == "True" or metype == "qr":
             mecard += "URL:" + host_site + self.checksum + ";"
 
         escaped = re.escape(mecard)
@@ -418,7 +418,7 @@ class FOSS_Components(models.Model, FileDataMixin):
 
 class System_Settings(models.Model):
     name = models.CharField(max_length=32, db_index=True)
-    ftype = models.CharField(max_length=1, default='t', choices=(('b', 'bool'), ('t', 'text')))
+    ftype = models.CharField(max_length=1, default='t', choices=(('b', 'boolean'), ('t', 'text'), ('c', 'choices')))
     value = models.CharField(max_length=128)
     descr = models.CharField(max_length=256)
     last_updated = models.DateTimeField('Updated', auto_now=True)
@@ -431,7 +431,7 @@ class RecordForm(ModelForm):
     class Meta:
         model = Product_Record
         # FIXME - exclude these for now until we decide how to expose them
-        exclude = ('codetype', 'released')
+        exclude = ('released',)
 
     foss_component = forms.CharField(label="Component", max_length=200, required=False)
     foss_version = forms.CharField(label="Version", max_length=20, required=False)
@@ -447,14 +447,14 @@ class HeaderForm(ModelForm):
     class Meta:
         model = Product_Record
         # FIXME - exclude these for now until we decide how to expose them
-        exclude = ('codetype', 'released')
+        exclude = ('released',)
 
     header_commit_message = forms.CharField(label="Change Comments (for change history, required)",
                                             widget=forms.Textarea(attrs={'cols': 80, 'rows': 4}))
 
 class ItemForm(RecordForm):
     class Meta(RecordForm.Meta):
-        exclude = ('company', 'product', 'version', 'release', 'checksum', 'codetype', 'website', 'record_date' 'contact', 'email', 'released')
+        exclude = ('company', 'product', 'version', 'release', 'checksum', 'website', 'record_date' 'contact', 'email', 'released')
 
     item_commit_message = forms.CharField(label="Change Comments (for change history, required)",
                                           widget=forms.Textarea(attrs={'cols': 80, 'rows': 4}))

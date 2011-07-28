@@ -11,16 +11,18 @@ from fossbarcode import task
 
 import sys, os, re, urllib, subprocess, time, datetime
 
+# used to populate drop-downs for config options with fixed choices
+CONFIG_CHOICES = (
+    ('display_code_type', (
+            ('128', 'Code 128 Barcode'),
+            ('qr', 'QR Code with only the checksum, URL'),
+            ('qr+', 'QR Code with BoM and oter data embedded in MECARD data'),
+        )
+    ),
+)
+
 # buffer size for Popen, we want unbuffered
 bufsize = -1
-
-# collect the system configuration global defaults - just host_site for now
-settings_list = System_Settings.objects.all()
-for s in settings_list:
-    if s.name == "host_site":
-        host_site = s.value
-    if s.name == "host_site_in_qrcode":
-        host_site_in_qrcode = s.value
 
 ### each of these views has a corresponding html page in ../templates/barcode
 
@@ -75,10 +77,11 @@ def sysconfig(request):
             info_message = "You must confirm and save the system settings to continue..."
         
     settings_list = System_Settings.objects.order_by('name')
+    host_site = get_config_value('host_site')
 
     return render_to_response('barcode/sysconfig.html', {'info_message': info_message,
                                                         'settings_list': settings_list,
-                                                        'host_site': host_site,
+                                                        'host_site': host_site, 'config_choices': CONFIG_CHOICES,
                                                         'tab_sysconfig': True })
 
 # record detail page - this is a multiform too with the edit additions
@@ -94,6 +97,10 @@ def detail(request, record_id, revision=None):
         record = ''
         error_message = "No data for record " + record_id
         enable_edits = False
+
+    # gather some config values we need
+    host_site = get_config_value('host_site')
+    display_code_type = get_config_value('display_code_type')
 
     # Create the history.
     record_history = []
@@ -144,10 +151,8 @@ def detail(request, record_id, revision=None):
                         except:
                             error_message += "Failed to delete: " + checksum + extension + "<br>"
                     
-                else: 
-                    # QR+ code changes with any change (record_date)
-                    if pr.codetype == 'qr+':                
-                        result = pr.checksum_to_barcode()              
+                # now we generate all types, so regen always
+                result = pr.checksum_to_barcode()              
                   
                 # commit changes to version control
                 pr.commit(request.POST.get('header_commit_message', ''))
@@ -258,8 +263,7 @@ def detail(request, record_id, revision=None):
                 pr.save()
                 
                 # QR+ code changes with any change (record_date, components)
-                if pr.codetype == 'qr+':                
-                    result = pr.checksum_to_barcode()              
+                result = pr.checksum_to_barcode()              
 
                 # commit changes to version control
                 if (mode == "Delete Item"):
@@ -281,6 +285,7 @@ def detail(request, record_id, revision=None):
     return render_to_response('barcode/detail.html', {'record': record, 'foss': foss, 'history': record_history,
                                                       'host_site': host_site, 'tab_results': True, 'revision': revision,
                                                       'error_message': error_message, 'enable_edits': enable_edits,
+                                                      'display_code': display_code_type,
                                                       'headerform': headerform, 'itemform': itemform })
 
 # record search page
@@ -416,13 +421,7 @@ def input(request):
         if recordform.is_valid() and component_error == '': # All validation rules pass
             recorddata = recordform.save(commit=False)       
             recorddata.save()
- 
-            # barcode or qrcode or...?
-            do_128 = request.POST.get('submit_barcode', '')
-            if do_128 != "":
-                recorddata.codetype = '128'
-                recorddata.save()
- 
+  
             recordid = recorddata.id
             data_dest = recorddata.file_path()
             if not recorddata.setup_directory():
@@ -654,4 +653,13 @@ def render_detail(id, revision=None):
                      'license': f.license, 'license_url': f.license_url, 
                      'url': f.url, 'spdx_file': spdx_file, 'patches': patches})
     return foss
+
+# get a system configuration value
+def get_config_value(cname):
+    settings_list = System_Settings.objects.filter(name = cname)
+    if settings_list:
+        return settings_list[0].value
+    else:
+        return false
+
 

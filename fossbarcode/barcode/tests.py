@@ -169,15 +169,25 @@ class TestProductRecord(BarCodeHarness):
     def testBarcode(self):
         self.product.setup_directory()
         self.product.checksum = self.product.calc_checksum()
-        self.product.codetype = '128'
         self.product.save()
         partial_path = os.path.join(self.product.file_path(),
                                     self.product.checksum)
 
         self.product.checksum_to_barcode()
-        self.assertTrue(os.path.exists(partial_path + ".ps"))
-        self.assertTrue(os.path.exists(partial_path + ".png"))
+        self.assertTrue(os.path.exists(partial_path + "-128.ps"))
+        self.assertTrue(os.path.exists(partial_path + "-128.png"))
 
+    def testQRCode(self):
+        self.product.setup_directory()
+        self.product.checksum = self.product.calc_checksum()
+        self.product.save()
+        partial_path = os.path.join(self.product.file_path(),
+                                    self.product.checksum)
+
+        self.product.checksum_to_barcode()
+        self.assertTrue(os.path.exists(partial_path + "-qr.ps"))
+        self.assertTrue(os.path.exists(partial_path + "-qr.png"))
+    
     def testDetailedQRCode(self):
         self.product.setup_directory()
         self.product.checksum = self.product.calc_checksum()
@@ -186,8 +196,8 @@ class TestProductRecord(BarCodeHarness):
                                     self.product.checksum)
 
         self.product.checksum_to_barcode()
-        self.assertTrue(os.path.exists(partial_path + ".ps"))
-        self.assertTrue(os.path.exists(partial_path + ".png"))
+        self.assertTrue(os.path.exists(partial_path + "-qr+.ps"))
+        self.assertTrue(os.path.exists(partial_path + "-qr+.png"))
 
     def testClone(self):
         self.addComponent()

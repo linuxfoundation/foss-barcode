@@ -80,6 +80,14 @@
     <field type="DateTimeField" name="last_updated">2011-07-06 00:00:00</field>
     <field type="BooleanField" name="user_updated">False</field>
   </object>
+  <object pk="3" model="barcode.system_settings">
+    <field type="CharField" name="name">display_code_type</field>
+    <field type="CharField" name="ftype">c</field>
+    <field type="CharField" name="value">qr+</field>
+    <field type="CharField" name="descr">Type of generated code to display on detail page</field>
+    <field type="DateTimeField" name="last_updated">2011-07-28 10:01:01</field>
+    <field type="BooleanField" name="user_updated">False</field>
+  </object>
   <object pk="22" model="auth.permission">
     <field type="CharField" name="name">Can add log entry</field>
     <field to="contenttypes.contenttype" name="content_type" rel="ManyToOneRel">8</field>

@@ -49,6 +49,7 @@
         <b>Last Updated: </b>{% if not revision %}{{ record.record_date|date:"M d, Y H:i:s" }}{% else %}<i>**HISTORICAL RECORD**</i>{% endif %}<br>
         <b>Compliance Contact Name: </b>{{ record.contact }}<br>
         <b>Compliance Contact Email: </b><a href="mailto:{{ record.email }}" target="_blank">{{ record.email }}</a><br>
+        <b>SPDX<sup>TM</sup> File: </b><a href="/site_media/user_data/{{ record.id }}/spdx_files/{{ record.spdx_file }}">{{ record.spdx_file }}</a><br>
 {% if revision %}
 	<p><i>This is a historic record, showing the state of the record as it existed in revision {{ revision }}.</i></p>
 {% endif %}        
@@ -59,9 +60,9 @@
     </tr>    
     <tr>
       <td align = "center">
-        <img src="/site_media/user_data/{{ record.id }}/{{ record.checksum }}.png"><br>
+        <img src="/site_media/user_data/{{ record.id }}/{{ record.checksum }}-{{ display_code }}.png"><br>
         <span id="noprint">
-        <a href="/site_media/user_data/{{ record.id }}/{{ record.checksum }}.ps">Download Postscript</a>
+        <a href="/site_media/user_data/{{ record.id }}/{{ record.checksum }}-{{ display_code }}.ps">Download Postscript</a>
         </span>
       </td>
     </tr>
