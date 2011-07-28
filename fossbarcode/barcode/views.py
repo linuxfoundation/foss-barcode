@@ -430,6 +430,16 @@ def input(request):
             spdx_dest = os.path.join(data_dest, "spdx_files")
             patch_dest = os.path.join(data_dest, "patches")
 
+            # top-level spdx_file
+            top_spdx = recorddata.spdx_file
+            if top_spdx != '':
+                try:
+                    recorddata.new_file_from_existing(top_spdx, "spdx_files")
+                except:
+                    error_message += "Failed to copy " + str(top_spdx) + "to " + spdx_dest + "<br>"
+                recorddata.spdx_file = os.path.basename(top_spdx)
+                recorddata.save()
+               
             # if we have foss components, store them also, and the patches
             if foss_components != '':
                 components = foss_components.split(",")
