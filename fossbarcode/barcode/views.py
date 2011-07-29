@@ -127,7 +127,12 @@ def detail(request, record_id, revision=None):
                     error_message += "Record clone failed..."
 
         if (mode == "Update Header"):
-            if headerform.is_valid(): # All validation rules pass            
+            if headerform.is_valid(): # All validation rules pass
+                # need this old value
+                pr = Product_Record.objects.get(id = record_id)
+                old_spdx = pr.spdx_file
+                new_spdx = request.POST.get('spdx_file', '')
+
                 Product_Record.objects.filter(id = record_id).update(company = request.POST.get('company', ''),
                                                                  website = request.POST.get('website', ''),
                                                                  product = request.POST.get('product', ''),
@@ -135,6 +140,7 @@ def detail(request, record_id, revision=None):
                                                                  release = request.POST.get('release', ''),
                                                                  contact = request.POST.get('contact', ''),
                                                                  email = request.POST.get('email', ''),
+                                                                 spdx_file = os.path.basename(new_spdx),
                                                                  record_date = str(datetime.datetime.now()))
 
                 # compute the new checksum, compare with the old and update if needed
@@ -150,7 +156,27 @@ def detail(request, record_id, revision=None):
                             pr.delete_file(checksum + extension)
                         except:
                             error_message += "Failed to delete: " + checksum + extension + "<br>"
-                    
+
+                # FIXME - we have similar spdx code for header update, item update and submit - move to a function or method?
+                # top-level spdx_file
+                # save and/or delete SPDX file if there's a change
+                if old_spdx != os.path.basename(new_spdx):
+                    if new_spdx != '':
+                        try:
+                            pr.new_file_from_existing(new_spdx, "spdx_files")
+                        except:
+                            error_message += "Failed to copy spdx file:" + new_spdx + "<br>"
+
+                    if old_spdx != '':
+                        try:
+                            pr.delete_file("spdx_files/" + old_spdx)
+                        except:
+                            error_message += "Failed to delete: " + old_spdx + "<br>"
+
+                # if we have an spdx file and didn't before, we need to purge the component entries
+                if new_spdx != '' and old_spdx == '':
+                    error_message += purge_foss_spdx(record_id, new_spdx)
+
                 # now we generate all types, so regen always
                 result = pr.checksum_to_barcode()              
                   
@@ -206,6 +232,7 @@ def detail(request, record_id, revision=None):
                 if (mode == "Delete Item"):
                     fd.delete()
 
+                # FIXME - we have similar spdx code for header update, item update and submit - move to a function or method?
                 # save and/or delete SPDX file if there's a change
                 if old_spdx != os.path.basename(new_spdx):
                     if new_spdx != '':
@@ -219,6 +246,17 @@ def detail(request, record_id, revision=None):
                             pr.delete_file("spdx_files/" + old_spdx)
                         except:
                             error_message += "Failed to delete: " + old_spdx + "<br>"
+                
+                # if we have an spdx file here, we can't have a top-level one
+                top_spdx = pr.spdx_file
+                if new_spdx != '' and top_spdx != '':
+                    pr.spdx_file = ''
+                    pr.save()
+                    if top_spdx != os.path.basename(new_spdx):
+                        try:
+                            pr.delete_file("spdx_files/" + top_spdx)
+                        except:
+                            error_message += "Failed to delete: " + top_spdx + "<br>"
 
                 # update/save/del patches
                 patch_files = request.POST.get('foss_patches', '')
@@ -647,17 +685,17 @@ def render_detail(id, revision=None):
             f.switch_revision(revision)
         fossid = f.id
         if f.spdx_file != '':
-            spdx_file = media_root + str(id) + "/spdx_files/" + os.path.basename(f.spdx_file) + '">' + f.spdx_file + "</a><br>"
+            spdx_file = media_root + str(id) + "/spdx_files/" + f.spdx_file + '">' + f.spdx_file + "</a><br>"
         else:
             spdx_file = ''
 
         patches = ""
         if revision:
             for p in f.patch_files:
-                patches += history_root + str(id) + "/detail/" + revision + "/patches/" + os.path.basename(p) + '">' + p + "</a><br>"
+                patches += history_root + str(id) + "/detail/" + revision + "/patches/" + p + '">' + p + "</a><br>"
         else:
             for p in f.patch_files:
-                patches += media_root + str(id) + "/patches/" + os.path.basename(p) + '">' + p + "</a><br>"
+                patches += media_root + str(id) + "/patches/" + p + '">' + p + "</a><br>"
         foss.append({'id': f.id, 'component': f.package, 'version': f.version, 
                      'copyright': f.copyright, 'attribution': f.attribution, 
                      'license': f.license, 'license_url': f.license_url, 
@@ -672,4 +710,21 @@ def get_config_value(cname):
     else:
         return false
 
+# walk through the set of component spdx entries and clear/remove them
+def purge_foss_spdx(recid, new_spdx):
+    error_message = ''
+    pr = Product_Record.objects.get(id = recid)
+    foss_list = FOSS_Components.objects.filter(brecord = recid)
+    new_spdx = os.path.basename(new_spdx)
+    for f in foss_list:
+        old_spdx = f.spdx_file
+        f.spdx_file = ''
+        f.save()
+        if old_spdx != new_spdx:
+            try:
+                pr.delete_file("spdx_files/" + old_spdx)
+            except:
+                error_message += "Failed to delete: " + old_spdx + "<br>"
 
+    return error_message
+    

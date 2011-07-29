@@ -20,6 +20,14 @@ function reload_filetree() {
         }, function(file) {
             filenametoentry(file);
     });
+    // header edit modal form needs a different target
+    $('#targeth').fileTree({
+        root: '/',
+        script: '/barcode/dirlist/',
+        loadMessage: 'waiting to load'
+        }, function(file) {
+            filenametoentry(file);
+    });
 }
 function set_destination(dest) {
     path_dest = dest;
@@ -40,6 +48,8 @@ function filenametoentry(filename) {
         if ((path_dest == sfield) || (path_dest == "spdx_file")) {
             // replace, don't append
             document.getElementsByName(path_dest)[0].value = filename;
+            // trigger onchange so we can enable/disable header/detail spdx stuff
+            document.getElementsByName(path_dest)[0].onchange();
         } else {
             document.getElementsByName(path_dest)[0].value += filename + "\n";
         }

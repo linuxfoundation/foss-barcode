@@ -1,13 +1,4 @@
 <!-- we don't extend base for this one as we don't want the overall tabs/styling -->
-<header>  
-    <!-- for the file browser -->
-    <style type="text/css" media="screen">@import "/site_media/css/jqueryFileTree.css";</style>
-    <style type="text/css">@import "/site_media/css/containers.css";</style>
-    <script type="text/javascript" src="/site_media/js/jquery-1.4.2.min.js"></script>
-    <script type="text/javascript" src="/site_media/js/jqueryFileTree.js"></script>
-    <script type="text/javascript" src="/site_media/js/file-select-ops.js"></script>
-    <script type="text/javascript" src="/site_media/js/visibility.js"></script>
-</header>
 {% block content %}
 <div id="line-item-modal-content">
   <!-- form needs to be inside the div -->
@@ -74,13 +65,18 @@
         <td colspan="3">{{ itemform.foss_url.errors }}</td>
       </tr>
       <tr>
+        <td colspan="3">
+          <span class="red" id="spdx_warn_line"><b>Warning:</b> Adding a line-item SPDX file will remove any header SPDX file.</span>
+        </td>
+      </tr>
+      <tr>
         <td><b>{% autoescape off %}{{ itemform.foss_spdx.label }}{% endautoescape %}:</b></td>
         <td>
             <input type="button" name="select_spdx" value="Select" 
                    title="Open a File/Directory Selector" 
                    onclick="toggle_visibility('target_select_modal');set_destination('foss_spdx');toggle_enabled('select_patch');">
             <a href="#" id="clear spdx"><img src="/site_media/images/edit-delete.png" 
-                        title="Clear SPDX" onclick="clear_field('spdx')";></a>
+                        title="Clear SPDX" onclick="clear_field('id_foss_spdx')";></a>
         </td>
         <td>{{ itemform.foss_spdx }}</td>
       </tr>
@@ -90,7 +86,7 @@
             <input type="button" name="select_patch" value="Select"title="Open a File/Directory Selector" 
                    onclick="toggle_visibility('target_select_modal');set_destination('foss_patches');toggle_enabled('select_spdx');">
             <a href="#" id="clear patches"><img src="/site_media/images/edit-delete.png" 
-                        title="Clear Patches" onclick="clear_field('patches');"></a>
+                        title="Clear Patches" onclick="clear_field('id_foss_patches');"></a>
         </td>
         <td rowspan="2">{{ itemform.foss_patches }}</td>
       </tr>
@@ -98,7 +94,7 @@
         <td colspan="2">
             <b>{{ itemform.item_commit_message.label }}:</b>
         </td>
-     </tr>
+      </tr>
      </table>
     </div>
     <!-- jQuery File Tree browser -->
@@ -130,10 +126,8 @@
     // no manual entry for spdx_files, patches
     document.getElementById('id_foss_spdx').setAttribute('readonly', 'true');
     document.getElementById('id_foss_patches').setAttribute('readonly', 'true');
-    function clear_field(fname) {
-        var to_clear = 'id_foss_' + fname;
-        document.getElementById(to_clear).value = '';
-    }
+    // in the input form we have to play games with top-level spdx vs line-item, here the backend handles the change
+    document.getElementById("id_foss_spdx").setAttribute("onchange", "");
 </script>
 {% endblock %}
 

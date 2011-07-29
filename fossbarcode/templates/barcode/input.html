@@ -72,9 +72,12 @@
   <tr align="left">
     <td align="right"><b>{% autoescape off %}{{ recordform.spdx_file.label }}{% endautoescape %}:</b></td>
     <td>{{ recordform.spdx_file }}</td>
-    <td align="center"><input type="button" name="spdxfilename" value="Select"
-                            title="Open a File/Directory Selector"
-                            onclick="toggle_visibility('target_select');set_destination('spdx_file');"/>
+    <td align="center">
+        <a href="#" id="clear_foss_spdx"><img src="/site_media/images/edit-delete.png" 
+                    title="Clear SPDX" onclick="clear_spdx('id_spdx_file', 'foss_spdx_select');"></a>
+        <input type="button" name="spdxfilename" value="Select" id="top_spdx_select"
+                             title="Open a File/Directory Selector"
+                             onclick="toggle_visibility('target_select');set_destination('spdx_file')"/>
     </td>    
   </tr>     
 </table>
@@ -101,7 +104,7 @@
     <col width=145>
     <col width=145>
     <col width=120>
-    <col width=80>
+    <col width=30>
     <col width=145>
     <col width=120>
   <tr>
@@ -113,7 +116,12 @@
     <th>License<br>Name and Version</th>
     <th>License<br>URL</th>
     <th>Original<br>Download URL</th>
-    <th colspan=2>SPDX<sup>TM</sup>File<br>(optional)</th>
+    <td colspan="2" align="center">
+        <b>SPDX<sup>TM</sup>File<br>(optional)</b> 
+        <input type="button" name="spdxfilename" value="Select" id="foss_spdx_select"
+                             title="Open a File/Directory Selector"
+                             onclick="toggle_visibility('target_select');set_destination('foss_spdx');toggle_enabled('patchfilename');"/>
+    </td>
     <th>Patches<br>(if applicable)</th>  
     <td></td>
   </tr>
@@ -128,13 +136,15 @@
     <td>{{ recordform.foss_license_url }}</td>
     <td>{{ recordform.foss_url }}</td>
     <!-- hand code this one so we can disable manual input -->
-    <td><input type="input" name="foss_spdx" readonly="true"/></td>
-    <td align="center"><input type="button" name="spdxfilename" value="Select"
-                            title="Open a File/Directory Selector"
-                            onclick="toggle_visibility('target_select');set_destination('foss_spdx');toggle_enabled('patchfilename');"/></td>
+    <td><input type="input" name="foss_spdx" id="id_foss_spdx" readonly="true"/></td>
+    <td>
+        <a href="#" id="clear_foss_spdx"><img src="/site_media/images/edit-delete.png" 
+                    title="Clear SPDX" onclick="clear_spdx('id_foss_spdx', 'top_spdx_select');"></a>
+    </td>
     <td align="center" colspan="2"><input type="button" name="addfoss" 
                                         value="Add Component" 
-                                        onclick="get_bom_values();add_bom_row('foss_list', 'add')"/></td>
+                                        onclick="get_bom_values();add_bom_row('foss_list', 'add')"/>
+    </td>
   </tr>
   <tr id="bom_editor">
     <td align="left" colspan="2"><input type="checkbox" name="selectall"
@@ -222,6 +232,10 @@
         }
         // disable manual input for the spdx_file field
         document.getElementById("id_spdx_file").setAttribute("readonly", "true");
+        // content of this field determines what we can do with the line items
+        document.getElementById("id_spdx_file").setAttribute("onchange", "spdx_change('id_spdx_file', 'foss_spdx_select');");
+        // and the reverse is true
+        document.getElementById("id_foss_spdx").setAttribute("onchange", "spdx_change('id_foss_spdx', 'top_spdx_select');");
     }
     function update_patch_list(src) {
         var findex = src.replace(pfield,"");
@@ -451,7 +465,6 @@
         }
     }
 
-
     function search_dupes() {
         var filled = true;
         for(var f in header_fields){
@@ -476,7 +489,35 @@
             }
         }
     }
-
+    function spdx_change(tid, sid) {
+        // tid = input field changed, sid = other file select button to disable
+        var e = document.getElementById(sid);  
+        if (typeof e != 'undefined') {
+            if (document.getElementById(tid).value == '') {
+                // disable the "other" spdx selector
+                e.disabled = false;
+                // hide the file selector if it's open
+                hide_element("target_select");
+            } else {
+                e.disabled = true;
+                // if we set the top-level one, clear all the line item entries
+                if (sid.search("foss") != -1) {
+                    var rowcount = document.getElementById("foss_list").getElementsByTagName("TR").length;
+                    for (i = 0; i < rowcount - 3; i++) {
+                        cell_id = "foss_spdx" + i;
+                        document.getElementById(cell_id).innerHTML = ''
+                    }
+                }
+            }
+        }
+    }
+    function clear_spdx(tid, sid) {
+        document.getElementById(tid).value = '';
+        spdx_change(tid, sid);
+    }
+    function clear_field(fname) {
+        document.getElementById(fname).value = '';
+    }
 </script>
 {% endblock %}
 

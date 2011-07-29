@@ -9,6 +9,11 @@
   <script type='text/javascript' src='/site_media/js/barcode-modals.js'></script>
   <script type='text/javascript' src='/site_media/js/history.js'></script>
   <script type="text/javascript" src="/site_media/js/record-check.js"></script>
+  <!-- for the file browser -->
+  <style type="text/css" media="screen">@import "/site_media/css/jqueryFileTree.css";</style>
+  <script type="text/javascript" src="/site_media/js/jqueryFileTree.js"></script>
+  <script type="text/javascript" src="/site_media/js/file-select-ops.js"></script>
+  <script type="text/javascript" src="/site_media/js/visibility.js"></script>
 </head>
 {% endblock %}
 
@@ -140,7 +145,8 @@
                           "version": "",
                           "release": "",
                           "contact": "",
-                          "email": "" };
+                          "email": "",
+                          "spdx_file": "", };
 
     // order matters here - needs to be the same as the table columns
     var bom_fields = { "foss_component": "",
@@ -154,13 +160,19 @@
                        "foss_patches": "" };
 
     function setdefaults() {
+        {% if record.spdx_file != '' %}
+            hide_element('spdx_warn_head'); 
+        {% else %}
+            // perhaps an assumption here, if things work correctly we should never see both
+            hide_element('spdx_warn_line');   
+        {% endif %}
     }
 
     function submit_header_validate() {
         var filled = true;
         for(var f in header_fields){
             var src = "id_" + f;
-            if (document.getElementById(src).value == "" && f != "contact")
+            if (document.getElementById(src).value == "" && f != "contact" && f != "spdx_file")
                 filled = false;
         }
         if (document.getElementById('id_header_commit_message').value == "")
@@ -170,7 +182,8 @@
             alert("Please fill all required header fields, including the commit message");
             return false;
         } else {
-            return search_dupes();
+            if (document.getElementById('submit_header').value == "Clone Record")
+                return search_dupes();
         }
     }
 
@@ -260,6 +273,11 @@
         document.getElementById('header_title').innerHTML = title_txt;
         document.getElementById('id_header_commit_message').value = commit_txt;
         document.getElementById('submit_header').value = submit_txt;
+        reload_filetree();
     }
+    function clear_field(fname) {
+        document.getElementById(fname).value = '';
+    }
+
 </script>
 {% endblock %}

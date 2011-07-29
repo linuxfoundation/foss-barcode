@@ -65,16 +65,24 @@
       </tr>
       <tr>
         <td><b>{% autoescape off %}{{ itemform.foss_spdx.label }}{% endautoescape %}:</b></td>
-        <td><input type="button" name="select_spdx" value="Select" 
-                   title="Open a File/Directory Selector" 
-                   onclick="toggle_visibility('target_select_modal');set_destination('foss_spdx_m');toggle_enabled('select_patch');"></td>
+        <td>
+          <input type="button" name="select_spdx" value="Select" 
+                 title="Open a File/Directory Selector" 
+                 onclick="toggle_visibility('target_select_modal');set_destination('foss_spdx_m');toggle_enabled('select_patch');">
+          <a href="#" id="clear spdx"><img src="/site_media/images/edit-delete.png" 
+                      title="Clear SPDX" onclick="clear_field('id_m_foss_spdx')";></a>
+        </td>
         <td>{{ itemform.foss_spdx }}</td>
       </tr>
       <tr>
         <td valign="top"><b>{{ itemform.foss_patches.label }}:</b></td>
-        <td valign="top"><input type="button" name="select_patch" value="Select"
+        <td valign="top">
+          <input type="button" name="select_patch" value="Select"
                                 title="Open a File/Directory Selector" 
-                                onclick="toggle_visibility('target_select_modal');set_destination('foss_patches_m');toggle_enabled('select_spdx');"></td>
+                                onclick="toggle_visibility('target_select_modal');set_destination('foss_patches_m');toggle_enabled('select_spdx');">
+          <a href="#" id="clear patches"><img src="/site_media/images/edit-delete.png" 
+                      title="Clear Patches" onclick="clear_field('id_m_foss_patches');"></a>
+        </td>
         <td rowspan="2">{{ itemform.foss_patches }}</td>
       </tr>
      </table>
