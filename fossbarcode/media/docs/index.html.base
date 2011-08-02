@@ -72,11 +72,23 @@ for discussion of the tool.</p>
 <b>System Requirements:</b>
 
 <p>The GUI requires python. It also runs the OS commands: 
-<i>find, cat, barcode, qrencode, md5sum, pstopnm, pnmtopng, and sam2p</i>, so these should be present on your system.
+<i>barcode, qrencode, pstopnm, pnmtopng, and sam2p</i>, so these should be present on your system.
 The GUI requires <a href="http://www.djangoproject.com">Django</a>, along with sqlite 
 support for the results database. A web browser is also needed to interact with the GUI.
 If your distribution does not provide Django, you can follow these 
 <a href="http://docs.djangoproject.com/en/dev/intro/install/">installation instructions</a>.</p>
+
+<p>The record history/changelog is stored as a git repository for each record under media/user_data/record_id. 
+Dulwich is used to interface with git from python. If your distribution does not provide Dulwich, it can be built from source:
+
+<pre>
+wget http://www.samba.org/~jelmer/dulwich/dulwich-0.7.1.tar.gz
+tar -xzf dulwich-0.7.1.tar.gz
+cd dulwich-0.7.1
+python setup.py build
+python setup.py install (using sudo or as root)
+</pre>
+</p>
 
 <p>If your distribution does not provide <i>barcode</i>, it can be built from source:
 <pre>
@@ -301,13 +313,13 @@ printed output so that only the test results show up in the printed report.</p>
 list of all the data entries, sorted by id/date. The far-right column has a summary of the information
 entered from the <b>Enter Data</b> tab. Clicking on the link for the id will 
 open the detail tab. If you want to delete records, you can select the checkboxes and 
-delete them from here, using the <i>Delete Selected Records</i> button.</p>
+delete them from here, using the <i>Delete Selected Records</i> button. Records can be edited from the Detail page, and a history of changes made will be created, with the ability to view the record as it appeared in older revisions.</p>
 </div>
 
 <div id="Search Compliance Records">
 <b>Search Compliance Records:</b>
 
-<p>The <b>Search Records</b> tab lets you enter a checksum and lookup the data detail for that value.</p>
+<p>The <b>Search Records</b> tab lets you enter a checksum and lookup the data detail for that value. You can also search by Company Name, Product Name, Version, and Release. If there are more than one matches, you will be presented with a list where can select a relase and view the detail.</p>
 
 <div id="System Configuration">
 <b>System Configuation:</b>
@@ -353,33 +365,34 @@ tables.</li>
     <li>version - Product Verson</li>
     <li>release - Product Release</li>
     <li>checksum - Generated Checksum</li>
+    <li>spdx_file - SPDX<sup>TM</sup> File describing the whole product (line item SPDX files will be blocked if this is used)</li>
+    <li>released - boolean Released to Production (not currently exposed in the UI)</li>
   </ul>
 <li><b>foss_components</b> - entered list of FOSS components, versions, etc. Linked to the <i>record</i> table 
 via <i>brecord_id</i>.</li>           
   <ul>
     <li>id - primary key</li>
     <li>brecord_id - link to the top-level record entry</li>
-    <li>package - FOSS component name (e.g. glibc)</li>
-    <li>version - FOSS componenent version</li>
-    <li>copyright - FOSS copyright information</li>
-    <li>attribution - FOSS attribution notices</li> 
-    <li>license - FOSS componenent license (e.g. GPLv2)</li>
-    <li>license_url - URL where FOSS license can be obtained</li>
-    <li>url - upstream URL where FOSS component can be obtained</li>
-    <li>spdx_file - SPDX<sup>TM</sup> file name for the FOSS component</li>
+    <li>data_file_name - each component's data is stored on the filesystem in a python "pickle" file, under version control. These files have the rest of the line item detail:</li>
+    <ul>
+        <li>package - FOSS component name</li>
+        <li>version - FOSS component version</li>
+        <li>copyright - FOSS copyright information</li>
+        <li>attribution - FOSS attribution notices</li> 
+        <li>license - FOSS componenent license (e.g. GPLv2)</li>
+        <li>license_url - URL where FOSS license can be obtained</li>
+        <li>url - upstream URL where FOSS component can be obtained</li>
+        <li>spdx_file - SPDX<sup>TM</sup> file name for the FOSS component</li>
+        <li>patch_files - list of patch files for the FOSS component</li>
+    </ul>
   </ul>
-<li><b>patch_files</b> - List of uploaded patch files. Linked to the <i>foss_components</i> table via
-<i>frecord_id</i>.</li>
-  <ul>
-    <li>id - primary key</li>
-    <li>frecord_id - link to the foss_components record entry</li>
-    <li>path - original path to the uploaded file</li>
-  </ul>
-<li><b>system_settings</b> - User configurable system settings, such as <i>host_site</i></li>
+<li><b>system_settings</b> - User configurable system settings, such as <i>host_site</i>. Adding settings is not yet exposed in the UI.</li>
   <ul>
     <li>id - primary key</li>
     <li>name - variable name used by the application</li>
+    <li>ftype - field type, choice of text, boolean, or choices (choose from a list)</li>
     <li>value - assigned variable value</li>
+    <li>descr - description of the value's purpose</li>
     <li>last_updated - last update date</li>
     <li>user_updated - boolean value. Shipped values have this set to False. User must review and save to use application</li>
   </ul>
@@ -404,7 +417,7 @@ via <i>brecord_id</i>.</li>
 <b>How it Works:</b>
 
 <p>What the program does is collect several of the user inputs and feed these through md5sum to get 
-a checksum. This checksum is then used to generate the barcode, using either of the 2 command line applications, <i>barcode</i> or <qrencode</i>:
+a checksum. This checksum is then used to generate the barcode, using either of the 2 command line applications, <i>barcode</i> or <i>qrencode</i>:
 
 <pre>
 barcode -b &lt;checksum&gt; -e 128 -m '0,0' -E &gt; &lt;checksum&gt;.ps
@@ -434,6 +447,7 @@ URL:http://compliance.linuxfoundation.org/foss-products/bcfc695e010eac680d69c914
 </pre>
 </p>
 
+<p>There are 2 QR code formats created: qr and qr+. qr+ is as described above, whereas the "plain" qr format simply has the URL to the public facing record detail.</p>
 </div>
 
 <div id="limitations">
