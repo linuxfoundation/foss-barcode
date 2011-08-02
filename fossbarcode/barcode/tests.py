@@ -1,5 +1,6 @@
 import os
 import shutil
+import re
 from django.conf import settings
 from django.test import TestCase
 from fossbarcode.barcode.models import *
@@ -165,6 +166,26 @@ class TestProductRecord(BarCodeHarness):
     def testChecksum(self):
         self.assertEqual(self.product.calc_checksum(),
                          "ef7fb81294c22856d9593d44f489cdd3")
+
+    def testMeCardPlus(self):
+        test_strings = ["N:Test Company;",
+                        "(Open Source Test 3.0 Test License 1.0)",
+                        "(Open Source Library 1.0 Test License 1.0)"]
+        self.addComponent()
+        second_component = FOSS_Components(brecord=self.product,
+                                           package="Open Source Library",
+                                           version="1.0",
+                                           copyright="Copyright 2010 Test Foundation",
+                                           attribution="",
+                                           license="Test License 1.0",
+                                           license_url="http://testlib.example.com/license.html",
+                                           url="http://testlib.example.com/")
+        second_component.save()
+        self.assertTrue(self.product.commit("Add second component."))
+        mecard = self.product.record_to_mecard("qr+")
+        for s in test_strings:
+            self.assertTrue(re.escape(s) in mecard,
+                            "could not find string '%s' in me card '%s'" % (s, mecard))
 
     def testBarcode(self):
         self.product.setup_directory()
