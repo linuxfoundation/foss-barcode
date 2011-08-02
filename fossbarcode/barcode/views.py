@@ -264,8 +264,7 @@ def detail(request, record_id, revision=None):
                     patches = patch_files.split("\r\n")
 
                     # remove patches no longer listed 
-                    old_patches = [x for x in fd.patch_files
-                                   if x not in patches]
+                    old_patches = [x for x in fd.patch_files if x not in patches]
                     for p in old_patches:
                         try:
                             pr.delete_file("patches/" + p)
@@ -299,9 +298,6 @@ def detail(request, record_id, revision=None):
                 # update the master record "last updated"         
                 pr.record_date = datetime.datetime.now()
                 pr.save()
-                
-                # QR+ code changes with any change (record_date, components)
-                result = pr.checksum_to_barcode()              
 
                 # commit changes to version control
                 if (mode == "Delete Item"):
@@ -309,6 +305,12 @@ def detail(request, record_id, revision=None):
                 else:
                     pr.commit(request.POST.get('item_commit_message', ''))
 
+                # QR+ code changes with any change (record_date, components)
+                # FIXME - doesn't pickup changes if we do this before commit
+                result = pr.checksum_to_barcode() 
+                if result:
+                    error_message += "Barcode generation failed...<br>"
+                    
                 # back to the page, with a clean slate and any error messages, we need to re-render to pickup changes
                 foss = render_detail(record_id)
                 record_list = Product_Record.objects.filter(id = record_id)
@@ -573,15 +575,17 @@ def input(request):
             if checksum:
                 recorddata.checksum = checksum
                 recorddata.save()
-                result = recorddata.checksum_to_barcode()
-                if result:
-                    error_message += "Barcode generation failed...<br>"
             else:
                 error_message += "Checksum generation failed...<br>"
 
             # Commit the whole thing to version control
             recorddata.commit("Created new record from form.")
 
+            # FIXME - don't get BoM in MECARD if we do this before commit  
+            result = recorddata.checksum_to_barcode()
+            if result:
+                error_message += "Barcode generation failed...<br>"
+  
             if error_message == '':
                 return HttpResponseRedirect('/barcode/' + str(recordid) + '/detail/')
 

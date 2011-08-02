@@ -112,14 +112,14 @@ class FileDataMixin:
                 to_write[key] = self.__dict__[key]
 
         path = os.path.join(self._file_path, self._file_name)
-        new_file = os.path.exists(path)
+        file_exists = os.path.exists(path)
         f = open(path, "w")
         pickle.dump(to_write, f)
         f.close()
-        if new_file:
-            self._master_class.register_new_file(self._file_name)
-        else:
+        if file_exists:
             self._master_class.register_modified_file(self._file_name)
+        else:
+            self._master_class.register_new_file(self._file_name)
 
 # This mixin class actually manages the files being created by the
 # FileDataMixin class.  Whichever model ends up being the "master"
@@ -304,6 +304,7 @@ class Product_Record(models.Model, FileDataDirMixin):
             ps_file = os.path.join(file_path, ps_filename)
             png_filename = base_filename + t + ".png"
             png_file = os.path.join(file_path, png_filename)
+
             if t == "128":
                 result = os.system("barcode -b " + self.checksum + " -e 128 -m '0,0' -E > " + ps_file)
             else:
@@ -329,9 +330,6 @@ class Product_Record(models.Model, FileDataDirMixin):
                     result = os.system("pstopnm -xsize 500 -portrait -stdout " + ps_file + " | pnmtopng > " + png_file)
                 else:
                     result = os.system("sam2p " + png_file + " PS: " + ps_file)
-
-                self.register_new_file(ps_filename)
-                self.register_new_file(png_filename)
 
         return result
 
