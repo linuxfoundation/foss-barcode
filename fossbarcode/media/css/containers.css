@@ -65,6 +65,14 @@
     width: 98%;
 }
 
+/* overflow:auto is also an option here, but not fully supported in browsers */ 
+.foss_table table {
+    table-layout: fixed;
+    overflow: hidden;
+    word-break: break-all;
+    word-wrap: break-word;
+}
+
 .foss_table td {
     padding-left: 5px;
     padding-right: 5px;

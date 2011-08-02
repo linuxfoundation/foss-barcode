@@ -2,7 +2,7 @@
 {% block header %}
   <!-- for the file browser -->
   <style type="text/css" media="screen">@import "/site_media/css/jqueryFileTree.css";</style>
-  <style type="text/css">@import "/site_media/css/containers.css";</style>
+  <style type="text/css" media="screen">@import "/site_media/css/containers.css";</style>
   <!-- CSS file for modal dialog -->
   <style type="text/css" media="screen">@import "/site_media/css/barcode-modals.css";</style>
   <script type="text/javascript" src="/site_media/js/jquery-1.4.2.min.js"></script>
@@ -93,7 +93,7 @@
     <span class="red"><b>{{ component_error }}</b></span>
     {% endautoescape %}
 {% endif %}
-<table border="1" width="700" cellspacing="1" style='table-layout:fixed' id="foss_list">
+<table border="1" width="700" cellspacing="1" id="foss_list">
     <col width=30>
     <col width=30>
     <col width=125>

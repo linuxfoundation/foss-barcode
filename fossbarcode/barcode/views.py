@@ -369,21 +369,30 @@ def records(request):
 
     rendered = []
     himage = '<img src="/site_media/images/filetree/code.png" title="Change History">'
-    liclose = "</ul></li>"
+    liclose = '</ul></li>'
+    liopen = '<li>'
+    # use <li class="liOpen"> to force open state if there aren't many records
+    liopene = '<li class="liOpen">'
+    expand_limit = 3
     ctr = 1
 
     # pre-render the outline display for speed, uses mktree.js for a collapsible list
     companies = Product_Record.objects.values_list('company').distinct()
-    if companies.count() != 0:
+    totalc = companies.count()
+    lio = liopene if totalc < expand_limit else liopen
+    if totalc != 0:
         for c in companies:
-            # use <li class="liOpen"> to force open state
-            rendered.append("<li><b>" + c[0] + ":</b><ul>")
+            rendered.append(lio + "<b>" + c[0] + ":</b><ul>")
             products = Product_Record.objects.values_list('product').filter(company = c[0]).distinct()
+            totalp = products.count()
+            lio = liopene if totalp < expand_limit else liopen
             for p in products:
-                rendered.append("<li>" + p[0] + ":<ul>")
+                rendered.append(lio + p[0] + ":<ul>")
                 versions = Product_Record.objects.values_list('version').filter(company = c[0], product = p[0]).distinct()
+                totlv = versions.count()
+                lio = liopene if totalp < expand_limit else liopen
                 for v in versions:
-                    rendered.append("<li>Version " + v[0] + ":<ul>")
+                    rendered.append(lio + "Version " + v[0] + ":<ul>")
                     releases = Product_Record.objects.filter(company = c[0], product = p[0], version = v[0])
                     if releases.count() != 0:
                         rendered.append('<table border="1" cellpadding="5" width="900px">')
