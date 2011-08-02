@@ -6,6 +6,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.http import Http404
 from django.conf import settings
 from django.utils import simplejson as json
+from django.utils.translation import ugettext as _
 
 from fossbarcode import task
 
@@ -14,12 +15,33 @@ import sys, os, re, urllib, subprocess, time, datetime
 # used to populate drop-downs for config options with fixed choices
 CONFIG_CHOICES = (
     ('display_code_type', (
-            ('128', 'Code 128 Barcode'),
-            ('qr', 'QR Code with only the checksum, URL'),
-            ('qr+', 'QR Code with BoM and oter data embedded in MECARD data'),
+            ('128', _('Code 128 Barcode')),
+            ('qr', _('QR Code with only the checksum, URL')),
+            ('qr+', _('QR Code with BoM and oter data embedded in MECARD data')),
         )
     ),
 )
+
+# error/info response strings
+msg_strings = {
+    'barcode_fail': _('Barcode generation failed...'),
+    'checksum_fail': _('Checksum generation failed...'),
+    'clone_fail': _('Record clone failed...'),
+    'commit_new_record': _('Created new record from form.'),
+    'config_info': _('You must confirm and save the system settings to continue...'),
+    'config_warn': _('Please Configure Basic System Settings ') + '<a href="/barcode/sysconfig/">' + _('Here') + '</a>',
+    'copy_fail': _('Failed to copy %s to %s'),
+    'create_fail': _('Failed to create %s'),
+    'delete_fail': _('Failed to delete: %s'),
+    'invalid_header': _('Invalid header update data, see header dialog...'),
+    'invalid_line_item': _('Invalid line item update data, see item dialog...'),
+    'no_data': _('No data for record %s'),
+    'no_record': _('Record not found...'),
+    'patch_copy_fail': _('Failed to copy patch file: %s'),
+    'spdx_copy_fail': _('Failed to copy spdx file: %s'),
+    'unknown_request': _('Unknown request made'),
+    'user_data_delete_fail': _('Failed to delete user data...'),
+}
 
 # buffer size for Popen, we want unbuffered
 bufsize = -1
@@ -74,7 +96,7 @@ def sysconfig(request):
         # has the user confirmed the settings?
         settings_done = System_Settings.objects.filter(user_updated = True).count()
         if (settings_done) == 0:
-            info_message = "You must confirm and save the system settings to continue..."
+            info_message = msg_strings['config_info']
         
     settings_list = System_Settings.objects.order_by('name')
     host_site = get_config_value('host_site')
@@ -95,7 +117,7 @@ def detail(request, record_id, revision=None):
         record = record_list[0]
     else:
         record = ''
-        error_message = "No data for record " + record_id
+        error_message = msg_strings['no_data'] % record_id
         enable_edits = False
 
     # gather some config values we need
@@ -124,7 +146,7 @@ def detail(request, record_id, revision=None):
                                       release = request.POST.get('release', ''))
                     record_id = str(newpr.id)
                 except:
-                    error_message += "Record clone failed..."
+                    error_message += msg_strings['clone_fail']
 
         if (mode == "Update Header"):
             if headerform.is_valid(): # All validation rules pass
@@ -155,7 +177,7 @@ def detail(request, record_id, revision=None):
                         try:
                             pr.delete_file(checksum + extension)
                         except:
-                            error_message += "Failed to delete: " + checksum + extension + "<br>"
+                            error_message += msg_strings['delete_fail'] % (checksum + extension) + "<br>"
 
                 # FIXME - we have similar spdx code for header update, item update and submit - move to a function or method?
                 # top-level spdx_file
@@ -165,13 +187,13 @@ def detail(request, record_id, revision=None):
                         try:
                             pr.new_file_from_existing(new_spdx, "spdx_files")
                         except:
-                            error_message += "Failed to copy spdx file:" + new_spdx + "<br>"
+                            error_message += msg_strings['spdx_copy_fail'] % new_spdx + "<br>"
 
                     if old_spdx != '':
                         try:
                             pr.delete_file("spdx_files/" + old_spdx)
                         except:
-                            error_message += "Failed to delete: " + old_spdx + "<br>"
+                            error_message += msg_strings['delete_fail'] % old_spdx + "<br>"
 
                 # if we have an spdx file and didn't before, we need to purge the component entries
                 if new_spdx != '' and old_spdx == '':
@@ -184,7 +206,7 @@ def detail(request, record_id, revision=None):
                 pr.commit(request.POST.get('header_commit_message', ''))
  
             else:
-                error_message += "Invalid header update data, see header dialog..."
+                error_message += msg_strings['invalid_header']
 
         if (mode == "Clone Record" or mode == "Update Header"):
             if (error_message == ''):
@@ -216,7 +238,7 @@ def detail(request, record_id, revision=None):
                     fd.save()
                     foss_id = fd.id
                 else:
-                    error_message += "Unknown request made<br>"
+                    error_message += msg_strings['unknown_request'] + "<br>"
 
                 if (mode == "Update Item"):
                     # line item data is in a file, so we alter/save rather than update
@@ -239,13 +261,13 @@ def detail(request, record_id, revision=None):
                         try:
                             pr.new_file_from_existing(new_spdx, "spdx_files")
                         except:
-                            error_message += "Failed to copy spdx file:" + new_spdx + "<br>"
+                            error_message += msg_strings['spdx_copy_fail'] % new_spdx + "<br>"
 
                     if old_spdx != '':
                         try:
                             pr.delete_file("spdx_files/" + old_spdx)
                         except:
-                            error_message += "Failed to delete: " + old_spdx + "<br>"
+                            error_message += msg_strings['delete_fail'] % old_spdx + "<br>"
                 
                 # if we have an spdx file here, we can't have a top-level one
                 top_spdx = pr.spdx_file
@@ -256,7 +278,7 @@ def detail(request, record_id, revision=None):
                         try:
                             pr.delete_file("spdx_files/" + top_spdx)
                         except:
-                            error_message += "Failed to delete: " + top_spdx + "<br>"
+                            error_message += msg_strings['delete_fail'] % top_spdx + "<br>"
 
                 # update/save/del patches
                 patch_files = request.POST.get('foss_patches', '')
@@ -269,7 +291,7 @@ def detail(request, record_id, revision=None):
                         try:
                             pr.delete_file("patches/" + p)
                         except:
-                            error_message += "Failed to delete: " + p + "<br>"
+                            error_message += msg_strings['delete_fail'] % p + "<br>"
                         fd.patch_files.remove(p)
 
                     # and add any new ones
@@ -279,7 +301,7 @@ def detail(request, record_id, revision=None):
                                 pr.new_file_from_existing(patch, "patches")
                                 fd.patch_files.append(os.path.basename(patch))
                             except:
-                                error_message += "Failed to copy patch file: " + str(patch) + "<br>"
+                                error_message += msg_strings['patch_copy_fail'] % str(patch) + "<br>"
 
                 else:
                     # no patches specified, remove any that might be present
@@ -288,7 +310,7 @@ def detail(request, record_id, revision=None):
                             try:
                                 pr.delete_file("patches/" + patch)
                             except:
-                                error_message += "Failed to delete: " + patch + "<br>"
+                                error_message += msg_strings['delete_fail'] % patch + "<br>"
                         fd.patch_files = []
 
                 # save changes to component
@@ -309,7 +331,7 @@ def detail(request, record_id, revision=None):
                 # FIXME - doesn't pickup changes if we do this before commit
                 result = pr.checksum_to_barcode() 
                 if result:
-                    error_message += "Barcode generation failed...<br>"
+                    error_message += msg_strings['barcode_fail'] + "<br>"
                     
                 # back to the page, with a clean slate and any error messages, we need to re-render to pickup changes
                 foss = render_detail(record_id)
@@ -317,7 +339,7 @@ def detail(request, record_id, revision=None):
                 record = record_list[0]
 
             else:
-                error_message = "Invalid line item update data, see item dialog..."
+                error_message = msg_strings['invalid_line_item']
 
     headerform = HeaderForm() # An unbound form
     itemform = ItemForm() # An unbound form
@@ -365,7 +387,7 @@ def search(request):
                     record_list = record_list.filter(release = searchrelease)
             
         if len(record_list) == 0:
-                error_message = "Record not found..."
+                error_message = msg_strings['no_record']
         else:
             if record_list.count() == 1:
                     id = record_list[0].id
@@ -508,7 +530,7 @@ def input(request):
             recordid = recorddata.id
             data_dest = recorddata.file_path()
             if not recorddata.setup_directory():
-                error_message += "Failed to create " + data_dest + "<br>"
+                error_message += msg_strings['create_fail'] % data_dest + "<br>"
             
             spdx_dest = os.path.join(data_dest, "spdx_files")
             patch_dest = os.path.join(data_dest, "patches")
@@ -519,7 +541,7 @@ def input(request):
                 try:
                     recorddata.new_file_from_existing(top_spdx, "spdx_files")
                 except:
-                    error_message += "Failed to copy " + str(top_spdx) + "to " + spdx_dest + "<br>"
+                    error_message += msg_strings['copy_fail'] % (str(top_spdx), spdx_dest) + "<br>"
                 recorddata.spdx_file = os.path.basename(top_spdx)
                 recorddata.save()
                
@@ -548,7 +570,7 @@ def input(request):
                             try:
                                 recorddata.new_file_from_existing(spdxs[i], "spdx_files")
                             except:
-                                error_message += "Failed to copy " + str(spdxs[i]) + "to " + spdx_dest + "<br>"
+                                error_message += msg_strings['copy_fail'] % (str(spdxs[i]), spdx_dest) + "<br>"
 
                         # check for patches and save in user_data
                         patch_files = request.POST.get('foss_patches' + str(i), '')
@@ -561,7 +583,7 @@ def input(request):
                                         recorddata.new_file_from_existing(patch, "patches")
                                         fossdata.patch_files.append(os.path.basename(patch))
                                     except:
-                                        error_message += "Failed to copy " + str(patch) + "to " + patch_dest + "<br>"
+                                        error_message += msg_strings['copy_fail'] % (str(patch), patch_dest) + "<br>"
 
                         # save information after everything's collected
                         fossdata.save()
@@ -576,15 +598,15 @@ def input(request):
                 recorddata.checksum = checksum
                 recorddata.save()
             else:
-                error_message += "Checksum generation failed...<br>"
+                error_message += msg_strings['checksum_fail'] + "<br>"
 
             # Commit the whole thing to version control
-            recorddata.commit("Created new record from form.")
+            recorddata.commit(msg_strings['commit_new_record'])
 
             # FIXME - don't get BoM in MECARD if we do this before commit  
             result = recorddata.checksum_to_barcode()
             if result:
-                error_message += "Barcode generation failed...<br>"
+                error_message += msg_strings['barcode_fail'] + "<br>"
   
             if error_message == '':
                 return HttpResponseRedirect('/barcode/' + str(recordid) + '/detail/')
@@ -597,7 +619,7 @@ def input(request):
         # check if the user has done basic setup
         settings_done = System_Settings.objects.filter(user_updated = True).count()
         if (settings_done) == 0:
-            error_message = 'Please Configure Basic System Settings <a href="/barcode/sysconfig/">Here</a>'
+            error_message = msg_strings['config_warn']
             needs_setup = 1
 
     return render_to_response('barcode/input.html', {
@@ -620,7 +642,7 @@ def documentation(request):
     status = 0
 
     try:
-        f = open(settings.STATIC_DOC_ROOT + "/docs/index.khtml", 'r')
+        f = open(settings.STATIC_DOC_ROOT + "/docs/index.html", 'r')
 
     except:
         # docs aren't created yet, try to do it
@@ -630,8 +652,8 @@ def documentation(request):
             if status == 0:
                 status = os.system("cd " + settings.STATIC_DOC_ROOT + "/docs && cat index.html.base index.html.addons index.html.footer > index.html")
             else:
-                docs = "<b>Error, no index.html in fossbarcode/media/docs.</b><br>"
-                docs += "If working with a git checkout or tarball, please type 'make' in the top level directory.<br>"
+                docs = "<b>" + _("Error, no index.html in fossbarcode/media/docs.") + "</b><br>"
+                docs += _("If working with a git checkout or tarball, please type 'make' in the top level directory.") + "<br>"
                 docs += "</body>"
 
     # something worked above
@@ -675,7 +697,7 @@ def dirlist(request):
                     r.append('<li class="file ext_%s"><a href="#" rel="%s">%s</a></li>' % (e,ff,f))
         r.append('</ul>')
     except Exception,e:
-        r.append('Could not load directory: %s' % str(e))
+        r.append(_('Could not load directory: %s') % str(e))
     r.append('</ul>')
     return HttpResponse(''.join(r))
 
@@ -689,13 +711,13 @@ def check_for_system_apps():
     for app in apps_needed:
         result = os.system("which " + app + "> /dev/null")
         if result:
-            errmsg += "Could not find system app '<i>" + app + "</i>'...<br>"
+            errmsg += _("Could not find system app ") + "<i>" + app + "</i>...<br>"
             if app == "barcode" or app == "qrencode":
-                errmsg += "(See the documentation for building '<i>" + app + "</i>' from source)<br>"
+                errmsg += _("(See the documentation for building ") + "<i>" + app + "</i> from source)<br>"
 
     if errmsg:
-        errmsg += "Application will fail to generate qr/barcode images without these apps<br>"
-        errmsg += "Please use your system package manager to install them<br>"
+        errmsg += _("Application will fail to generate qr/barcode images without these apps") + "<br>"
+        errmsg += _("Please use your system package manager to install them") + "<br>"
 
     return errmsg
 
@@ -707,7 +729,7 @@ def delete_record(recid):
     try:
         q[0].remove_directory()
     except:
-        errmsg += "Failed to delete user data...<br>"
+        errmsg += msg_strings['user_data_delete_fail'] + "<br>"
     q.delete()
     return errmsg
 
@@ -771,7 +793,7 @@ def purge_foss_spdx(recid, new_spdx):
             try:
                 pr.delete_file("spdx_files/" + old_spdx)
             except:
-                error_message += "Failed to delete: " + old_spdx + "<br>"
+                error_message += msg_strings['delete_fail'] % old_spdx + "<br>"
 
     return error_message
     
