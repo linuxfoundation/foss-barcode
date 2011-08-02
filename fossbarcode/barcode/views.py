@@ -37,8 +37,6 @@ msg_strings = {
     'invalid_line_item': _('Invalid line item update data, see item dialog...'),
     'no_data': _('No data for record %s'),
     'no_record': _('Record not found...'),
-    'patch_copy_fail': _('Failed to copy patch file: %s'),
-    'spdx_copy_fail': _('Failed to copy spdx file: %s'),
     'unknown_request': _('Unknown request made'),
     'user_data_delete_fail': _('Failed to delete user data...'),
 }
@@ -179,25 +177,18 @@ def detail(request, record_id, revision=None):
                         except:
                             error_message += msg_strings['delete_fail'] % (checksum + extension) + "<br>"
 
-                # FIXME - we have similar spdx code for header update, item update and submit - move to a function or method?
                 # top-level spdx_file
                 # save and/or delete SPDX file if there's a change
                 if old_spdx != os.path.basename(new_spdx):
                     if new_spdx != '':
-                        try:
-                            pr.new_file_from_existing(new_spdx, "spdx_files")
-                        except:
-                            error_message += msg_strings['spdx_copy_fail'] % new_spdx + "<br>"
+                        error_message += spdx_file_add(pr, new_spdx)
 
                     if old_spdx != '':
-                        try:
-                            pr.delete_file("spdx_files/" + old_spdx)
-                        except:
-                            error_message += msg_strings['delete_fail'] % old_spdx + "<br>"
+                        error_message += spdx_file_delete(pr, old_spdx)
 
                 # if we have an spdx file and didn't before, we need to purge the component entries
                 if new_spdx != '' and old_spdx == '':
-                    error_message += purge_foss_spdx(record_id, new_spdx)
+                    error_message += foss_spdx_purge(record_id, new_spdx)
 
                 # now we generate all types, so regen always
                 result = pr.checksum_to_barcode()              
@@ -254,20 +245,15 @@ def detail(request, record_id, revision=None):
                 if (mode == "Delete Item"):
                     fd.delete()
 
-                # FIXME - we have similar spdx code for header update, item update and submit - move to a function or method?
                 # save and/or delete SPDX file if there's a change
                 if old_spdx != os.path.basename(new_spdx):
+                    error_message += spdx_file_add(pr, new_spdx)
+
                     if new_spdx != '':
-                        try:
-                            pr.new_file_from_existing(new_spdx, "spdx_files")
-                        except:
-                            error_message += msg_strings['spdx_copy_fail'] % new_spdx + "<br>"
+                        error_message += spdx_file_add(pr, new_spdx)
 
                     if old_spdx != '':
-                        try:
-                            pr.delete_file("spdx_files/" + old_spdx)
-                        except:
-                            error_message += msg_strings['delete_fail'] % old_spdx + "<br>"
+                        error_message += spdx_file_delete(pr, old_spdx)
                 
                 # if we have an spdx file here, we can't have a top-level one
                 top_spdx = pr.spdx_file
@@ -275,10 +261,7 @@ def detail(request, record_id, revision=None):
                     pr.spdx_file = ''
                     pr.save()
                     if top_spdx != os.path.basename(new_spdx):
-                        try:
-                            pr.delete_file("spdx_files/" + top_spdx)
-                        except:
-                            error_message += msg_strings['delete_fail'] % top_spdx + "<br>"
+                        error_message += spdx_file_delete(pr, top_spdx)
 
                 # update/save/del patches
                 patch_files = request.POST.get('foss_patches', '')
@@ -301,7 +284,7 @@ def detail(request, record_id, revision=None):
                                 pr.new_file_from_existing(patch, "patches")
                                 fd.patch_files.append(os.path.basename(patch))
                             except:
-                                error_message += msg_strings['patch_copy_fail'] % str(patch) + "<br>"
+                                error_message += msg_strings['copy_fail'] % (str(patch), "patches") + "<br>"
 
                 else:
                     # no patches specified, remove any that might be present
@@ -532,18 +515,12 @@ def input(request):
             if not recorddata.setup_directory():
                 error_message += msg_strings['create_fail'] % data_dest + "<br>"
             
-            spdx_dest = os.path.join(data_dest, "spdx_files")
             patch_dest = os.path.join(data_dest, "patches")
 
             # top-level spdx_file
             top_spdx = recorddata.spdx_file
             if top_spdx != '':
-                try:
-                    recorddata.new_file_from_existing(top_spdx, "spdx_files")
-                except:
-                    error_message += msg_strings['copy_fail'] % (str(top_spdx), spdx_dest) + "<br>"
-                recorddata.spdx_file = os.path.basename(top_spdx)
-                recorddata.save()
+                error_message += spdx_file_add(recorddata, top_spdx)
                
             # if we have foss components, store them also, and the patches
             if foss_components != '':
@@ -567,10 +544,7 @@ def input(request):
 
                         # check for SPDX files and save in user_data
                         if spdxs[i] != '':
-                            try:
-                                recorddata.new_file_from_existing(spdxs[i], "spdx_files")
-                            except:
-                                error_message += msg_strings['copy_fail'] % (str(spdxs[i]), spdx_dest) + "<br>"
+                            error_message += spdx_file_add(recorddata, spdxs[i])
 
                         # check for patches and save in user_data
                         patch_files = request.POST.get('foss_patches' + str(i), '')
@@ -780,8 +754,8 @@ def get_config_value(cname):
         return false
 
 # walk through the set of component spdx entries and clear/remove them
-def purge_foss_spdx(recid, new_spdx):
-    error_message = ''
+def foss_spdx_purge(recid, new_spdx):
+    errmsg = ''
     pr = Product_Record.objects.get(id = recid)
     foss_list = FOSS_Components.objects.filter(brecord = recid)
     new_spdx = os.path.basename(new_spdx)
@@ -790,10 +764,32 @@ def purge_foss_spdx(recid, new_spdx):
         f.spdx_file = ''
         f.save()
         if old_spdx != new_spdx:
-            try:
-                pr.delete_file("spdx_files/" + old_spdx)
-            except:
-                error_message += msg_strings['delete_fail'] % old_spdx + "<br>"
+            errmsg += spdx_file_delete(pr, old_spdx)
 
-    return error_message
-    
+    return errmsg
+
+# add an spdx file to a record
+def spdx_file_add(pr, spdx_file):
+    errmsg = ''
+    data_dest = pr.file_path()
+    spdx_dest = os.path.join(data_dest, "spdx_files")
+
+    try:
+        pr.new_file_from_existing(spdx_file, "spdx_files")
+    except:
+        errmsg = msg_strings['copy_fail'] % (str(spdx_file), spdx_dest) + "<br>"
+
+    pr.spdx_file = os.path.basename(spdx_file)
+    pr.save()
+    return errmsg
+
+# remove an spdx file from a record
+def spdx_file_delete(pr, spdx_file):
+    errmsg = ''
+
+    try:
+        pr.delete_file("spdx_files/" + spdx_file)
+    except:
+        error_message += msg_strings['delete_fail'] % spdx_file + "<br>"
+
+    return errmsg
