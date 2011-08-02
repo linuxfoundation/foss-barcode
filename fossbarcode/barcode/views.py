@@ -329,16 +329,50 @@ def detail(request, record_id, revision=None):
 # record search page
 def search(request):
     error_message = ""
+    record_list = []
+
+    companies = Product_Record.objects.values_list('company', flat=True).distinct()
+    products = Product_Record.objects.values_list('product', flat=True).distinct()
+    versions = Product_Record.objects.values_list('version', flat=True).distinct()
+    releases = Product_Record.objects.values_list('release', flat=True).distinct()
+
     if request.method == 'POST': # If the form has been submitted...
         searchsum = request.POST.get('searchsum', '')
-        record_list = Product_Record.objects.filter(checksum = searchsum)
-        if record_list.count() == 0:
-            error_message = "Record not found..."
-        else:
-            id = record_list[0].id
-            return HttpResponseRedirect('/barcode/' + str(id) + '/detail/')
+        if searchsum != '':
+            record_list = Product_Record.objects.filter(checksum = searchsum)
 
-    return render_to_response('barcode/search.html', {'error_message': error_message, 'tab_search': True})
+        else:
+            searchcompany = request.POST.get('searchcompany', '')
+            searchproduct = request.POST.get('searchproduct', '')
+            searchversion = request.POST.get('searchversion', '')
+            searchrelease = request.POST.get('searchrelease', '')
+
+            if searchcompany != '' or searchproduct != '' or searchversion != '' or searchrelease != '':
+                if searchcompany != '':
+                    record_list = Product_Record.objects.filter(company = searchcompany)
+                else:
+                    record_list = Product_Record.objects.all()
+
+                if searchproduct != '':
+                    record_list = record_list.filter(product = searchproduct)
+
+                if searchversion != '':
+                    record_list = record_list.filter(version = searchversion)
+
+                if searchrelease != '':
+                    record_list = record_list.filter(release = searchrelease)
+            
+        if len(record_list) == 0:
+                error_message = "Record not found..."
+        else:
+            if record_list.count() == 1:
+                    id = record_list[0].id
+                    return HttpResponseRedirect('/barcode/' + str(id) + '/detail/')
+
+    return render_to_response('barcode/search.html', {'error_message': error_message, 'tab_search': True,
+                                                      'companies': companies, 'products': products,
+                                                      'versions': versions, 'releases': releases,
+                                                      'recordlist': record_list })
 
 # used to see if user is entering a duplicate record in the input tab, no search_dupes.html
 def search_dupes(request):
@@ -377,23 +411,23 @@ def records(request):
     ctr = 1
 
     # pre-render the outline display for speed, uses mktree.js for a collapsible list
-    companies = Product_Record.objects.values_list('company').distinct()
-    totalc = companies.count()
-    lio = liopene if totalc < expand_limit else liopen
+    companies = Product_Record.objects.values_list('company', flat=True).distinct()
+    totalc = companies.count()   
     if totalc != 0:
         for c in companies:
-            rendered.append(lio + "<b>" + c[0] + ":</b><ul>")
-            products = Product_Record.objects.values_list('product').filter(company = c[0]).distinct()
+            lio = liopene if totalc < expand_limit else liopen
+            rendered.append(lio + "<b>" + c + ":</b><ul>")
+            products = Product_Record.objects.values_list('product', flat=True).filter(company = c).distinct()
             totalp = products.count()
-            lio = liopene if totalp < expand_limit else liopen
             for p in products:
-                rendered.append(lio + p[0] + ":<ul>")
-                versions = Product_Record.objects.values_list('version').filter(company = c[0], product = p[0]).distinct()
-                totlv = versions.count()
                 lio = liopene if totalp < expand_limit else liopen
+                rendered.append(lio + p + ":<ul>")
+                versions = Product_Record.objects.values_list('version', flat=True).filter(company = c, product = p).distinct()
+                totlv = versions.count()
                 for v in versions:
-                    rendered.append(lio + "Version " + v[0] + ":<ul>")
-                    releases = Product_Record.objects.filter(company = c[0], product = p[0], version = v[0])
+                    lio = liopene if totalp < expand_limit else liopen
+                    rendered.append(lio + "Version " + v + ":<ul>")
+                    releases = Product_Record.objects.filter(company = c, product = p, version = v)
                     if releases.count() != 0:
                         rendered.append('<table border="1" cellpadding="5" width="900px">')
                         for r in releases:

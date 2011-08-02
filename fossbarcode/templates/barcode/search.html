@@ -10,12 +10,66 @@
 {% endif %}
   <br>
   <form name="searchform" method="post" action="" enctype="multipart/form-data">
-  <table width = "100%">
+  <table width = "100%" border="1">
     <tr>
-      <th>Product Checksum/Code:</th>
-      <td><input type = "text" name = "searchsum"></td>
-      <td><input type = "submit" value = "Search"></td>
+      <th colspan="4">Product Checksum/Code:</th>
+      <td colspan="4"><input type = "text" name = "searchsum"></td>
     </tr>
+    <tr>
+      <th colspan="8" align="center">Or (any or all fields):</th>
+    </tr>
+    <tr>
+      <th>Company Name:</th>
+        <td>
+          <select name="searchcompany">
+            <option value="" selected>Select</option>
+            {% for c in companies %}
+            <option value="{{ c }}">{{ c }}</option>
+            {% endfor %}
+          </select>
+      </td>
+      <th>Product Name:</th>
+        <td>
+          <select name="searchproduct">
+            <option value="" selected>Select</option>
+            {% for p in products %}
+            <option value="{{ p }}">{{ p }}</option>
+            {% endfor %}
+          </select>
+      </td>
+      <th>Product Version:</th>
+        <td>
+          <select name="searchversion">
+            <option value="" selected>Select</option>
+            {% for v in versions %}
+            <option value="{{ v }}">{{ v }}</option>
+            {% endfor %}
+          </select>
+      </td>
+      <th>Product Release:</th>
+        <td>
+          <select name="searchrelease">
+            <option value="" selected>Select</option>
+            {% for r in releases %}
+            <option value="{{ r }}">{{ r }}</option>
+            {% endfor %}
+          </select>
+      </td>
+    <tr>
+      <td colspan="8" align="center"><input type = "submit" value = "Search"></td>
+    </tr>  
   </table>
+  {% if recordlist %}
+    <table width = "100%" border="1">
+    {% for r in recordlist %}
+      <tr>
+        <td>{{ r.company }}</td>
+        <td>{{ r.product }}</td>
+        <td>Version {{ r.version }}</td>
+        <td><a href="/barcode/{{ r.id }}/detail/">Release {{ r.release }}</a></td>
+      </tr>
+    {% endfor %}
+    </table>
+  {% endif %}
   </form>
 {% endblock %}
