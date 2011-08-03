@@ -356,9 +356,9 @@ def search(request):
 
             if searchcompany != '' or searchproduct != '' or searchversion != '' or searchrelease != '':
                 if searchcompany != '':
-                    record_list = Product_Record.objects.filter(company = searchcompany)
+                    record_list = Product_Record.objects.filter(company = searchcompany).order_by('product','version','release')
                 else:
-                    record_list = Product_Record.objects.all()
+                    record_list = Product_Record.objects.all().order_by('company','product','version','release')
 
                 if searchproduct != '':
                     record_list = record_list.filter(product = searchproduct)
