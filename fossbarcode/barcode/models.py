@@ -231,7 +231,7 @@ class Product_Record(models.Model, FileDataDirMixin):
     def __unicode__(self):
         return self.product
 
-    def clone(self, company=None, product=None, version=None, release=None):
+    def clone(self, company=None, product=None, version=None, release=None, website=None, contact=None, email=None, spdx_file=None):
         # Create a clone of this product, including the same components,
         # patches, etc.  Must provide at least one different value for
         # company, product, version, or release.  Returns the new product.
@@ -243,6 +243,14 @@ class Product_Record(models.Model, FileDataDirMixin):
             version = self.version
         if not release:
             release = self.release
+        if not website:
+            website = self.website
+        if not contact:
+            contact = self.contact
+        if not email:
+            email = self.email
+        if not spdx_file:
+            spdx_file = self.spdx_file
 
         if company == self.company and product == self.product and \
                 version == self.version and release == self.release:
@@ -250,9 +258,9 @@ class Product_Record(models.Model, FileDataDirMixin):
 
         new_product = Product_Record(company=company, product=product,
                                      version=version, release=release,
-                                     website=self.website,
-                                     contact=self.contact, email=self.email, 
-                                     spdx_file=self.spdx_file)
+                                     website=website,
+                                     contact=contact, email=email, 
+                                     spdx_file=spdx_file)
         new_product.save()
 
         shutil.copytree(self.file_path(), new_product.file_path(), ignore=shutil.ignore_patterns('*.png', '*.ps'))

@@ -137,14 +137,30 @@ def detail(request, record_id, revision=None):
         if (mode == "Clone Record"):
             if headerform.is_valid(): # All validation rules pass            
                 pr = Product_Record.objects.get(id = record_id)
+                old_spdx = pr.spdx_file
+                new_spdx = request.POST.get('spdx_file', '')
                 try:
-                    newpr = pr.clone( company=request.POST.get('company', ''),
+                    newpr = pr.clone( company = request.POST.get('company', ''),
                                       product = request.POST.get('product', ''), 
                                       version = request.POST.get('version', ''),
-                                      release = request.POST.get('release', ''))
+                                      release = request.POST.get('release', ''),
+                                      website = request.POST.get('website', ''),
+                                      contact = request.POST.get('contact', ''),
+                                      email = request.POST.get('email', ''),
+                                      spdx_file = os.path.basename(new_spdx) )
+
                     record_id = str(newpr.id)
                 except:
                     error_message += msg_strings['clone_fail']
+
+                # top-level spdx_file
+                # save and/or delete SPDX file if there's a change
+                if old_spdx != os.path.basename(new_spdx):
+                    if new_spdx != '':
+                        error_message += spdx_file_add(newpr, new_spdx)
+
+                    if old_spdx != '':
+                        error_message += spdx_file_delete(newpr, old_spdx)
 
         if (mode == "Update Header"):
             if headerform.is_valid(): # All validation rules pass
@@ -414,7 +430,7 @@ def records(request):
     liopen = '<li>'
     # use <li class="liOpen"> to force open state if there aren't many records
     liopene = '<li class="liOpen">'
-    expand_limit = 3
+    expand_limit = 4
     ctr = 1
 
     # pre-render the outline display for speed, uses mktree.js for a collapsible list
@@ -434,7 +450,7 @@ def records(request):
                 for v in versions:
                     lio = liopene if totalp < expand_limit else liopen
                     rendered.append(lio + "Version " + v + ":<ul>")
-                    releases = Product_Record.objects.filter(company = c, product = p, version = v)
+                    releases = Product_Record.objects.filter(company = c, product = p, version = v).order_by('release')
                     if releases.count() != 0:
                         rendered.append('<table border="1" cellpadding="5" width="900px">')
                         for r in releases:
