@@ -316,7 +316,7 @@ class Product_Record(models.Model, FileDataDirMixin):
                                      shell=True, stdin=subprocess.PIPE)
                 qrencode_pipe.stdin.write(mecard)
                 qrencode_pipe.stdin.close()
-                retval = qrencode_pipe.wait()
+                result = qrencode_pipe.wait()
                 if result == 0:
                     # overlay the foss.png image for branding
                     qrcode = Image.open(png_file)
