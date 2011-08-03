@@ -184,7 +184,7 @@ class TestProductRecord(BarCodeHarness):
         self.assertTrue(self.product.commit("Add second component."))
         mecard = self.product.record_to_mecard("qr+")
         for s in test_strings:
-            self.assertTrue(re.escape(s) in mecard,
+            self.assertTrue(s in mecard,
                             "could not find string '%s' in me card '%s'" % (s, mecard))
 
     def testBarcode(self):
