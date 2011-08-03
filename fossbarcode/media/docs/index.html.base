@@ -309,11 +309,10 @@ printed output so that only the test results show up in the printed report.</p>
 <div id="Review Compliance Records">
 <b>Review Compliance Records:</b>
 
-<p>The data records should also be accessible from the <b>Review Records</b> page. This is a tabular
-list of all the data entries, sorted by id/date. The far-right column has a summary of the information
-entered from the <b>Enter Data</b> tab. Clicking on the link for the id will 
+<p>The data records should also be accessible from the <b>Review Records</b> page. This is a collapsible tree-style
+list of all the data entries, sorted by company, product, version, release. Clicking on the link for the release will 
 open the detail tab. If you want to delete records, you can select the checkboxes and 
-delete them from here, using the <i>Delete Selected Records</i> button. Records can be edited from the Detail page, and a history of changes made will be created, with the ability to view the record as it appeared in older revisions.</p>
+delete them from here, using the <i>Delete Selected Records</i> button. Records can be edited or cloned from the Detail page, and a history of changes made will be created, with the ability to view the record as it appeared in older revisions.</p>
 </div>
 
 <div id="Search Compliance Records">

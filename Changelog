@@ -26,3 +26,11 @@
     Add BoM data to QR code
     Add a System Configuration tab for local settings
 
+0.0.6:
+    Create all 3 styles of barcodes and display per system config
+    Implement History view, change control
+    Add ability to edit/clone existing records
+    Add new search by company,product,version,release
+    Arrange the records tab into a tree list
+
+
