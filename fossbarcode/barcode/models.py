@@ -251,7 +251,8 @@ class Product_Record(models.Model, FileDataDirMixin):
         new_product = Product_Record(company=company, product=product,
                                      version=version, release=release,
                                      website=self.website,
-                                     contact=self.contact, email=self.email)
+                                     contact=self.contact, email=self.email, 
+                                     spdx_file=self.spdx_file)
         new_product.save()
 
         shutil.copytree(self.file_path(), new_product.file_path(), ignore=shutil.ignore_patterns('*.png', '*.ps'))

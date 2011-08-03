@@ -17,7 +17,7 @@ CONFIG_CHOICES = (
     ('display_code_type', (
             ('128', _('Code 128 Barcode')),
             ('qr', _('QR Code with only the checksum, URL')),
-            ('qr+', _('QR Code with BoM and oter data embedded in MECARD data')),
+            ('qr+', _('QR Code with BoM and other data embedded in MECARD data')),
         )
     ),
 )
