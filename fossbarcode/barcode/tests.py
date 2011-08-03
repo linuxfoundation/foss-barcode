@@ -169,8 +169,8 @@ class TestProductRecord(BarCodeHarness):
 
     def testMeCardPlus(self):
         test_strings = ["N:Test Company;",
-                        "(Open Source Test 3.0 Test License 1.0)",
-                        "(Open Source Library 1.0 Test License 1.0)"]
+                        "(Open Source Test 3.0 Test License 1.0),",
+                        "(Open Source Library 1.0 Test License 1.0);"]
         self.addComponent()
         second_component = FOSS_Components(brecord=self.product,
                                            package="Open Source Library",
