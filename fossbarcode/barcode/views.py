@@ -31,8 +31,10 @@ msg_strings = {
     'config_info': _('You must confirm and save the system settings to continue...'),
     'config_warn': _('Please Configure Basic System Settings ') + '<a href="/barcode/sysconfig/">' + _('Here') + '</a>',
     'copy_fail': _('Failed to copy %s to %s'),
+    'create_barcode': _('Create barcode images'),
     'create_fail': _('Failed to create %s'),
     'delete_fail': _('Failed to delete: %s'),
+    'delete_line_item': _('Delete line item for "%s"'),
     'invalid_header': _('Invalid header update data, see header dialog...'),
     'invalid_line_item': _('Invalid line item update data, see item dialog...'),
     'no_data': _('No data for record %s'),
@@ -195,12 +197,7 @@ def detail(request, record_id, revision=None):
 
                 # top-level spdx_file
                 # save and/or delete SPDX file if there's a change
-                if old_spdx != os.path.basename(new_spdx):
-                    if new_spdx != '':
-                        error_message += spdx_file_add(pr, new_spdx)
-
-                    if old_spdx != '':
-                        error_message += spdx_file_delete(pr, old_spdx)
+                error_message += spdx_check_for_change(pr, old_spdx, new_spdx)
 
                 # if we have an spdx file and didn't before, we need to purge the component entries
                 if new_spdx != '' and old_spdx == '':
@@ -262,14 +259,7 @@ def detail(request, record_id, revision=None):
                     fd.delete()
 
                 # save and/or delete SPDX file if there's a change
-                if old_spdx != os.path.basename(new_spdx):
-                    error_message += spdx_file_add(pr, new_spdx)
-
-                    if new_spdx != '':
-                        error_message += spdx_file_add(pr, new_spdx)
-
-                    if old_spdx != '':
-                        error_message += spdx_file_delete(pr, old_spdx)
+                error_message += spdx_check_for_change(pr, old_spdx, new_spdx)
                 
                 # if we have an spdx file here, we can't have a top-level one
                 top_spdx = pr.spdx_file
@@ -322,7 +312,7 @@ def detail(request, record_id, revision=None):
 
                 # commit changes to version control
                 if (mode == "Delete Item"):
-                    pr.commit('Delete line item record for "' + fd.package + '"' )
+                    pr.commit(msg_strings['delete_line_item'] % fd.package)
                 else:
                     pr.commit(request.POST.get('item_commit_message', ''))
 
@@ -806,6 +796,18 @@ def spdx_file_delete(pr, spdx_file):
     try:
         pr.delete_file("spdx_files/" + spdx_file)
     except:
-        error_message += msg_strings['delete_fail'] % spdx_file + "<br>"
+        errmsg += msg_strings['delete_fail'] % spdx_file + "<br>"
 
     return errmsg
+
+# check if the spdx file has changed on an edit
+def spdx_check_for_change(pr, old_spdx, new_spdx):  
+    errmsg = ''
+    if old_spdx != os.path.basename(new_spdx):
+        if new_spdx != '':
+            errmsg += spdx_file_add(pr, new_spdx)
+        if old_spdx != '':
+            errmsg += spdx_file_delete(pr, old_spdx)
+
+    return errmsg    
+
