@@ -769,7 +769,7 @@ def foss_spdx_purge(recid, new_spdx):
         old_spdx = f.spdx_file
         f.spdx_file = ''
         f.save()
-        if old_spdx != new_spdx:
+        if old_spdx != new_spdx and old_spdx != '':
             errmsg += spdx_file_delete(pr, old_spdx)
 
     return errmsg
