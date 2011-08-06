@@ -364,7 +364,7 @@ class Product_Record(models.Model, FileDataDirMixin):
                 foss_list = FOSS_Components.objects.filter(brecord = self)
                 for f in foss_list:
                     mecard += "(" + f.package + " " + f.version + " " + f.license + "), "
-                    mecard = mecard[:-2] + ";"
+                mecard = mecard[:-2] + ";"
 
         # url to central site
         if host_site_in_qrcode == "True" or metype == "qr":

@@ -546,7 +546,7 @@ def input(request):
                                                    package = foss, version = versions[i],
                                                    copyright = copyrights[i], attribution = attributions[i],
                                                    license = licenses[i], license_url = license_urls[i], 
-                                                   url = urls[i], spdx_file = os.path.basename(spdxs[i]))
+                                                   url = urls[i], spdx_file = os.path.basename(spdxs[i]), patch_files = [])
 
                         # check for SPDX files and save in user_data
                         if spdxs[i] != '':
