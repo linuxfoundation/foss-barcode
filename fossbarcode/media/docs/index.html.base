@@ -30,6 +30,7 @@
     <li><a href="#admin">Admin Interface</a></li>
     <li><a href="#database">Database Schema</a></li>
     <li><a href="#dbserver">Using a Database Server</a></li>
+    <li><a href="#pfacing">Public-Facing Configuration</a></li>
     <li><a href="#backend">How it Works</a></li>
     <li><a href="#limitations">Limitations</a></li>
   </ul>
@@ -409,6 +410,20 @@ via <i>brecord_id</i>.</li>
   and Oracle database servers.  Comment out the SQLite configuration,
   uncomment the configuration for your database server, and edit the
   configuration as appropriate.</p>
+
+</div>
+
+<div id="pfacing">
+<b>Public-Facing Configuration</b>
+
+<p>This same set of code used internally to create and manage records can be used on the public-facing site. In this mode, one can only view the list of records, search for records, and see the record detail. No input/editing is enabled, nor docs or configuration tabs. Attempts to access the other tabs will redirect to the records tab.</p>
+
+<p>To enable the public facing mode:</p>
+<ol>
+  <li>Edit <tt>"host_site"</tt> in the System Configuration tab. The url should be of the nature <tt>"http://hostname/barcode/checksum/"</tt>. You can simulate a public-facing layout in your local install by using <tt>"http://localhost:8000/barcode/checksum/"</tt>. Users that follow the checksum url from the MECARD data will be directed to this page, with the checksum appended, which will redirect to the correct record_id.</li>
+  <li>Edit <tt>"public_logo"</tt> in the System Configuration tab. This should be a 190x60 pixel logo file. Place the file in media/images. This file will replace the banner image when the site is in public-facing mode.</li>
+  <li>Edit <tt>"public_facing"</tt> in site_settings.py, setting the value to <tt>"True"</tt>. Once this is set, the installation will be in public-facing mode. To turn it back off, change the value to <tt>"False"</tt>.</li>
+</ol>
 
 </div>
 

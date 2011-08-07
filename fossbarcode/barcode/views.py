@@ -9,6 +9,7 @@ from django.utils import simplejson as json
 from django.utils.translation import ugettext as _
 
 from fossbarcode import task
+from site_settings import public_facing
 
 import sys, os, re, urllib, subprocess, time, datetime
 
@@ -75,10 +76,22 @@ def history_file(request, record_id, revision, path):
     blob = repo.get_blob(traverse)
     return HttpResponse(blob.data, content_type="text/plain")
 
+# for public facing side, lookup by checksum
+def by_checksum(request, checksum):
+    try:
+        p = Product_Record.objects.get(checksum=checksum)
+    except Product_Record.DoesNotExist:
+        raise Http404
+    record_id = str(p.id)
+    return HttpResponseRedirect('/barcode/' + record_id + '/detail/')
+
 # system configuration settings
 def sysconfig(request):
     info_message = ""
 
+    if public_facing == True:
+        return HttpResponseRedirect('/barcode/records/')
+ 
     if request.method == 'POST': # If the form has been submitted...
         # walk through all the known system settings and update
         # do we need to go back and regenerate all the QR codes if host_site changes?
@@ -336,7 +349,8 @@ def detail(request, record_id, revision=None):
     return render_to_response('barcode/detail.html', {'record': record, 'foss': foss, 'history': record_history,
                                                       'host_site': host_site, 'tab_results': True, 'revision': revision,
                                                       'error_message': error_message, 'enable_edits': enable_edits,
-                                                      'display_code': display_code_type,
+                                                      'display_code': display_code_type, 
+                                                      'public_facing': public_facing, 'public_logo': public_logo,
                                                       'headerform': headerform, 'itemform': itemform })
 
 # record search page
@@ -383,6 +397,7 @@ def search(request):
                     return HttpResponseRedirect('/barcode/' + str(id) + '/detail/')
 
     return render_to_response('barcode/search.html', {'error_message': error_message, 'tab_search': True,
+                                                      'public_facing': public_facing, 'public_logo': public_logo,
                                                       'companies': companies, 'products': products,
                                                       'versions': versions, 'releases': releases,
                                                       'recordlist': record_list })
@@ -465,10 +480,13 @@ def records(request):
     
     return render_to_response('barcode/records.html', {'rendered_list': rendered,
                                                        'error_message': error_message, 
-                                                       'tab_records': True })
+                                                       'tab_records': True, 
+                                                       'public_facing': public_facing, 'public_logo': public_logo })
 
 # input form - this is where the real work happens
 def input(request):
+    if public_facing == True:
+        return HttpResponseRedirect('/barcode/records/')
 
     error_message = check_for_system_apps()
     foss_components = ''
@@ -617,6 +635,9 @@ def input(request):
 def documentation(request):
     from site_settings import gui_name, gui_version
 
+    if public_facing == True:
+        return HttpResponseRedirect('/barcode/records/')
+        
     # Read the standalone docs, and reformat for the gui
     docs = ''
     status = 0
@@ -757,7 +778,7 @@ def get_config_value(cname):
     if settings_list:
         return settings_list[0].value
     else:
-        return false
+        return False
 
 # walk through the set of component spdx entries and clear/remove them
 def foss_spdx_purge(recid, new_spdx):
@@ -810,4 +831,7 @@ def spdx_check_for_change(pr, old_spdx, new_spdx):
             errmsg += spdx_file_delete(pr, old_spdx)
 
     return errmsg    
+
+# used when in the public facing mode
+public_logo = get_config_value('public_logo')
 

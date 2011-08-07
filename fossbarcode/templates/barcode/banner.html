@@ -1,3 +1,6 @@
 <!-- a href="http://www.linuxfoundation.org/" target="_blank"-->
+{% if not public_facing %}
 <img hspace="15" vspace="5" align="right" src="/site_media/images/lflogo.png" alt="FOSS Barcode Tool" title="FOSS Barcode Tool" />
-
+{% else %}
+<img hspace="15" vspace="5" align="right" src="/site_media/images/{{ public_logo }}" />
+{% endif %}

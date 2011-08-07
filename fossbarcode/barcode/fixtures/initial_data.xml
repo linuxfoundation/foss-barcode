@@ -88,6 +88,14 @@
     <field type="DateTimeField" name="last_updated">2011-07-28 10:01:01</field>
     <field type="BooleanField" name="user_updated">False</field>
   </object>
+  <object pk="4" model="barcode.system_settings">
+    <field type="CharField" name="name">public_logo</field>
+    <field type="CharField" name="ftype">t</field>
+    <field type="CharField" name="value">mylogo.png</field>
+    <field type="CharField" name="descr">Logo to display on public facing page (190x60 pixels)</field>
+    <field type="DateTimeField" name="last_updated">2011-08-07 10:01:01</field>
+    <field type="BooleanField" name="user_updated">False</field>
+  </object>
   <object pk="22" model="auth.permission">
     <field type="CharField" name="name">Can add log entry</field>
     <field to="contenttypes.contenttype" name="content_type" rel="ManyToOneRel">8</field>

@@ -32,5 +32,5 @@
     Add ability to edit/clone existing records
     Add new search by company,product,version,release
     Arrange the records tab into a tree list
-
+    Add a setup for a public-facing mode, and document
 

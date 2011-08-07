@@ -6,6 +6,7 @@ admin.autodiscover()
 
 urlpatterns = patterns('',
     (r'^barcode/$', 'fossbarcode.barcode.views.input'),
+    (r'^barcode/checksum/(?P<checksum>[0-9a-fA-F]+)$', 'fossbarcode.barcode.views.by_checksum'),
     (r'^barcode/input/$', 'fossbarcode.barcode.views.input'),
     (r'^barcode/dirlist/$', 'fossbarcode.barcode.views.dirlist'),
     (r'^barcode/documentation/$', 'fossbarcode.barcode.views.documentation'),

@@ -35,7 +35,7 @@
       <td rowspan = "3" width = "40%">
         <span id="noprint">
           &nbsp;&nbsp;
-          {% if not revision %}
+          {% if not revision and not public_facing %}
           <span id="header-modal">    
             <a href="#" name="edit_header" class="basic"><img src="/site_media/images/filetree/edit.png" title="Edit Record Header"></a>
           </span>
@@ -80,7 +80,7 @@
     <tr>
       <td align="center" width="45">
         <span id="noprint">
-        {% if not revision %}
+        {% if not revision and not public_facing %}
         <div id="line-item-modal">    
           <a href="#" class="basic" name="line_item_add" id="{{ foss|length }}"><img src="/site_media/images/list-add.png" title="Add Line Item"></a>
         </div>
@@ -101,7 +101,7 @@
     <tr valign = "top">   
       <td align="center" width="45">
       <span id="noprint">
-        {% if not revision %}
+        {% if not revision and not public_facing %}
         <span id="line-item-modal">
             <a href="#" class="basic" name="line_item{{ forloop.counter }}" id="{{ row.id }}"><img src="/site_media/images/filetree/edit.png" title="Edit Line Item"></a>
         </span>
