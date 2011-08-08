@@ -8,6 +8,7 @@ import shutil
 import pickle
 import time
 import hashlib
+import subprocess
 from dulwich.repo import Repo
 from dulwich.objects import parse_timezone
 
@@ -320,7 +321,12 @@ class Product_Record(models.Model, FileDataDirMixin):
                 # mecard data will either be basic (just the product url), or enhanced
                 mecard = self.record_to_mecard(t)
 
-                result = os.system("qrencode -v 6 -l Q -m 0 -o " + png_file + " " + mecard)
+                qrencode_pipe = \
+                    subprocess.Popen("qrencode -v 6 -l Q -m 0 -o " + png_file,
+                                     shell=True, stdin=subprocess.PIPE)
+                qrencode_pipe.stdin.write(mecard)
+                qrencode_pipe.stdin.close()
+                result = qrencode_pipe.wait()
                 if result == 0:
                     # overlay the foss.png image for branding
                     qrcode = Image.open(png_file)
@@ -370,8 +376,7 @@ class Product_Record(models.Model, FileDataDirMixin):
         if host_site_in_qrcode == "True" or metype == "qr":
             mecard += "URL:" + host_site + self.checksum + ";"
 
-        escaped = re.escape(mecard)
-        return escaped
+        return mecard
 
 class FOSS_Components(models.Model, FileDataMixin):
     _master_class_path = ["brecord"]
