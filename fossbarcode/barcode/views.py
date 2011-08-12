@@ -351,7 +351,8 @@ def detail(request, record_id, revision=None):
                                                       'error_message': error_message, 'enable_edits': enable_edits,
                                                       'display_code': display_code_type, 
                                                       'public_facing': public_facing, 'public_logo': public_logo,
-                                                      'headerform': headerform, 'itemform': itemform })
+                                                      'headerform': headerform, 'itemform': itemform,
+                                                      'reload_trigger': str(time.time()) })
 
 # record search page
 def search(request):
