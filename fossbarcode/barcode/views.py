@@ -201,7 +201,6 @@ def detail(request, record_id, revision=None):
                 if checksum != new_checksum:
                     pr.checksum = new_checksum
                     pr.save()
-                    result = pr.checksum_to_barcode()
                     for extension in (".png", ".ps"):
                         try:
                             pr.delete_file(checksum + extension)
@@ -319,6 +318,12 @@ def detail(request, record_id, revision=None):
                 if mode not in ["Delete Item", "Add Item"]:
                     fd.save()
 
+                # QR+ code changes with any change (record_date, components)
+                # FIXME - doesn't pickup changes if we do this before commit
+                result = pr.checksum_to_barcode() 
+                if result:
+                    error_message += msg_strings['barcode_fail'] + "<br>"
+                    
                 # update the master record "last updated"         
                 pr.record_date = datetime.datetime.now()
                 pr.save()
@@ -329,12 +334,6 @@ def detail(request, record_id, revision=None):
                 else:
                     pr.commit(request.POST.get('item_commit_message', ''))
 
-                # QR+ code changes with any change (record_date, components)
-                # FIXME - doesn't pickup changes if we do this before commit
-                result = pr.checksum_to_barcode() 
-                if result:
-                    error_message += msg_strings['barcode_fail'] + "<br>"
-                    
                 # back to the page, with a clean slate and any error messages, we need to re-render to pickup changes
                 foss = render_detail(record_id)
                 record_list = Product_Record.objects.filter(id = record_id)
@@ -598,14 +597,14 @@ def input(request):
             else:
                 error_message += msg_strings['checksum_fail'] + "<br>"
 
-            # Commit the whole thing to version control
-            recorddata.commit(msg_strings['commit_new_record'])
-
             # FIXME - don't get BoM in MECARD if we do this before commit  
             result = recorddata.checksum_to_barcode()
             if result:
                 error_message += msg_strings['barcode_fail'] + "<br>"
   
+            # Commit the whole thing to version control
+            recorddata.commit(msg_strings['commit_new_record'])
+
             if error_message == '':
                 return HttpResponseRedirect('/barcode/' + str(recordid) + '/detail/')
 
