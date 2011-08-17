@@ -49,6 +49,8 @@ PROJECT_ROOT = get_project_root()
 if use_userdir():
     USERDIR_ROOT = get_userdir()
     DATABASE_NAME = os.path.join(USERDIR_ROOT, "barcode.sqlite")
+    if DATABASES['default']['ENGINE'] == 'django.db.backends.sqlite3':
+        DATABASES['default']['NAME'] = os.path.join(USERDIR_ROOT, "barcode.sqlite")
     STATE_ROOT = USERDIR_ROOT
     STATIC_DOC_ROOT = os.path.join(USERDIR_ROOT, "media")
     USERDATA_ROOT = os.path.join(USERDIR_ROOT, "media", "user_data")

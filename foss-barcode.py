@@ -66,6 +66,10 @@ def setup_userdir():
         if not os.path.exists(os.path.join(settings.USERDIR_ROOT, "media", dirlink)):
             os.symlink(os.path.join(settings.PROJECT_ROOT, "fossbarcode", "media", dirlink),
                          os.path.join(settings.USERDIR_ROOT, "media", dirlink))
+    # if we copied the database, we need the corresponding user_data too, or we get errors trying to view the data
+    if not os.path.exists(os.path.join(settings.USERDIR_ROOT, "media", "user_data")):
+        shutil.copytree(os.path.join(settings.PROJECT_ROOT, "fossbarcode", "media", "user_data"),
+                        os.path.join(settings.USERDIR_ROOT, "media", "user_data"))
 
 def start_server(run_browser, interface=None):
     pid_path = os.path.join(settings.STATE_ROOT, "server.pid")
