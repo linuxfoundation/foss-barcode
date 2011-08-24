@@ -92,8 +92,6 @@
       <th>Copyright<br>Information</th>
       <th>Attribution<br>Notices</th>
       <th>License<br>Name and Version</th>
-      <th>License<br>URL</th>
-      <th>Download<br>URL</th>
       <th>SPDX<sup>TM</sup><br>File</th>
       <th>Patch(es)</th>
     </tr>
@@ -111,13 +109,11 @@
         {% endif %}
       </span>     
       </td>
-      <td id="foss_component{{ forloop.counter }}">{{ row.component }}</td>
+      <td id="foss_component{{ forloop.counter }}"><a href="{{ row.url }}" target="_blank">{{ row.component }}</a></td>
       <td id="foss_version{{ forloop.counter }}">{{ row.version }}</td>
       <td id="foss_copyright{{ forloop.counter }}">{{ row.copyright }}</td>
       <td id="foss_attribution{{ forloop.counter }}">{{ row.attribution }}</td>
-      <td id="foss_license{{ forloop.counter }}">{{ row.license }}</td>
-      <td id="foss_license_url{{ forloop.counter }}"><a href="{{ row.license_url }}" target="_blank">{{ row.license_url }}</a></td>
-      <td id="foss_url{{ forloop.counter }}"><a href="{{ row.url }}" target="_blank">{{ row.url }}</a></td>
+      <td id="foss_license{{ forloop.counter }}"><a href="{{ row.license_url }}" target="_blank">{{ row.license }}</a></td>
       {% autoescape off %}
       <td id="foss_spdx{{ forloop.counter }}">{{ row.spdx_file }}</td>
       <td id="foss_patches{{ forloop.counter }}">{{ row.patches }}</td>
