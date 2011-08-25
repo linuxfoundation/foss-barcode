@@ -96,9 +96,11 @@ class FileDataMixin:
 
 
         try:
-            read_from = pickle.loads(
-                self.brecord.get_file_content(self._file_name, revision))
-            self.__dict__.update(read_from)
+            record_data = self.brecord.get_file_content(self._file_name,
+                                                        revision)
+            if record_data:
+                read_from = pickle.loads(record_data)
+                self.__dict__.update(read_from)
         except KeyError:
             pass
 
@@ -187,15 +189,21 @@ class FileDataDirMixin:
             yield (commit.id, commit.commit_time, commit.message)
 
     def get_file_content(self, subpath, revision=None):
-        repo = self.get_repo()
-        if not revision:
-            revision = repo.head()
+        if revision:
+            repo = self.get_repo()
 
-        traverse = repo.commit(revision).tree
-        for path_component in os.path.split(subpath):
-            if path_component:
-                traverse = repo.tree(traverse)[path_component][1]
-        return repo.get_blob(traverse).data
+            traverse = repo.commit(revision).tree
+            for path_component in os.path.split(subpath):
+                if path_component:
+                    traverse = repo.tree(traverse)[path_component][1]
+            return repo.get_blob(traverse).data
+        else:
+            data_full_path = os.path.join(self.file_path(), subpath)
+            if os.path.exists(data_full_path):
+                data_file = open(data_full_path)
+                return data_file.read()
+            else:
+                return ""
 
     def commit(self, commit_msg):
         if not self.current_changes:
@@ -345,6 +353,10 @@ class Product_Record(models.Model, FileDataDirMixin):
                     result = os.system("pstopnm -xsize 500 -portrait -stdout " + ps_file + " | pnmtopng > " + png_file)
                 else:
                     result = os.system("sam2p " + png_file + " PS: " + ps_file)
+
+            for fn in [ps_filename, png_filename]:
+                if os.path.exists(os.path.join(file_path, fn)):
+                    self.register_new_file(fn)
 
         return result
 

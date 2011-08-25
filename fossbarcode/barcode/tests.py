@@ -49,6 +49,7 @@ class BarCodeHarness(TestCase):
 
         self.addComponent()
         self.assertIsNotNone(self.component)
+        self.assertEqual(self.component.brecord, self.product)
         self.assertEqual(self.component.license, "Test License 1.0")
 
 class TestFileDataDirMixin(BarCodeHarness):
@@ -150,18 +151,6 @@ class TestFileDataMixin(BarCodeHarness):
                                       "FOSS_Components_%d.pickle" % self.component.id)
         self.assertTrue(os.path.exists(data_file_path))
 
-    def testLoadObject(self):
-        self.addComponent()
-        self.assertEqual(self.component.brecord, self.product)
-
-        loaded_component = FOSS_Components.objects.get(id=self.component.id)
-
-        self.assertEqual(loaded_component.id, self.component.id)
-        self.assertEqual(loaded_component.brecord.id, self.component.brecord.id)
-        self.assertEqual(loaded_component.package, self.component.package)
-        self.assertEqual(loaded_component.license, self.component.license)
-        self.assertEqual(loaded_component.url, self.component.url)
-
 class TestProductRecord(BarCodeHarness):
     def testChecksum(self):
         self.assertEqual(self.product.calc_checksum(),
@@ -188,6 +177,8 @@ class TestProductRecord(BarCodeHarness):
                             "could not find string '%s' in me card '%s'" % (s, mecard))
 
     def testBarcode(self):
+        path_suffixes = ["-128.ps", "-128.png", "-qr.ps", "-qr.png",
+                         "-qr+.ps", "-qr+.png"]
         self.product.setup_directory()
         self.product.checksum = self.product.calc_checksum()
         self.product.save()
@@ -195,30 +186,15 @@ class TestProductRecord(BarCodeHarness):
                                     self.product.checksum)
 
         self.product.checksum_to_barcode()
-        self.assertTrue(os.path.exists(partial_path + "-128.ps"))
-        self.assertTrue(os.path.exists(partial_path + "-128.png"))
+        self.assertTrue(self.product.commit("Add barcodes."))
 
-    def testQRCode(self):
-        self.product.setup_directory()
-        self.product.checksum = self.product.calc_checksum()
-        self.product.save()
-        partial_path = os.path.join(self.product.file_path(),
-                                    self.product.checksum)
+        for suffix in path_suffixes:
+            self.assertTrue(os.path.exists(partial_path + suffix))
 
-        self.product.checksum_to_barcode()
-        self.assertTrue(os.path.exists(partial_path + "-qr.ps"))
-        self.assertTrue(os.path.exists(partial_path + "-qr.png"))
-    
-    def testDetailedQRCode(self):
-        self.product.setup_directory()
-        self.product.checksum = self.product.calc_checksum()
-        self.product.save()
-        partial_path = os.path.join(self.product.file_path(),
-                                    self.product.checksum)
-
-        self.product.checksum_to_barcode()
-        self.assertTrue(os.path.exists(partial_path + "-qr+.ps"))
-        self.assertTrue(os.path.exists(partial_path + "-qr+.png"))
+        repo = self.product.get_repo()
+        tree = repo.tree(repo.commit(repo.head()).tree)
+        for suffix in path_suffixes:
+            self.assertTrue((self.product.checksum + suffix) in tree)
 
     def testClone(self):
         self.addComponent()
@@ -264,6 +240,18 @@ class TestFOSSComponents(BarCodeHarness):
 
         self.assertFalse(os.path.exists(os.path.join(self.product.file_path(),
                                                      component_fn)))
+
+    def testLoadObject(self):
+        self.addComponent()
+        self.assertEqual(self.component.brecord, self.product)
+
+        loaded_component = FOSS_Components.objects.get(id=self.component.id)
+
+        self.assertEqual(loaded_component.id, self.component.id)
+        self.assertEqual(loaded_component.brecord.id, self.component.brecord.id)
+        self.assertEqual(loaded_component.package, self.component.package)
+        self.assertEqual(loaded_component.license, self.component.license)
+        self.assertEqual(loaded_component.url, self.component.url)
 
     def testLoadObjectRevision(self):
         self.addComponent()
