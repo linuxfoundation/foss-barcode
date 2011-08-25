@@ -350,9 +350,9 @@ class Product_Record(models.Model, FileDataDirMixin):
                 os.putenv('TMP', '/tmp')
                 os.putenv('TMPDIR', '/tmp')
                 if t == "128":
-                    result = os.system("pstopnm -xsize 500 -portrait -stdout " + ps_file + " | pnmtopng > " + png_file)
+                    result = os.system("pstopnm -xsize 500 -portrait -stdout " + ps_file + " 2>/dev/null | pnmtopng 2>/dev/null > " + png_file)
                 else:
-                    result = os.system("sam2p " + png_file + " PS: " + ps_file)
+                    result = os.system("sam2p -j:quiet " + png_file + " PS: " + ps_file)
 
             for fn in [ps_filename, png_filename]:
                 if os.path.exists(os.path.join(file_path, fn)):
