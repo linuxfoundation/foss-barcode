@@ -228,6 +228,27 @@ class TestProductRecord(BarCodeHarness):
             clone_failed = True
         self.assertTrue(clone_failed)
 
+    def testChecksumHistory(self):
+        self.addComponent()
+        repo = self.product.get_repo()
+        starting_history = len(repo.revision_history(repo.head()))
+
+        self.product.checksum_to_barcode()
+        self.assertTrue(self.product.commit('Calculated barcode.'))
+        old_checksum = self.product.checksum
+        old_revision = self.product.get_repo().head()
+
+        self.product.company = "Testing Industries"
+        self.product.save()
+        self.product.checksum = self.product.calc_checksum()
+        self.product.checksum_to_barcode()
+        self.assertTrue(self.product.commit('Changed company name and re-calc barcode.'))
+
+        self.assertNotEqual(old_checksum, self.product.checksum)
+
+        self.product.switch_revision(old_revision)
+        self.assertEqual(old_checksum, self.product.checksum)
+
 class TestFOSSComponents(BarCodeHarness):
     def testDelete(self):
         self.addComponent()
