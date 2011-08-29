@@ -281,3 +281,8 @@ class TestFOSSComponents(BarCodeHarness):
         except ReadOnlyError:
             write_failed = True
         self.assertTrue(write_failed)
+
+class TestLicense(BarCodeHarness):
+    def testFixtures(self):
+        self.assertTrue(License.objects.all().count() > 0)
+        self.assertTrue(LicenseAlias.objects.all().count() > 0)

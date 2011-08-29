@@ -440,6 +440,23 @@ class FOSS_Components(models.Model, FileDataMixin):
             self.brecord.delete_file(self.data_file_name)
         super(FOSS_Components, self).delete(*args, **kwargs)
 
+class License(models.Model):
+    longname = models.CharField('License', max_length=200)
+    license = models.CharField('License', max_length=200)
+    version = models.CharField('Version', max_length=20, blank=True)
+    def __unicode__(self):
+        if self.license.version:
+            retval = self.license + u' ' + self.license.version
+        else:
+            retval = self.license
+        return retval
+
+class LicenseAlias(models.Model):
+    license = models.ForeignKey(License)
+    alias = models.CharField('Alias', max_length=20, unique=True)
+    def __unicode__(self):
+        return self.alias + u': ' + unicode(self.license)
+
 class System_Settings(models.Model):
     name = models.CharField(max_length=32, db_index=True)
     ftype = models.CharField(max_length=1, default='t', choices=(('b', 'boolean'), ('t', 'text'), ('c', 'choices')))
