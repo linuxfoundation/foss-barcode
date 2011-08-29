@@ -445,8 +445,8 @@ class License(models.Model):
     license = models.CharField('License', max_length=200)
     version = models.CharField('Version', max_length=20, blank=True)
     def __unicode__(self):
-        if self.license.version:
-            retval = self.license + u' ' + self.license.version
+        if self.version:
+            retval = self.license + u' ' + self.version
         else:
             retval = self.license
         return retval
