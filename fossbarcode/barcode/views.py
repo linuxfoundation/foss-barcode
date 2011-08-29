@@ -507,6 +507,15 @@ def input(request):
     component_error = ''
     needs_setup = 0
 
+    # get the default values to pre-fill, if defined
+    company_prefills = {'name': get_config_value('company_name'),
+                        'website': get_config_value('company_website'),
+                        'contact': get_config_value('compliance_name'),
+                        'email': get_config_value('compliance_email')}
+
+    # plus whatever product names we may already have in the system
+    products = Product_Record.objects.values_list('product', flat=True).distinct()
+
     # we don't do anything with this content, just used to format the modal popup
     # because it's also a subset of Recordform, change out the id string id_foo -> id_m_foo
     itemform = ItemForm(auto_id='id_m_%s') # An unbound form
@@ -629,6 +638,7 @@ def input(request):
     return render_to_response('barcode/input.html', {
                               'error_message': error_message, 'component_error': component_error, 
                               'recordform': recordform, 'itemform': itemform, 'needs_setup': needs_setup,
+                              'company_prefills': company_prefills, 'products': products,
                               'foss_components': foss_components, 'foss_versions': foss_versions,
                               'foss_copyrights': foss_copyrights, 'foss_attributions': foss_attributions,
                               'foss_licenses': foss_licenses, 'foss_license_urls': foss_license_urls, 

@@ -33,31 +33,47 @@
   <tr align="left">
     <td align="right"><b>{{ recordform.company.label }}:</b></td>
     <td>{{ recordform.company }}</td>
+    <td></td>
     <td>{{ recordform.company.errors }}</td>
   </tr>
   <tr align="left">
     <td align="right"><b>{{ recordform.website.label }}:</b></td>
     <td>{{ recordform.website }}</td>
+    <td></td>
     <td>{{ recordform.website.errors }}</td>
   </tr>
   <tr align="left">
     <td align="right"><b>{{ recordform.product.label }}:</b></td>
     <td>{{ recordform.product }}</td>
+    {% if products %}
+      <td>
+        <select id="id_product_select" onchange="select_to_product();">
+          <option value="">Select...</option>
+          <option value="manual_entry">Manual Entry</option>
+          {% for p in products %}
+            <option value="{{ p }}">{{ p }}</option>
+          {% endfor %}
+        </select>
+      </td>
+    {% endif %}
     <td>{{ recordform.product.errors }}</td>
   </tr>
   <tr align="left">
     <td align="right"><b>{{ recordform.version.label }}:</b></td>
     <td>{{ recordform.version }}</td>
+    <td></td>
     <td>{{ recordform.version.errors }}</td>
   </tr>
   <tr align="left">
     <td align="right"><b>{{ recordform.release.label }}:</b></td>
     <td>{{ recordform.release }}</td>
+    <td></td>
     <td>{{ recordform.release.errors }}</td>
   </tr>
   <tr align="left">
     <td align="right"><b>{{ recordform.contact.label }}:</b></td>
     <td>{{ recordform.contact }}</td>
+    <td></td>
     <td></td>    
   </tr>
   <tr align="left">
@@ -67,7 +83,8 @@
       <a href="#" id="dupe_search" onclick="search_dupes();">
       <img src="/site_media/images/system-search.png" title="Check for Match to Continue"></a>
       {{ recordform.email.errors }}
-    </td>   
+    </td>
+    <td></td>   
   </tr>
   <tr align="left">
     <td align="right"><b>{% autoescape off %}{{ recordform.spdx_file.label }}{% endautoescape %}:</b></td>
@@ -78,11 +95,13 @@
         <input type="button" name="spdxfilename" value="Select" id="top_spdx_select"
                              title="Open a File/Directory Selector"
                              onclick="toggle_visibility('target_select');set_destination('spdx_file')"/>
-    </td>    
+    </td>
+    <td></td>    
   </tr>
   <tr align="left">
     <td align="right"><b>{{ recordform.released.label }}:</b></td>
     <td>{{ recordform.released }}</td>
+    <td></td>
     <td></td>    
   </tr>     
 </table>
@@ -241,6 +260,25 @@
         document.getElementById("id_spdx_file").setAttribute("onchange", "spdx_change('id_spdx_file', 'foss_spdx_select');");
         // and the reverse is true
         document.getElementById("id_foss_spdx").setAttribute("onchange", "spdx_change('id_foss_spdx', 'top_spdx_select');");
+        // prefill some header values if defined
+        document.getElementById("id_company").setAttribute("value", "{{ company_prefills.name }}");
+        document.getElementById("id_website").setAttribute("value", "{{ company_prefills.website }}");
+        document.getElementById("id_contact").setAttribute("value", "{{ company_prefills.contact }}");
+        document.getElementById("id_email").setAttribute("value", "{{ company_prefills.email }}");
+        // default to list select
+        {% if products %}
+        document.getElementById("id_product").disabled = true;
+        {% endif %}
+    }
+    function select_to_product() {
+        var product = document.getElementById("id_product_select").value;
+        var dest = document.getElementById("id_product");
+        if (product == "manual_entry") {
+            dest.disabled = false;
+        } else {
+            dest.value = product;
+            dest.disabled = true;
+        }
     }
     function update_patch_list(src) {
         var findex = src.replace(pfield,"");

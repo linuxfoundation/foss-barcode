@@ -96,6 +96,38 @@
     <field type="DateTimeField" name="last_updated">2011-08-07 10:01:01</field>
     <field type="BooleanField" name="user_updated">False</field>
   </object>
+  <object pk="5" model="barcode.system_settings">
+    <field type="CharField" name="name">company_name</field>
+    <field type="CharField" name="ftype">t</field>
+    <field type="CharField" name="value">FOSS Company</field>
+    <field type="CharField" name="descr">Default company name for new records </field>
+    <field type="DateTimeField" name="last_updated">2011-08-29 11:35:01</field>
+    <field type="BooleanField" name="user_updated">False</field>
+  </object>
+  <object pk="6" model="barcode.system_settings">
+    <field type="CharField" name="name">company_website</field>
+    <field type="CharField" name="ftype">t</field>
+    <field type="CharField" name="value">http://fosscompany.org</field>
+    <field type="CharField" name="descr">Default website for new records </field>
+    <field type="DateTimeField" name="last_updated">2011-08-29 11:35:01</field>
+    <field type="BooleanField" name="user_updated">False</field>
+  </object>
+  <object pk="7" model="barcode.system_settings">
+    <field type="CharField" name="name">compliance_name</field>
+    <field type="CharField" name="ftype">t</field>
+    <field type="CharField" name="value"/>
+    <field type="CharField" name="descr">Default compliance contact for new records </field>
+    <field type="DateTimeField" name="last_updated">2011-08-29 11:35:01</field>
+    <field type="BooleanField" name="user_updated">False</field>
+  </object>
+  <object pk="8" model="barcode.system_settings">
+    <field type="CharField" name="name">compliance_email</field>
+    <field type="CharField" name="ftype">t</field>
+    <field type="CharField" name="value">compliance@fosscompany.org</field>
+    <field type="CharField" name="descr">Default compliance email for new records </field>
+    <field type="DateTimeField" name="last_updated">2011-08-29 11:35:01</field>
+    <field type="BooleanField" name="user_updated">False</field>
+  </object>
   <object pk="22" model="auth.permission">
     <field type="CharField" name="name">Can add log entry</field>
     <field to="contenttypes.contenttype" name="content_type" rel="ManyToOneRel">8</field>
