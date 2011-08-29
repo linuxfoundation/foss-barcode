@@ -26,12 +26,13 @@ class BarCodeHarness(TestCase):
     # We add the component as an explicit step, because it will
     # trigger the creation of the data directory prematurely.
     def addComponent(self):
+        component_license = License.objects.filter(license="GPL", version="3.0")[0]
         self.component = FOSS_Components(brecord=self.product,
                                          package="Open Source Test",
                                          version="3.0",
                                          copyright="Copyright 2010 Test Foundation",
                                          attribution="",
-                                         license="Test License 1.0",
+                                         license_id=component_license.id,
                                          license_url="http://testprj.example.com/license.html",
                                          url="http://testprj.example.com/")
         self.component.save()
@@ -50,7 +51,7 @@ class BarCodeHarness(TestCase):
         self.addComponent()
         self.assertIsNotNone(self.component)
         self.assertEqual(self.component.brecord, self.product)
-        self.assertEqual(self.component.license, "Test License 1.0")
+        self.assertEqual(str(self.component.license), "GPL 3.0")
 
 class TestFileDataDirMixin(BarCodeHarness):
     def testSetupDirectoryNew(self):
@@ -68,9 +69,9 @@ class TestFileDataDirMixin(BarCodeHarness):
     def testCommit(self):
         self.addComponent()
 
-        self.component.license = "Test License 2.0"
+        self.component.attribution = "Some people somewhere."
         self.component.save()
-        self.product.commit("Change component license.")
+        self.product.commit("Change attribution.")
 
         repo = self.product.get_repo()
         self.assertEqual(len(repo.revision_history(repo.head())), 2)
@@ -158,15 +159,15 @@ class TestProductRecord(BarCodeHarness):
 
     def testMeCardPlus(self):
         test_strings = ["N:Test Company;",
-                        "(Open Source Test 3.0 Test License 1.0),",
-                        "(Open Source Library 1.0 Test License 1.0);"]
+                        "(Open Source Test 3.0 GPL 3.0),",
+                        "(Open Source Library 1.0 GPL 3.0);"]
         self.addComponent()
         second_component = FOSS_Components(brecord=self.product,
                                            package="Open Source Library",
                                            version="1.0",
                                            copyright="Copyright 2010 Test Foundation",
                                            attribution="",
-                                           license="Test License 1.0",
+                                           license_id=self.component.license.id,
                                            license_url="http://testlib.example.com/license.html",
                                            url="http://testlib.example.com/")
         second_component.save()
@@ -256,25 +257,25 @@ class TestFOSSComponents(BarCodeHarness):
     def testLoadObjectRevision(self):
         self.addComponent()
         commit_id = self.product.get_repo().head()
-        self.component.license = "Test License 2.0"
+        self.component.attribution = "Some people somewhere."
         self.component.save()
-        self.product.commit("Change component license.")
+        self.product.commit("Change attribution.")
 
         old_component = FOSS_Components.objects.get(id=self.component.id)
         old_component.switch_revision(commit_id)
         self.assertEqual(old_component.id, self.component.id)
-        self.assertEqual(old_component.license, "Test License 1.0")
+        self.assertEqual(old_component.attribution, "")
 
     def testReadOnly(self):
         self.addComponent()
         commit_id = self.product.get_repo().head()
-        self.component.license = "Test License 2.0"
+        self.component.attribution = "Some people somewhere."
         self.component.save()
-        self.product.commit("Change component license.")
+        self.product.commit("Change attribution.")
         old_component = FOSS_Components.objects.get(id=self.component.id)
         old_component.switch_revision(commit_id)
 
-        old_component.license = "Test License 3.0"
+        old_component.license = "More people elsewhere."
         write_failed = False
         try:
             old_component.save()

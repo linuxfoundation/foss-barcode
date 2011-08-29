@@ -381,7 +381,7 @@ class Product_Record(models.Model, FileDataDirMixin):
                 mecard += ", BoM: "
                 foss_list = FOSS_Components.objects.filter(brecord = self)
                 for f in foss_list:
-                    mecard += "(" + f.package + " " + f.version + " " + f.license + "), "
+                    mecard += "(" + f.package + " " + f.version + " " + str(f.license) + "), "
                 mecard = mecard[:-2] + ";"
 
         # url to central site
@@ -397,7 +397,7 @@ class FOSS_Components(models.Model, FileDataMixin):
         "version": (str, ""),
         "copyright": (str, ""),
         "attribution": (str, ""),
-        "license": (str, ""),
+        "license_id": (int, -1),
         "license_url": (str, ""),
         "url": (str, ""),
         "spdx_file": (str, ""),
@@ -420,6 +420,10 @@ class FOSS_Components(models.Model, FileDataMixin):
     def __unicode__(self):
         return self.package
 
+    def load_from_fn(self, revision=None):
+        super(FOSS_Components, self).load_from_fn(revision)
+        self.license = License.objects.get(id=self.license_id)
+
     def switch_revision(self, revision):
         if revision == None:
             repo = self.brecord.get_repo()
@@ -432,6 +436,10 @@ class FOSS_Components(models.Model, FileDataMixin):
     def save(self, *args, **kwargs):
         if self._read_only:
             raise ReadOnlyError, "cannot modify object not on HEAD revision"
+        try:
+            self.license_id = self.license.id
+        except AttributeError:
+            raise ValueError, "FOSS component must have valid license"
         super(FOSS_Components, self).save(*args, **kwargs)
         self.write_to_fn()
 
