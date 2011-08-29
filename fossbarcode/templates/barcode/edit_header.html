@@ -62,6 +62,14 @@
         <td colspan="3">{{ headerform.email.errors }}</td>
       </tr>
       <tr>
+        <td><b>{{ headerform.released.label }}:</b></td>
+        <td></td>
+        <td><input type="checkbox" id="id_released" name="released" value="{{ record.released }}"></td>
+      </tr>
+      <tr>
+        <td colspan="3">{{ headerform.released.errors }}</td>
+      </tr>
+      <tr>
         <td colspan="3">
           <span class="red" id="spdx_warn_head"><b>Warning:</b> Adding a top-level SPDX file will remove any BoM SPDX files.</span>
         </td>
@@ -81,7 +89,6 @@
         <td colspan="2"><b>{{ headerform.header_commit_message.label }}:</b></td>
       </tr>
     </table>
-    <br>
     </div>
     <!-- jQuery File Tree browser -->
     <div class="containerm" id="target_select_modalh" style="display: none;"> 

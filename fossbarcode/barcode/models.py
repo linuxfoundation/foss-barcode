@@ -454,8 +454,6 @@ class System_Settings(models.Model):
 class RecordForm(ModelForm):   
     class Meta:
         model = Product_Record
-        # FIXME - exclude these for now until we decide how to expose them
-        exclude = ('released',)
 
     foss_component = forms.CharField(label="Component", max_length=200, required=False)
     foss_version = forms.CharField(label="Version", max_length=20, required=False)
@@ -470,8 +468,6 @@ class RecordForm(ModelForm):
 class HeaderForm(ModelForm):
     class Meta:
         model = Product_Record
-        # FIXME - exclude these for now until we decide how to expose them
-        exclude = ('released',)
 
     header_commit_message = forms.CharField(label="Change Comments (for change history, required)",
                                             widget=forms.Textarea(attrs={'cols': 80, 'rows': 4}))

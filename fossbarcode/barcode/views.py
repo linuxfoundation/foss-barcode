@@ -191,6 +191,7 @@ def detail(request, record_id, revision=None):
                                                                  release = request.POST.get('release', ''),
                                                                  contact = request.POST.get('contact', ''),
                                                                  email = request.POST.get('email', ''),
+                                                                 released = request.POST.get('released', ''),
                                                                  spdx_file = os.path.basename(new_spdx),
                                                                  record_date = str(datetime.datetime.now()))
 
@@ -224,7 +225,12 @@ def detail(request, record_id, revision=None):
             else:
                 error_message += msg_strings['invalid_header']
 
-        if (mode == "Clone Record" or mode == "Update Header"):
+        if (mode == "Unrelease Record"):
+            Product_Record.objects.filter(id = record_id).update(released = False)
+            pr = Product_Record.objects.get(id = record_id)
+            pr.commit('Unrelease record for edits')
+
+        if (mode == "Clone Record" or mode == "Update Header" or mode == "Unrelease Record"):
             if (error_message == ''):
                 return HttpResponseRedirect('/barcode/' + record_id + '/detail/') 
 

@@ -21,13 +21,30 @@ jQuery(function ($) {
         header_edit_mode(clicked);
 		$('#header-modal-content').modal({
             containerCss:{
-                height:520,
+                height:540,
                 padding:0,
                 width:850
             }
         });
 		return false;
 	});
+
+    // header unlock/unrelease modal
+    $('#unrelease-modal .basic').click(function (e) {
+        var body_html =  '<form id="headerform" method="post" action="" enctype="multipart/form-data">' +
+                         '<h3>Unlock/Unrelease Record?</h3>' +
+                         '<input type="submit" name="submit" id="unrelease_record" value="Unrelease Record">' +
+                         '</form>'
+        $.modal(body_html, {
+            containerCss:{
+                height:100,
+                padding:0,
+                width:200,
+                "text-align": "center",
+            }
+        });
+        return false;
+    });
 
     // history popup
 	$('#history-modal .basic').click(function (e) {
