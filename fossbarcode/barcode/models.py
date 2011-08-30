@@ -482,11 +482,17 @@ class RecordForm(ModelForm):
         # FIXME - exclude these for now until we decide how to expose them
         exclude = ('released',)
 
+    def __init__(self, *args, **kwargs):
+        super(RecordForm, self).__init__(*args, **kwargs)
+        self.fields["foss_license"].choices = \
+            [(x.id, str(x))
+             for x in License.objects.all().order_by('license', 'version')]
+
     foss_component = forms.CharField(label="Component", max_length=200, required=False)
     foss_version = forms.CharField(label="Version", max_length=20, required=False)
     foss_copyright = forms.CharField(label="Copyright Information", max_length=100, required=False)
     foss_attribution = forms.CharField(label="License Attribution", max_length=100, required=False)
-    foss_license = forms.CharField(label="License Name and Version", max_length=40, required=False)
+    foss_license = forms.ChoiceField(label="License", required=False, choices=[])
     foss_license_url = forms.CharField(label="License URL", max_length=200, required=False)
     foss_url = forms.CharField(label="Download URL", max_length=200, required=False)
     foss_spdx = forms.CharField(label="SPDX<sup>TM</sup> File", max_length=100, required=False)
