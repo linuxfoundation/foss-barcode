@@ -35,7 +35,7 @@
       <td rowspan = "3" width = "40%">
         <span id="noprint">
           &nbsp;&nbsp;
-          {% if not revision and not public_facing %}
+          {% if not revision and not public_facing and not record.released %}
           <span id="header-modal">    
             <a href="#" name="edit_header" class="basic"><img src="/site_media/images/filetree/edit.png" title="Edit Record Header"></a>
           </span>
@@ -46,15 +46,21 @@
           <span id="history-modal" float="left">
             <a href="#" name="history1" id="{{ record.id }}" class="basic"><img src="/site_media/images/filetree/code.png" title="Change History"></a>
           </span>
+          {% if not revision and not public_facing and record.released %}
+          <span id="unrelease-modal">    
+            <a href="#" name="unlock_record" class="basic"><img src="/site_media/images/unlock.png" title="Unlock/Unrelease Record for Edits"></a>
+          </span>
+          {% endif %}
         </span>
-        <b>Company Name: </b>{{ record.company }}<br>
-        <b>FOSS Website: </b><a href="{{ record.website }}" target="_blank">{{ record.website }}</a><br>
-        <b>Product Name: </b>{{ record.product }}<br>
+        <b>{{ headerform.company.label }}: </b>{{ record.company }}<br>
+        <b>{{ headerform.website.label }}: </b><a href="{{ record.website }}" target="_blank">{{ record.website }}</a><br>
+        <b>{{ headerform.product.label }}: </b>{{ record.product }}<br>
         <b>Product Version/Release: </b>{{ record.version }}-{{ record.release }}<br>
         <b>Last Updated: </b>{% if not revision %}{{ record.record_date|date:"M d, Y H:i:s" }}{% else %}<i>**HISTORICAL RECORD**</i>{% endif %}<br>
         <b>Compliance Contact Name: </b>{{ record.contact }}<br>
-        <b>Compliance Contact Email: </b><a href="mailto:{{ record.email }}" target="_blank">{{ record.email }}</a><br>
-        <b>SPDX<sup>TM</sup> File: </b><a href="/site_media/user_data/{{ record.id }}/spdx_files/{{ record.spdx_file }}">{{ record.spdx_file }}</a><br>
+        <b>{{ headerform.email.label }}: </b><a href="mailto:{{ record.email }}" target="_blank">{{ record.email }}</a><br>
+        <b>{% autoescape off %}{{ headerform.spdx_file.label }}{% endautoescape %}: </b><a href="/site_media/user_data/{{ record.id }}/spdx_files/{{ record.spdx_file }}">{{ record.spdx_file }}</a><br>
+        <b>{{ headerform.released.label }}: </b>{{ record.released }}<br>
 {% if revision %}
 	<p><i>This is a historic record, showing the state of the record as it existed in revision {{ revision }}.</i></p>
 {% endif %}        
@@ -80,7 +86,7 @@
     <tr>
       <td align="center" width="45">
         <span id="noprint">
-        {% if not revision and not public_facing %}
+        {% if not revision and not public_facing and not record.released %}
         <div id="line-item-modal">    
           <a href="#" class="basic" name="line_item_add" id="{{ foss|length }}"><img src="/site_media/images/list-add.png" title="Add Line Item"></a>
         </div>
@@ -99,7 +105,7 @@
     <tr valign = "top">   
       <td align="center" width="45">
       <span id="noprint">
-        {% if not revision and not public_facing %}
+        {% if not revision and not public_facing and not record.released %}
         <span id="line-item-modal">
             <a href="#" class="basic" name="line_item{{ forloop.counter }}" id="{{ row.id }}"><img src="/site_media/images/filetree/edit.png" title="Edit Line Item"></a>
         </span>
@@ -200,7 +206,13 @@
             // walk through the table row and plug the values into the edit form, called when we click the icon, before the form appears
             for(var f in bom_fields){
                 var dest = "id_" + f;
-                var src = f + row;
+                if (f == "foss_url") {
+                    var src = "foss_component" + row;
+                } else if (f == "foss_license_url") {
+                    var src = "foss_license" + row;
+                } else {
+                    var src = f + row;
+                }
                 if (document.getElementById(src).children.length > 0) {
                     var items = document.getElementById(src).children.length;
                     // clear anything from a previous call
@@ -210,6 +222,8 @@
                         for (i = 0; i < items; i = i+2) {
                             document.getElementById(dest).value += document.getElementById(src).children[i].innerHTML + "\n";
                         }
+                    } else if (f == "foss_license_url" || f == "foss_url") {
+                        document.getElementById(dest).value += document.getElementById(src).children[0].href
                     } else {
                         document.getElementById(dest).value += document.getElementById(src).children[0].innerHTML
                     }
