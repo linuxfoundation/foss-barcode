@@ -261,10 +261,10 @@
         // and the reverse is true
         document.getElementById("id_foss_spdx").setAttribute("onchange", "spdx_change('id_foss_spdx', 'top_spdx_select');");
         // prefill some header values if defined
-        document.getElementById("id_company").setAttribute("value", "{{ company_prefills.name }}");
-        document.getElementById("id_website").setAttribute("value", "{{ company_prefills.website }}");
-        document.getElementById("id_contact").setAttribute("value", "{{ company_prefills.contact }}");
-        document.getElementById("id_email").setAttribute("value", "{{ company_prefills.email }}");
+        document.getElementById("id_company").setAttribute("value", "{% autoescape off %}{{ company_prefills.name }}{% endautoescape %}");
+        document.getElementById("id_website").setAttribute("value", "{% autoescape off %}{{ company_prefills.website }}{% endautoescape %}");
+        document.getElementById("id_contact").setAttribute("value", "{% autoescape off %}{{ company_prefills.contact }}{% endautoescape %}");
+        document.getElementById("id_email").setAttribute("value", "{% autoescape off %}{{ company_prefills.email }}{% endautoescape %}");
         // default to list select
         {% if products %}
         document.getElementById("id_product").disabled = true;
