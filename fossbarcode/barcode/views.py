@@ -226,7 +226,7 @@ def detail(request, record_id, revision=None):
                 error_message += msg_strings['invalid_header']
 
         if (mode == "Unrelease Record"):
-            Product_Record.objects.filter(id = record_id).update(released = False)
+            Product_Record.objects.filter(id = record_id).update(released = False, record_date = str(datetime.datetime.now()))
             pr = Product_Record.objects.get(id = record_id)
             pr.commit('Unrelease record for edits')
 
