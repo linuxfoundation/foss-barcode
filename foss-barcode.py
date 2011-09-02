@@ -55,9 +55,8 @@ def check_current_user():
 def setup_userdir():
     if not os.path.exists(settings.USERDIR_ROOT):
         os.mkdir(settings.USERDIR_ROOT)
-        shutil.copyfile(os.path.join(settings.PROJECT_ROOT, 
-                                     "fossbarcode", "barcode.sqlite"),
-                        os.path.join(settings.USERDIR_ROOT, "barcode.sqlite"))
+        manager_args = [settings.USERDIR_ROOT, "syncdb", "--noinput"]
+        execute_manager(settings, manager_args)
 
     if not os.path.exists(os.path.join(settings.USERDIR_ROOT, "media")):
         os.mkdir(os.path.join(settings.USERDIR_ROOT, "media"))
@@ -66,10 +65,8 @@ def setup_userdir():
         if not os.path.exists(os.path.join(settings.USERDIR_ROOT, "media", dirlink)):
             os.symlink(os.path.join(settings.PROJECT_ROOT, "fossbarcode", "media", dirlink),
                          os.path.join(settings.USERDIR_ROOT, "media", dirlink))
-    # if we copied the database, we need the corresponding user_data too, or we get errors trying to view the data
     if not os.path.exists(os.path.join(settings.USERDIR_ROOT, "media", "user_data")):
-        shutil.copytree(os.path.join(settings.PROJECT_ROOT, "fossbarcode", "media", "user_data"),
-                        os.path.join(settings.USERDIR_ROOT, "media", "user_data"))
+        os.mkdir(os.path.join(settings.USERDIR_ROOT, "media", "user_data"))
 
 def start_server(run_browser, interface=None):
     pid_path = os.path.join(settings.STATE_ROOT, "server.pid")
