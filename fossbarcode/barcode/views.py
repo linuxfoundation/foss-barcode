@@ -1,7 +1,7 @@
 # Create your views here.
 from django.template import Context, loader
 from django.shortcuts import render_to_response, get_object_or_404
-from fossbarcode.barcode.models import Product_Record, FOSS_Components, System_Settings, RecordForm, HeaderForm, ItemForm
+from fossbarcode.barcode.models import Product_Record, FOSS_Components, System_Settings, RecordForm, HeaderForm, ItemForm, License
 from django.http import HttpResponse, HttpResponseRedirect
 from django.http import Http404
 from django.conf import settings
@@ -268,7 +268,7 @@ def detail(request, record_id, revision=None):
                     fd.version = request.POST.get('foss_version', '')
                     fd.copyright = request.POST.get('foss_copyright', '')
                     fd.attribution = request.POST.get('foss_attribution', '')
-                    fd.license = License.objects.get(int(request.POST.get('foss_license', '0')))
+                    fd.license = License.objects.get(id=int(request.POST.get('foss_license', '0')))
                     fd.license_url = request.POST.get('foss_license_url', '')
                     fd.url = request.POST.get('foss_url', '')
                     fd.spdx_file = os.path.basename(new_spdx)
