@@ -224,6 +224,16 @@
                         }
                     } else if (f == "foss_license_url" || f == "foss_url") {
                         document.getElementById(dest).value += document.getElementById(src).children[0].href
+                    } else if (f == "foss_license") {
+                        var license_text = document.getElementById(src).children[0].innerHTML;
+                        var options = document.getElementById(dest).children;
+                        for (i=0; i<options.length; i++) {
+                            if (options.item(i).innerHTML == license_text) {
+                                options.item(i).selected = "selected";
+                            } else {
+                                options.item(i).selected = "";
+                            }
+                        }
                     } else {
                         document.getElementById(dest).value += document.getElementById(src).children[0].innerHTML
                     }

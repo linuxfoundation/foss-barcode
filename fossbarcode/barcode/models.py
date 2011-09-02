@@ -381,7 +381,7 @@ class Product_Record(models.Model, FileDataDirMixin):
                 mecard += ", BoM: "
                 foss_list = FOSS_Components.objects.filter(brecord = self)
                 for f in foss_list:
-                    mecard += "(" + f.package + " " + f.version + " " + f.license + "), "
+                    mecard += "(" + f.package + " " + f.version + " " + str(f.license) + "), "
                 mecard = mecard[:-2] + ";"
 
         # url to central site
@@ -397,7 +397,7 @@ class FOSS_Components(models.Model, FileDataMixin):
         "version": (str, ""),
         "copyright": (str, ""),
         "attribution": (str, ""),
-        "license": (str, ""),
+        "license_id": (int, -1),
         "license_url": (str, ""),
         "url": (str, ""),
         "spdx_file": (str, ""),
@@ -420,6 +420,10 @@ class FOSS_Components(models.Model, FileDataMixin):
     def __unicode__(self):
         return self.package
 
+    def load_from_fn(self, revision=None):
+        super(FOSS_Components, self).load_from_fn(revision)
+        self.license = License.objects.get(id=self.license_id)
+
     def switch_revision(self, revision):
         if revision == None:
             repo = self.brecord.get_repo()
@@ -432,6 +436,10 @@ class FOSS_Components(models.Model, FileDataMixin):
     def save(self, *args, **kwargs):
         if self._read_only:
             raise ReadOnlyError, "cannot modify object not on HEAD revision"
+        try:
+            self.license_id = self.license.id
+        except AttributeError:
+            raise ValueError, "FOSS component must have valid license"
         super(FOSS_Components, self).save(*args, **kwargs)
         self.write_to_fn()
 
@@ -439,6 +447,23 @@ class FOSS_Components(models.Model, FileDataMixin):
         if self.data_file_name:
             self.brecord.delete_file(self.data_file_name)
         super(FOSS_Components, self).delete(*args, **kwargs)
+
+class License(models.Model):
+    longname = models.CharField('License', max_length=200)
+    license = models.CharField('License', max_length=200)
+    version = models.CharField('Version', max_length=20, blank=True)
+    def __unicode__(self):
+        if self.version:
+            retval = self.license + u' ' + self.version
+        else:
+            retval = self.license
+        return retval
+
+class LicenseAlias(models.Model):
+    license = models.ForeignKey(License)
+    alias = models.CharField('Alias', max_length=20, unique=True)
+    def __unicode__(self):
+        return self.alias + u': ' + unicode(self.license)
 
 class System_Settings(models.Model):
     name = models.CharField(max_length=32, db_index=True)
@@ -455,11 +480,17 @@ class RecordForm(ModelForm):
     class Meta:
         model = Product_Record
 
+    def __init__(self, *args, **kwargs):
+        super(RecordForm, self).__init__(*args, **kwargs)
+        self.fields["foss_license"].choices = \
+            [(x.id, str(x))
+             for x in License.objects.all().order_by('license', 'version')]
+
     foss_component = forms.CharField(label="Component", max_length=200, required=False)
     foss_version = forms.CharField(label="Version", max_length=20, required=False)
     foss_copyright = forms.CharField(label="Copyright Information", max_length=100, required=False)
     foss_attribution = forms.CharField(label="License Attribution", max_length=100, required=False)
-    foss_license = forms.CharField(label="License Name and Version", max_length=40, required=False)
+    foss_license = forms.ChoiceField(label="License", required=False, choices=[])
     foss_license_url = forms.CharField(label="License URL", max_length=200, required=False)
     foss_url = forms.CharField(label="Download URL", max_length=200, required=False)
     foss_spdx = forms.CharField(label="SPDX<sup>TM</sup> File", max_length=100, required=False)

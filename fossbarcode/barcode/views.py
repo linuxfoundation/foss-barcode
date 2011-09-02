@@ -252,7 +252,7 @@ def detail(request, record_id, revision=None):
                                          version = request.POST.get('foss_version', ''),
                                          copyright = request.POST.get('foss_copyright', ''), 
                                          attribution = request.POST.get('foss_attribution', ''),
-                                         license = request.POST.get('foss_license', ''), 
+                                         license_id = int(request.POST.get('foss_license', '0')), 
                                          license_url = request.POST.get('foss_license_url', ''), 
                                          url = request.POST.get('foss_url', ''), 
                                          spdx_file = os.path.basename(new_spdx))
@@ -268,7 +268,7 @@ def detail(request, record_id, revision=None):
                     fd.version = request.POST.get('foss_version', '')
                     fd.copyright = request.POST.get('foss_copyright', '')
                     fd.attribution = request.POST.get('foss_attribution', '')
-                    fd.license = request.POST.get('foss_license', '')
+                    fd.license = License.objects.get(int(request.POST.get('foss_license', '0')))
                     fd.license_url = request.POST.get('foss_license_url', '')
                     fd.url = request.POST.get('foss_url', '')
                     fd.spdx_file = os.path.basename(new_spdx)
@@ -578,7 +578,7 @@ def input(request):
                         fossdata = FOSS_Components(brecord_id = recordid, 
                                                    package = foss, version = versions[i],
                                                    copyright = copyrights[i], attribution = attributions[i],
-                                                   license = licenses[i], license_url = license_urls[i], 
+                                                   license_id = licenses[i], license_url = license_urls[i], 
                                                    url = urls[i], spdx_file = os.path.basename(spdxs[i]), patch_files = [])
 
                         # check for SPDX files and save in user_data
