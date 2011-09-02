@@ -199,7 +199,8 @@
 <span id="header_mode" align="center"><h3>BoM and Submit buttons will be visible after checking for a unique record</h3></span>
 <table width="100%" id="submit_buttons">
   <tr>
-    <td align="center"><input style="width: 200px" type="submit" name="submit_code" value="Create Checksum/Code Image" /></td>
+    <td align="center"><input style="width: 200px" type="submit" name="submit_code" 
+                              value="Create Checksum/Code Image" onclick="return enable_disabled();"/></td>
   </tr>
 </table>
 <hr>
@@ -279,6 +280,11 @@
             dest.value = product;
             dest.disabled = true;
         }
+    }
+    function enable_disabled() {
+        // django doesn't see the entered values for disabled fields on submit, enable them before submit
+        document.getElementById("id_product").disabled = false;
+        return true;
     }
     function update_patch_list(src) {
         var findex = src.replace(pfield,"");
