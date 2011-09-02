@@ -137,8 +137,12 @@
     <th>Version</th>
     <th>Copyright<br>Information</th>
     <th>Attribution<br>Notices</th>
-    <th>License<br>Name and Version</th>
-    <th>License<br>URL</th>
+    <td colspan="2">
+      <ul><b>
+        <li>License Name and Version</li>
+        <li>License URL</li></b>
+      </ul>
+    </td>
     <th>Original<br>Download URL</th>
     <td colspan="2" align="center">
         <b>SPDX<sup>TM</sup>File<br>(optional)</b> 
@@ -156,8 +160,10 @@
     <td>{{ recordform.foss_version }}</td>
     <td>{{ recordform.foss_copyright }}</td>
     <td>{{ recordform.foss_attribution }}</td>
-    <td>{{ recordform.foss_license }}</td>
-    <td>{{ recordform.foss_license_url }}</td>
+    <td colspan="2">
+      {{ recordform.foss_license }}<br>
+      {{ recordform.foss_license_url }}
+    </td>
     <td>{{ recordform.foss_url }}</td>
     <!-- hand code this one so we can disable manual input -->
     <td><input type="input" name="foss_spdx" id="id_foss_spdx" readonly="true"/></td>
