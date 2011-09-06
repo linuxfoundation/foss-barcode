@@ -53,15 +53,44 @@
           </span>
           {% endif %}
         </span>
-        <b>{{ headerform.company.label }}: </b>{{ record.company }}<br>
-        <b>{{ headerform.website.label }}: </b><a href="{{ record.website }}" target="_blank">{{ record.website }}</a><br>
-        <b>{{ headerform.product.label }}: </b>{{ record.product }}<br>
-        <b>Product Version/Release: </b>{{ record.version }}-{{ record.release }}<br>
-        <b>Last Updated: </b>{% if not revision %}{{ record.record_date|date:"M d, Y H:i:s" }}{% else %}<i>**HISTORICAL RECORD**</i>{% endif %}<br>
-        <b>Compliance Contact Name: </b>{{ record.contact }}<br>
-        <b>{{ headerform.email.label }}: </b><a href="mailto:{{ record.email }}" target="_blank">{{ record.email }}</a><br>
-        <b>{% autoescape off %}{{ headerform.spdx_file.label }}{% endautoescape %}: </b><a href="/site_media/user_data/{{ record.id }}/spdx_files/{{ record.spdx_file }}">{{ record.spdx_file }}</a><br>
-        <b>{{ headerform.released.label }}: </b>{{ record.released }}<br>
+        <table>
+          <tr>
+            <td align="right"><b>{{ headerform.company.label }}:</b></td>
+            <td>{{ record.company }}</td>
+          </tr>
+          <tr>
+            <td align="right"><b>{{ headerform.website.label }}:</b></td>
+            <td><a href="{{ record.website }}" target="_blank">{{ record.website }}</td>
+          </tr>
+          <tr>        
+            <td align="right"><b>{{ headerform.product.label }}:</b></td>
+            <td>{{ record.product }}</td>
+          </tr>
+          <tr>        
+            <td align="right"><b>Product Version/Release:</b></td>
+            <td>{{ record.version }}-{{ record.release }}</td>
+          </tr>        
+          <tr>
+            <td align="right"><b>Last Updated:</b></td>
+            <td>{% if not revision %}{{ record.record_date|date:"M d, Y H:i:s" }}{% else %}<i>**HISTORICAL RECORD**</i>{% endif %}</td>
+          </tr>
+          <tr>        
+            <td align="right"><b>Compliance Contact Name:</b></tf>
+            <td>{{ record.contact }}</td>
+          </tr>
+          <tr>        
+            <td align="right"><b>{{ headerform.email.label }}:</b></td>
+            <td><a href="mailto:{{ record.email }}" target="_blank">{{ record.email }}</a></td>
+          </tr>
+          <tr>
+            <td align="right"><b>{% autoescape off %}{{ headerform.spdx_file.label }}{% endautoescape %}:</th>
+            <td><a href="/site_media/user_data/{{ record.id }}/spdx_files/{{ record.spdx_file }}">{{ record.spdx_file }}</a></td>
+          </tr>
+          <tr>
+            <td align="right"><b>{{ headerform.released.label }}:</b></td>
+            <td>{{ record.released }}</td>
+          </tr>
+        </table>
 {% if revision %}
 	<p><i>This is a historic record, showing the state of the record as it existed in revision {{ revision }}.</i></p>
 {% endif %}        
