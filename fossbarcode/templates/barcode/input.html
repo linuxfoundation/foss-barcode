@@ -32,19 +32,19 @@
 <div class="container" id="entry_form">
 <table align="left" width="100%">
   <tr align="left">
-    <td align="right"><b>{{ recordform.company.label }}:</b></td>
+    <td align="right"><b>{{ recordform.company.css_classes }}{{ recordform.company.label }}:</b></td>
     <td>{{ recordform.company }}</td>
     <td></td>
     <td>{{ recordform.company.errors }}</td>
   </tr>
   <tr align="left">
-    <td align="right"><b>{{ recordform.website.label }}:</b></td>
+    <td align="right"><b>{{ recordform.website.css_classes }}{{ recordform.website.label }}:</b></td>
     <td>{{ recordform.website }}</td>
     <td></td>
     <td>{{ recordform.website.errors }}</td>
   </tr>
   <tr align="left">
-    <td align="right"><b>{{ recordform.product.label }}:</b></td>
+    <td align="right"><b>{{ recordform.product.css_classes }}{{ recordform.product.label }}:</b></td>
     <td>{{ recordform.product }}</td>
     {% if products %}
       <td>
@@ -60,35 +60,33 @@
     <td>{{ recordform.product.errors }}</td>
   </tr>
   <tr align="left">
-    <td align="right"><b>{{ recordform.version.label }}:</b></td>
+    <td align="right"><b>{{ recordform.version.css_classes }}{{ recordform.version.label }}:</b></td>
     <td>{{ recordform.version }}</td>
     <td></td>
     <td>{{ recordform.version.errors }}</td>
   </tr>
   <tr align="left">
-    <td align="right"><b>{{ recordform.release.label }}:</b></td>
+    <td align="right"><b>{{ recordform.release.css_classes }}{{ recordform.release.label }}:</b></td>
     <td>{{ recordform.release }}</td>
     <td></td>
     <td>{{ recordform.release.errors }}</td>
   </tr>
   <tr align="left">
-    <td align="right"><b>{{ recordform.contact.label }}:</b></td>
+    <td align="right"><b>{{ recordform.contact.css_classes }}{{ recordform.contact.label }}:</b></td>
     <td>{{ recordform.contact }}</td>
     <td></td>
     <td></td>    
   </tr>
   <tr align="left">
-    <td align="right"><b>{{ recordform.email.label }}:</b></td>
+    <td align="right"><b>{{ recordform.email.css_classes }}{{ recordform.email.label }}:</b></td>
     <td>{{ recordform.email }}</td>
     <td>
-      <a href="#" id="dupe_search" onclick="search_dupes();">
-      <img src="/site_media/images/system-search.png" title="Check for Match to Continue"></a>
       {{ recordform.email.errors }}
     </td>
     <td></td>   
   </tr>
   <tr align="left">
-    <td align="right"><b>{% autoescape off %}{{ recordform.spdx_file.label }}{% endautoescape %}:</b></td>
+    <td align="right"><b>{{ recordform.spdx_file.css_classes }}{% autoescape off %}{{ recordform.spdx_file.label }}{% endautoescape %}:</b></td>
     <td>{{ recordform.spdx_file }}</td>
     <td align="center">
         <a href="#" id="clear_foss_spdx"><img src="/site_media/images/edit-delete.png" 
@@ -104,7 +102,15 @@
     <td>{{ recordform.released }}</td>
     <td></td>
     <td></td>    
-  </tr>     
+  </tr>
+  <tr align="left">
+    <th>(Fields marked * are required)</th>
+    <td align="center">
+      <input type="button" id="dupe_search" value="Continue..." onclick="search_dupes();">
+    </td>    
+    <td></td>
+    <td></td>
+  </tr>          
 </table>
 </div> <!-- entry_form -->
 
@@ -134,19 +140,17 @@
     <col width=120>
   <tr>
     <td colspan="2"></td>
-    <th>FOSS Component</th>
-    <th>Version</th>
-    <th>Copyright<br>Information</th>
-    <th>Attribution<br>Notices</th>
+    <th>{{ recordform.required_flag }}{{ recordform.foss_component.label }}</th>
+    <th>{{ recordform.required_flag }}{{ recordform.foss_version.label }}</th>
+    <th>{{ recordform.required_flag }}Copyright<br>Information</th>
+    <th>{{ recordform.required_flag }}Attribution<br>Notices</th>
     <td colspan="2">
-      <ul><b>
-        <li>License Name and Version</li>
-        <li>License URL</li></b>
-      </ul>
+        <b>{{ recordform.required_flag }}License Name and Version<br>
+        {{ recordform.required_flag }}License URL</b>
     </td>
-    <th>Original<br>Download URL</th>
+    <th>{{ recordform.required_flag }}Original<br>Download URL</th>
     <td colspan="2" align="center">
-        <b>SPDX<sup>TM</sup>File<br>(optional)</b> 
+        <b>SPDX<sup>TM</sup>File</b> 
         <input type="button" name="spdxfilename" value="Select" id="foss_spdx_select"
                              title="Open a File/Directory Selector"
                              onclick="toggle_visibility('target_select');set_destination('foss_spdx');toggle_enabled('patchfilename');"/>
@@ -207,14 +211,12 @@
 
 <div class="cfooter">
 <hr>
-<span id="header_mode" align="center"><h3>BoM and Submit buttons will be visible after checking for a unique record</h3></span>
 <table width="100%" id="submit_buttons">
   <tr>
     <td align="center"><input style="width: 200px" type="submit" name="submit_code" 
                               value="Add Record" onclick="return enable_disabled();"/></td>
   </tr>
 </table>
-<hr>
 </form> <!-- overall form ends here to include the submit buttons -->
 </div>
 
@@ -553,7 +555,6 @@
                 show_none("foss_list");
                 show_none("submit_buttons");
                 hide_element("dupe_search");
-                hide_element("header_mode");
             } else {
                 var answer = confirm("There appears to already be an entry with that company, product, version, release. Would you care to edit that entry instead?")
 	            if (answer)

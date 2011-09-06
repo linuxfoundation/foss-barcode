@@ -231,7 +231,7 @@ class Product_Record(models.Model, FileDataDirMixin):
     checksum = models.CharField('Checksum', max_length=200, blank=True)
     website = models.CharField('Company Website', max_length=200)
     record_date = models.DateTimeField('Last Updated', auto_now=True)
-    contact = models.CharField('Compliance Contact Name (optional)', max_length=200, blank=True)
+    contact = models.CharField('Compliance Contact Name', max_length=200, blank=True)
     email = models.CharField('Compliance Contact Email', max_length=200)
     spdx_file = models.CharField('SPDX<sup>TM</sup> File', max_length=200, blank=True)
     # for future fine tuning of how things can be changed
@@ -500,24 +500,30 @@ class RecordForm(ModelForm):
     foss_component = forms.CharField(label="Component", max_length=200, required=False)
     foss_version = forms.CharField(label="Version", max_length=20, required=False)
     foss_copyright = forms.CharField(label="Copyright Information", max_length=100, required=False)
-    foss_attribution = forms.CharField(label="License Attribution", max_length=100, required=False)
+    foss_attribution = forms.CharField(label="Attribution Notices", max_length=100, required=False)
     foss_license = forms.ChoiceField(label="License", required=False, choices=[])
     foss_license_url = forms.CharField(label="License URL", max_length=200, required=False)
     foss_url = forms.CharField(label="Download URL", max_length=200, required=False)
     foss_spdx = forms.CharField(label="SPDX<sup>TM</sup> File", max_length=100, required=False)
     foss_patches = forms.CharField(label="Patches", max_length=200, required=False, widget=forms.Textarea(attrs={'cols': 20, 'rows': 4}))
 
+    required_css_class = '*'
+    required_flag = '*' # for component fields that we need, but are tagged False above
+
 class HeaderForm(ModelForm):
     class Meta:
         model = Product_Record
 
-    header_commit_message = forms.CharField(label="Change Comments (for change history, required)",
+    header_commit_message = forms.CharField(label="Change Comments (for change history)",
                                             widget=forms.Textarea(attrs={'cols': 80, 'rows': 4}))
+
+    required_css_class = '*'
 
 class ItemForm(RecordForm):
     class Meta(RecordForm.Meta):
         exclude = ('company', 'product', 'version', 'release', 'checksum', 'website', 'record_date' 'contact', 'email', 'released')
 
-    item_commit_message = forms.CharField(label="Change Comments (for change history, required)",
+    item_commit_message = forms.CharField(label="Change Comments (for change history)",
                                           widget=forms.Textarea(attrs={'cols': 80, 'rows': 4}))
 
+    required_css_class = '*'

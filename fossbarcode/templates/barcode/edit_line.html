@@ -12,7 +12,7 @@
         <td colspan="3">{% autoescape off %}{{ component_select }}{% endautoescape %}</td>
       </tr>
       <tr>
-        <td><b>{{ itemform.foss_component.label }}:</b></td>
+        <td><b>{{ itemform.required_flag }}{{ itemform.foss_component.label }}:</b></td>
         <td></td>
         <td>{{ itemform.foss_component }}</td>
       </tr>
@@ -20,7 +20,7 @@
         <td colspan="3">{{ itemform.foss_component.errors }}</td>
       </tr>
       <tr>
-        <td><b>{{ itemform.foss_version.label }}:</b></td>
+        <td><b>{{ itemform.required_flag }}{{ itemform.foss_version.label }}:</b></td>
         <td></td>
         <td>{{ itemform.foss_version }}</td>
         </tr>
@@ -28,7 +28,7 @@
         <td colspan="3">{{ itemform.foss_version.errors }}</td>
       </tr>
       <tr>
-        <td><b>{{ itemform.foss_copyright.label }}:</b></td>
+        <td><b>{{ itemform.required_flag }}{{ itemform.foss_copyright.label }}:</b></td>
         <td></td>
         <td>{{ itemform.foss_copyright }}</td>
       </tr>
@@ -36,7 +36,7 @@
         <td colspan="3">{{ itemform.foss_copyright.errors }}</td>
       </tr>
       <tr>
-        <td><b>{{ itemform.foss_attribution.label }}:</b></td>
+        <td><b>{{ itemform.required_flag }}{{ itemform.foss_attribution.label }}:</b></td>
         <td></td>
         <td>{{ itemform.foss_attribution }}</td>
       </tr>
@@ -44,7 +44,7 @@
         <td colspan="3">{{ itemform.foss_attributions.errors }}</td>
       </tr>
       <tr>
-        <td><b>{{ itemform.foss_license.label }}:</b></td>
+        <td><b>{{ itemform.required_flag }}{{ itemform.foss_license.label }}:</b></td>
         <td></td>
         <td>{{ itemform.foss_license }}</td>
       </tr>
@@ -52,7 +52,7 @@
         <td colspan="3">{{ itemform.foss_license.errors }}</td>
       </tr>
       <tr>
-        <td><b>{{ itemform.foss_license_url.label }}:</b></td>
+        <td><b>{{ itemform.required_flag }}{{ itemform.foss_license_url.label }}:</b></td>
         <td></td>
         <td>{{ itemform.foss_license_url }}</td>
       </tr>
@@ -60,7 +60,7 @@
         <td colspan="3">{{ itemform.foss_license_url.errors }}</td>
       </tr>
       <tr>
-        <td><b>{{ itemform.foss_url.label }}:</b></td>
+        <td><b>{{ itemform.required_flag }}{{ itemform.foss_url.label }}:</b></td>
         <td></td>
         <td>{{ itemform.foss_url }}</td>
       </tr>
@@ -95,7 +95,7 @@
       </tr>
       <tr>
         <td colspan="2">
-            <b>{{ itemform.item_commit_message.label }}:</b>
+            <b>{{ itemform.item_commit_message.css_classes }}{{ itemform.item_commit_message.label }}:</b>
         </td>
       </tr>
      </table>
