@@ -910,7 +910,7 @@ def cache_get_components():
     component_json = serializers.serialize('json', component_list, ensure_ascii=False)
     widget = '<select id="id_component_select" onchange="select_to_component();">'
     widget += '<option value="">Select...</option>'
-    widget += '<option value="manual_entry">Manual Entry</option>'
+    widget += '<option value="manual_entry">New...</option>'
     indexer = 0
     for c in component_list:
         cl = License.objects.get(id = c.license_id)

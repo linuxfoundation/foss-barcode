@@ -50,7 +50,7 @@
       <td>
         <select id="id_product_select" onchange="select_to_product();">
           <option value="">Select...</option>
-          <option value="manual_entry">Manual Entry</option>
+          <option value="manual_entry">New...</option>
           {% for p in products %}
             <option value="{{ p }}">{{ p }}</option>
           {% endfor %}
@@ -211,7 +211,7 @@
 <table width="100%" id="submit_buttons">
   <tr>
     <td align="center"><input style="width: 200px" type="submit" name="submit_code" 
-                              value="Create Checksum/Code Image" onclick="return enable_disabled();"/></td>
+                              value="Add Record" onclick="return enable_disabled();"/></td>
   </tr>
 </table>
 <hr>

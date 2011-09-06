@@ -296,7 +296,7 @@ are loaded using the file selection navigator, they are stored in the system und
 in the detailed reporting. Multiple files can be loaded for FOSS component patches.
 For FOSS components, all fields but SPDX<sup>TM</sup> File and Patches are mandatory.</p>
 
-<p>Once you enter the data, click on the <b>Create Checksum/QRcode</b> or <b>Create Checksum/Barcode</b> button. After the data
+<p>Once you enter the data, click on the <b>Add Record</b> button. After the data
 is compiled you will be presented with the detailed record results in tabular form, with a graphical
 image of the barcode. The <i>Download Postscript</i> link will download an .eps file of the bardcode
 image for product packaging. Websites and uploaded files should be clickable links for further information.</p>
