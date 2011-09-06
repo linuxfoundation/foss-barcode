@@ -13,6 +13,7 @@
   <script type="text/javascript" src="/site_media/js/visibility.js"></script>
   <script type="text/javascript" src="/site_media/js/checklist.js"></script>
   <script type="text/javascript" src="/site_media/js/record-check.js"></script>
+  <script type="text/javascript" src="/site_media/js/component-select.js"></script>
 </head>
 {% endblock %}
 
@@ -154,6 +155,11 @@
     <td></td>
   </tr>
   <tr>
+    <td colspan="2"></td>
+    <td colspan="7">{% autoescape off %}{{ component_select }}{% endautoescape %}</td>
+    <td colspan="4"></td>
+  </tr>
+  <tr>
     <!-- needed to control the width here, so hand tweaked size in css -->
     <td colspan="2"></td>
     <td>{{ recordform.foss_component }}</td>
@@ -165,8 +171,7 @@
       {{ recordform.foss_license_url }}
     </td>
     <td>{{ recordform.foss_url }}</td>
-    <!-- hand code this one so we can disable manual input -->
-    <td><input type="input" name="foss_spdx" id="id_foss_spdx" readonly="true"/></td>
+    <td>{{ recordform.foss_spdx }}</td>
     <td>
         <a href="#" id="clear_foss_spdx"><img src="/site_media/images/edit-delete.png" 
                     title="Clear SPDX" onclick="clear_spdx('id_foss_spdx', 'top_spdx_select');"></a>
@@ -220,6 +225,11 @@
 
 {% block scripts %}
 <script language="JavaScript">
+    // this gets used by component-select.js
+    {% if cached_components %}
+    var ccache = {% autoescape off %}{{ cached_components }}{% endautoescape %};
+    {% endif %}
+
     // pfield, sfield, modal are defined in file-select-ops.js
 
     var header_fields = { "company": "",
@@ -263,6 +273,7 @@
         }
         // disable manual input for the spdx_file field
         document.getElementById("id_spdx_file").setAttribute("readonly", "true");
+        document.getElementById("id_foss_spdx").setAttribute("readonly", "true");
         // content of this field determines what we can do with the line items
         document.getElementById("id_spdx_file").setAttribute("onchange", "spdx_change('id_spdx_file', 'foss_spdx_select');");
         // and the reverse is true
@@ -276,15 +287,21 @@
         {% if products %}
         document.getElementById("id_product").disabled = true;
         {% endif %}
+        {% if cached_components %}
+        component_disabled(true);
+        {% endif %}
     }
     function select_to_product() {
         var product = document.getElementById("id_product_select").value;
         var dest = document.getElementById("id_product");
         if (product == "manual_entry") {
             dest.disabled = false;
+        } else if (product == "") {
+            return 0;
         } else {
             dest.value = product;
             dest.disabled = true;
+            document.getElementById("id_product_select")[0].selected = true;
         }
     }
     function enable_disabled() {
@@ -293,7 +310,7 @@
         return true;
     }
     function update_patch_list(src) {
-        var findex = src.replace(pfield,"");
+        var findex = src.replace(pfield, "");
         var rlist = document.getElementById(pfield).value;
         var rarray = rlist.split(",");
         rarray[findex] = document.getElementsByName(src)[0].value;
@@ -341,20 +358,20 @@
         // nothing is in the database yet, so this is handled a little differently than the other forms
         var t = document.getElementById(id);
         var chk = document.getElementsByName("bomcheck");
-        // list index is 0... - actual row is +3     
+        // list index is 0... - actual row is +4     
         if (typeof chk != 'undefined') {
             if (typeof chk.length != 'undefined') {
                 // work backwords or we miss rows
                 for (i = chk.length - 1; i >= 0; i--) {
                     if (chk[i].checked == true) {
-                        t.deleteRow(i+3);
+                        t.deleteRow(i + 4);
                         remove_bom_values(i);
                     }
                 }
             } else {
                 // only one row to work with
                 if (chk.checked == true) {
-                    t.deleteRow(3);
+                    t.deleteRow(4);
                     clear_bom_values();
                 }
             }
@@ -377,7 +394,7 @@
         }
 
         var tbody = document.getElementById(id).getElementsByTagName("TBODY")[0];
-        var rindex = document.getElementById(id).rows.length - 3;
+        var rindex = document.getElementById(id).rows.length - 4;
         var patch_tag = pfield + rindex;
         var row = document.createElement("TR");
 
@@ -489,8 +506,8 @@
 
     function line_edit_init(row) {
         // FIXME - for some reason, the dynamically added icons never trigger $('#line-item-modal .basic').click
-        // so we basically dupe the jQuery code here (calling $('#line-item-modal .basic').click() 
-        // directly triggers recursion issues in chrome)
+        // so we basically dupe the jQuery code here 
+        // (calling $('#line-item-modal .basic').click() directly triggers recursion issues in chrome)
         line_edit_fill(row);
         $('#line-item-modal-content').modal({
              containerCss:{

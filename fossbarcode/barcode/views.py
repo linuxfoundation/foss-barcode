@@ -1,7 +1,7 @@
 # Create your views here.
 from django.template import Context, loader
 from django.shortcuts import render_to_response, get_object_or_404
-from fossbarcode.barcode.models import Product_Record, FOSS_Components, System_Settings, RecordForm, HeaderForm, ItemForm, License
+from fossbarcode.barcode.models import Product_Record, FOSS_Components, System_Settings, Component_Cache, RecordForm, HeaderForm, ItemForm, License
 from django.http import HttpResponse, HttpResponseRedirect
 from django.http import Http404
 from django.conf import settings
@@ -26,6 +26,8 @@ CONFIG_CHOICES = (
 # error/info response strings
 msg_strings = {
     'barcode_fail': _('Barcode generation failed...'),
+    'cc_add_fail': _('Component cache add failed...'),
+    'cc_update_fail': _('Component cache update failed...'),
     'checksum_fail': _('Checksum generation failed...'),
     'clone_fail': _('Record clone failed...'),
     'commit_new_record': _('Created new record from form.'),
@@ -41,6 +43,7 @@ msg_strings = {
     'no_data': _('No data for record %s'),
     'no_record': _('Record not found...'),
     'unknown_request': _('Unknown request made'),
+    'unrelease_record': _('Unrelease record for edits'),
     'user_data_delete_fail': _('Failed to delete user data...'),
 }
 
@@ -137,6 +140,9 @@ def detail(request, record_id, revision=None):
     host_site = get_config_value('host_site')
     display_code_type = get_config_value('display_code_type')
 
+    # and the cached component list
+    cached_components, component_select = cache_get_components()
+
     # Create the history.
     record_history = []
     if record:
@@ -228,7 +234,7 @@ def detail(request, record_id, revision=None):
         if (mode == "Unrelease Record"):
             Product_Record.objects.filter(id = record_id).update(released = False, record_date = str(datetime.datetime.now()))
             pr = Product_Record.objects.get(id = record_id)
-            pr.commit('Unrelease record for edits')
+            pr.commit(msg_strings['unrelease_record'])
 
         if (mode == "Clone Record" or mode == "Update Header" or mode == "Unrelease Record"):
             if (error_message == ''):
@@ -240,6 +246,16 @@ def detail(request, record_id, revision=None):
                 # needed for file/change control operations below
                 pr = Product_Record.objects.get(id = record_id)
 
+                # use these in several places, gather them once
+                if (mode == "Update Item" or mode == "Add Item"):
+                    new_component = request.POST.get('foss_component', '')
+                    new_version = request.POST.get('foss_version', '')
+                    new_copyright = request.POST.get('foss_copyright', '')
+                    new_attribution = request.POST.get('foss_attribution', '')
+                    new_license_id = request.POST.get('foss_license', '')
+                    new_license_url = request.POST.get('foss_license_url', '')
+                    new_url = request.POST.get('foss_url', '')
+
                 new_spdx = request.POST.get('foss_spdx', '')
                 if (mode == "Update Item" or mode == "Delete Item"):               
                     foss_id = request.POST.get('foss_record_id', '')
@@ -247,32 +263,33 @@ def detail(request, record_id, revision=None):
                     old_spdx = fd.spdx_file
 
                 elif (mode == "Add Item"):
-                    fd = FOSS_Components(brecord_id = record_id, 
-                                         package = request.POST.get('foss_component', ''),
-                                         version = request.POST.get('foss_version', ''),
-                                         copyright = request.POST.get('foss_copyright', ''), 
-                                         attribution = request.POST.get('foss_attribution', ''),
-                                         license_id = int(request.POST.get('foss_license', '0')), 
-                                         license_url = request.POST.get('foss_license_url', ''), 
-                                         url = request.POST.get('foss_url', ''), 
+                    fd = FOSS_Components(brecord_id = record_id, package = new_component, 
+                                         version = new_version, copyright = new_copyright, 
+                                         attribution = new_attribution, license_id = new_license_id, 
+                                         license_url = new_license_url, url = new_url, 
                                          spdx_file = os.path.basename(new_spdx))
 
                     fd.save()
                     foss_id = fd.id
+                    cache_add_component(new_component, new_url, new_license_id, 
+                                        new_license_url, new_copyright, new_attribution)
                 else:
                     error_message += msg_strings['unknown_request'] + "<br>"
 
                 if (mode == "Update Item"):
                     # line item data is in a file, so we alter/save rather than update
-                    fd.package = request.POST.get('foss_component', '')
-                    fd.version = request.POST.get('foss_version', '')
-                    fd.copyright = request.POST.get('foss_copyright', '')
-                    fd.attribution = request.POST.get('foss_attribution', '')
-                    fd.license = License.objects.get(id=int(request.POST.get('foss_license', '0')))
-                    fd.license_url = request.POST.get('foss_license_url', '')
-                    fd.url = request.POST.get('foss_url', '')
+                    fd.package = new_component
+                    fd.version = new_version
+                    fd.copyright = new_copyright
+                    fd.attribution = new_attribution
+                    fd.license_id = new_license_id
+                    fd.license_url = new_license_url
+                    fd.url = new_url
                     fd.spdx_file = os.path.basename(new_spdx)
-                
+
+                    cache_update_component(new_component, new_url, new_license_id, 
+                                           new_license_url, new_copyright, new_attribution)
+
                 if (mode == "Delete Item"):
                     fd.delete()
 
@@ -354,8 +371,9 @@ def detail(request, record_id, revision=None):
     return render_to_response('barcode/detail.html', {'record': record, 'foss': foss, 'history': record_history,
                                                       'host_site': host_site, 'tab_results': True, 'revision': revision,
                                                       'error_message': error_message, 'enable_edits': enable_edits,
-                                                      'display_code': display_code_type, 
-                                                      'public_facing': public_facing, 'public_logo': public_logo,
+                                                      'display_code': display_code_type,
+                                                      'cached_components': cached_components, 'component_select': component_select,
+                                                      'public_facing':  public_facing, 'public_logo': public_logo,
                                                       'headerform': headerform, 'itemform': itemform,
                                                       'reload_trigger': str(time.time()) })
 
@@ -516,6 +534,9 @@ def input(request):
     # plus whatever product names we may already have in the system
     products = Product_Record.objects.values_list('product', flat=True).distinct()
 
+    # and the cached component list
+    cached_components, component_select = cache_get_components()
+
     # we don't do anything with this content, just used to format the modal popup
     # because it's also a subset of Recordform, change out the id string id_foo -> id_m_foo
     itemform = ItemForm(auto_id='id_m_%s') # An unbound form
@@ -581,6 +602,8 @@ def input(request):
                                                    license_id = licenses[i], license_url = license_urls[i], 
                                                    url = urls[i], spdx_file = os.path.basename(spdxs[i]), patch_files = [])
 
+                        result = cache_add_component(foss, urls[i], licenses[i], license_urls[i], copyrights[i], attributions[i])
+
                         # check for SPDX files and save in user_data
                         if spdxs[i] != '':
                             error_message += spdx_file_add(recorddata, spdxs[i])
@@ -643,6 +666,7 @@ def input(request):
                               'foss_copyrights': foss_copyrights, 'foss_attributions': foss_attributions,
                               'foss_licenses': foss_licenses, 'foss_license_urls': foss_license_urls, 
                               'foss_urls': foss_urls, 'foss_spdxs': foss_spdxs,
+                              'cached_components': cached_components, 'component_select': component_select,
                               'foss_patches': foss_patches, 'tab_input': True })
 
 ### these are all basically documentation support
@@ -846,7 +870,55 @@ def spdx_check_for_change(pr, old_spdx, new_spdx):
         if old_spdx != '':
             errmsg += spdx_file_delete(pr, old_spdx)
 
-    return errmsg    
+    return errmsg
+    
+# add a record to the component cache for input select
+def cache_add_component(component, url, license, license_url, copyright, attribution):
+    errmsg = ''
+    if component != '':
+        cc_list = Component_Cache.objects.filter(component = component)
+        if len(cc_list) == 0:
+            try:
+                cc = Component_Cache(component = component, url = url, license_id = license,
+                                     license_url = license_url, copyright = copyright, attribution = attribution)
+                cc.save();
+            except:        
+                errmsg = msg_strings['cc_add_fail'] + "<br>"
+    
+    return errmsg
+
+# update a component cache record (or add if there isn't one)
+def cache_update_component(component, url, license, license_url, copyright, attribution):
+    errmsg = ''
+    if component != '':
+        cc_list = Component_Cache.objects.filter(component = component)
+        if len(cc_list) != 0:
+            try:
+                Component_Cache.objects.filter(component = component).update(url = url, license_id = license, license_url = license_url, 
+                                                                            copyright = copyright, attribution = attribution)
+            except:
+                errmsg = msg_strings['cc_update_fail'] + "<br>"
+        else:
+           errmsg = cache_add_component(component, url, license, license_url, copyright, attribution)
+
+    return errmsg
+
+# retrieve the cached component list, both the raw list in json and a preformatted select widget
+def cache_get_components():
+    from django.core import serializers
+    component_list = Component_Cache.objects.order_by('component')
+    component_json = serializers.serialize('json', component_list, ensure_ascii=False)
+    widget = '<select id="id_component_select" onchange="select_to_component();">'
+    widget += '<option value="">Select...</option>'
+    widget += '<option value="manual_entry">Manual Entry</option>'
+    indexer = 0
+    for c in component_list:
+        cl = License.objects.get(id = c.license_id)
+        widget += '<option value="' + str(indexer) + '">' + c.component + ': ' + c.url + ' | ' + cl.license + ' ' + cl.version + ': ' + c.license_url + '</option>'
+        indexer += 1
+    widget += '</select>'
+
+    return component_json, widget
 
 # used when in the public facing mode
 public_logo = get_config_value('public_logo')

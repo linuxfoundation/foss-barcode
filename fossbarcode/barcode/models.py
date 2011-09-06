@@ -476,6 +476,17 @@ class System_Settings(models.Model):
     def __unicode__(self):
         return "%s = %s" % (self.name, self.value)
 
+class Component_Cache(models.Model):
+    component = models.CharField(max_length=200, db_index=True, unique=True)
+    url = models.CharField(max_length=256)
+    license_id = models.IntegerField()
+    license_url = models.CharField(max_length=256)
+    copyright = models.CharField(max_length=200, blank=True)
+    attribution = models.CharField(max_length=200, blank=True)
+
+    def __unicode__(self):
+        return "%s = %d" % (self.component, self.license_id)
+
 class RecordForm(ModelForm):   
     class Meta:
         model = Product_Record

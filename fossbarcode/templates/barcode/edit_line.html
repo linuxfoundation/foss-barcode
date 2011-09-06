@@ -9,6 +9,9 @@
     <div class="containerm" id="modal_entry_form">
      <table width="100%">
       <tr>
+        <td colspan="3">{% autoescape off %}{{ component_select }}{% endautoescape %}</td>
+      </tr>
+      <tr>
         <td><b>{{ itemform.foss_component.label }}:</b></td>
         <td></td>
         <td>{{ itemform.foss_component }}</td>

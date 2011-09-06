@@ -14,6 +14,7 @@
   <script type="text/javascript" src="/site_media/js/jqueryFileTree.js"></script>
   <script type="text/javascript" src="/site_media/js/file-select-ops.js"></script>
   <script type="text/javascript" src="/site_media/js/visibility.js"></script>
+  <script type="text/javascript" src="/site_media/js/component-select.js"></script>
 </head>
 {% endblock %}
 
@@ -141,6 +142,11 @@
 
 {% block scripts %}
 <script language="JavaScript">
+    // this gets used by component-select.js
+    {% if cached_components %}
+    var ccache = {% autoescape off %}{{ cached_components }}{% endautoescape %};
+    {% endif %}
+
     var header_fields = { "company": "",
                           "website": "",
                           "product": "",
@@ -168,6 +174,8 @@
             // perhaps an assumption here, if things work correctly we should never see both
             hide_element('spdx_warn_line');   
         {% endif %}
+        // default is to use the component select
+        component_disabled(true);
     }
 
     function submit_header_validate() {
@@ -273,6 +281,8 @@
             alert("Please fill all required component fields, including the commit message");
             return false;
         } else {
+            // re-enable the disabled fields before submit or we wipe the record out
+            component_disabled(false);
             return true;
         }
     }
