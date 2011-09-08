@@ -2,6 +2,7 @@
 {% block header %}
     <!-- tree style ul -->
     <style type="text/css" media="screen">@import "/site_media/css/mktree.css";</style>
+    <style type="text/css" media="screen">@import "/site_media/css/records.css";</style>
     <!-- CSS file for modal dialog -->
     <style type="text/css" media="screen">@import "/site_media/css/barcode-modals.css";</style>
     <script type="text/javascript" src="/site_media/js/checklist.js"></script>
@@ -28,27 +29,32 @@
 {% else %}
     <br>
     <form name="resultsform" method="post" action="" enctype="multipart/form-data">
-    <table border="1" cellpadding="5" style="margin-left: 140px;" width="900px">
+    <div class="record_table_header">
+    <table border="1">
+    {% autoescape off %}{{ colwidths }}{% endautoescape %}
       <tr align="center">
-        <td width="45" align="center"><input type="checkbox" name="selectall"
-                    title="Select/Deselect All Records" 
-                    onclick="toggleall(this.form,'recordcheck','selectall')" />
-        </td>
-        <td><input type="submit" name="submit" value="Delete Selected Records"
+        <td colspan="6"><input type="submit" name="submit" value="Delete Selected Records"
                     onclick="buildlist(this.form,'recordcheck','recordlist')" />
         </td>
       </tr>
-      <tr align="center">
+      <tr>
         <td></td>
-        <th>Release/Information (Website, Contact Email/Name, Last Updated)</th>
+        <th>Release</th>
+        <th>Website</th>
+        <th>Contact Email</th>
+        <th>Contact Name</th>
+        <th>Last Updated</th>
       </tr>
     </table>
+    </div>
+    <div class="record_table">
     <ul class="mktree" id="tree1">
     <!-- just blob out the pre-rendered html - fastest way --> 
     {% for row in rendered_list %}
     {% autoescape off %}{{ row }}{% endautoescape %}
     {% endfor %} 
-    </ul>    
+    </ul>
+    </div>
     <input type="hidden", name="recordlist", value="" />
     </form>
     <!-- this is the modal popup content for viewing the history data -->

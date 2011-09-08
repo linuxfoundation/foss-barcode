@@ -1,0 +1,23 @@
+/* overflow:auto is also an option here, but not fully supported in browsers */ 
+/* offset header by 140px so things line up with the outline */
+.record_table_header table {
+    table-layout: fixed;
+    margin-left: 140px;
+    width: 900px;
+    overflow: hidden;
+    word-break: break-all;
+    word-wrap: break-word;
+}
+.record_table_header td {
+    padding: 5px;
+}
+.record_table table {
+    table-layout: fixed;
+    width: 900px;
+    overflow: hidden;
+    word-break: break-all;
+    word-wrap: break-word;
+}
+.record_table td {
+    padding: 5px;
+}

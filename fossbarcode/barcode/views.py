@@ -481,16 +481,20 @@ def records(request):
                     rendered.append(lio + "Version " + v + ":<ul>")
                     releases = Product_Record.objects.filter(company = c, product = p, version = v).order_by('release')
                     if releases.count() != 0:
-                        rendered.append('<table border="1" cellpadding="5" width="900px">')
+                        rendered.append('<table border="1">')
+                        # these colums widths are used by both the header and the content of the outline tables - defined once here and passed to template
+                        colwidths = '<col width=40><col width=40><col width=150><col width=150><col width=150><col width=100>'
+                        rendered.append(colwidths)
                         for r in releases:
                             recid = str(r.id)
                             rendered.append('<tr>')
-                            rendered.append('<td width="45" valign="center"><input type="checkbox" name="recordcheck" value="' + recid + '">')
+                            rendered.append('<td valign="center">')
+                            rendered.append('<input type="checkbox" name="recordcheck" value="' + recid + '" title="Select for Deletion">')
                             rendered.append('<span id="history-modal">')
                             rendered.append('<a href="#" class="basic" name="history' + str(ctr) +'"')
                             rendered.append('id="' + recid + '">' + himage + '</a>')
                             rendered.append('</span></td>')
-                            rendered.append('<td><a href="/barcode/' + recid + '/detail/">Release ' + r.release + '</a></td>')
+                            rendered.append('<td><a href="/barcode/' + recid + '/detail/">' + r.release + '</a></td>')
                             rendered.append('<td><a href="' + r.website + '" target="_blank">' + r.website + '</a></td>')
                             rendered.append('<td><a href="mailto:' + r.email + '" target="_blank">' + r.email + '</a></td>')
                             rendered.append('<td>' + r.contact + '</td>')
@@ -504,7 +508,7 @@ def records(request):
     
     return render_to_response('barcode/records.html', {'rendered_list': rendered,
                                                        'error_message': error_message, 
-                                                       'tab_records': True, 
+                                                       'tab_records': True, 'colwidths': colwidths,
                                                        'public_facing': public_facing, 'public_logo': public_logo })
 
 # input form - this is where the real work happens
