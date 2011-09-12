@@ -461,6 +461,7 @@ def records(request):
     liopene = '<li class="liOpen">'
     expand_limit = 4
     ctr = 1
+    colwidths = ''
 
     # pre-render the outline display for speed, uses mktree.js for a collapsible list
     companies = Product_Record.objects.values_list('company', flat=True).distinct()
