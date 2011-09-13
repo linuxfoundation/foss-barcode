@@ -3,8 +3,11 @@
   <style type="text/css">@import "/site_media/css/containers.css";</style>
   <!-- CSS file for modal dialog -->
   <style type="text/css" media="screen">@import "/site_media/css/barcode-modals.css";</style>
+  <!-- CSS file for the datepicker -->
+  <style type="text/css" media="screen">@import "/site_media/css/jquery-ui-1.8.16.custom.css";</style>
   <!-- used for modal dialog -->
   <script type="text/javascript" src="/site_media/js/jquery-1.4.2.min.js"></script>
+  <script type="text/javascript" src="/site_media/js/jquery-ui-1.8.16.custom.min.js"></script>
   <script type='text/javascript' src='/site_media/js/jquery.simplemodal.1.4.1.min.js'></script>
   <script type='text/javascript' src='/site_media/js/barcode-modals.js'></script>
   <script type='text/javascript' src='/site_media/js/history.js'></script>
@@ -36,7 +39,7 @@
       <td rowspan = "3" width = "40%">
         <span id="noprint">
           &nbsp;&nbsp;
-          {% if not revision and not public_facing and not record.released %}
+          {% if not revision and not public_facing and not record.release_date %}
           <span id="header-modal">    
             <a href="#" name="edit_header" class="basic"><img src="/site_media/images/filetree/edit.png" title="Edit Record Header"></a>
           </span>
@@ -47,7 +50,7 @@
           <span id="history-modal" float="left">
             <a href="#" name="history1" id="{{ record.id }}" class="basic"><img src="/site_media/images/filetree/code.png" title="Change History"></a>
           </span>
-          {% if not revision and not public_facing and record.released %}
+          {% if not revision and not public_facing and record.release_date %}
           <span id="unrelease-modal">    
             <a href="#" name="unlock_record" class="basic"><img src="/site_media/images/unlock.png" title="Unlock/Unrelease Record for Edits"></a>
           </span>
@@ -87,8 +90,8 @@
             <td><a href="/site_media/user_data/{{ record.id }}/spdx_files/{{ record.spdx_file }}">{{ record.spdx_file }}</a></td>
           </tr>
           <tr>
-            <td align="right"><b>{{ headerform.released.label }}:</b></td>
-            <td>{{ record.released }}</td>
+            <td align="right"><b>{{ headerform.release_date.label }}:</b></td>
+            <td>{{ record.release_date|date:"M d, Y" }}</td>
           </tr>
         </table>
 {% if revision %}
@@ -116,7 +119,7 @@
     <tr>
       <td align="center" width="45">
         <span id="noprint">
-        {% if not revision and not public_facing and not record.released %}
+        {% if not revision and not public_facing and not record.release_date %}
         <div id="line-item-modal">    
           <a href="#" class="basic" name="line_item_add" id="{{ foss|length }}"><img src="/site_media/images/list-add.png" title="Add Line Item"></a>
         </div>
@@ -129,13 +132,13 @@
       <th>Attribution<br>Notices</th>
       <th>License<br>Name and Version</th>
       <th>SPDX<sup>TM</sup><br>File</th>
-      <th>Patch(es)</th>
+      <th>Patch Files</th>
     </tr>
     {% for row in foss %}
     <tr valign = "top">   
       <td align="center" width="45">
       <span id="noprint">
-        {% if not revision and not public_facing and not record.released %}
+        {% if not revision and not public_facing and not record.release_date %}
         <span id="line-item-modal">
             <a href="#" class="basic" name="line_item{{ forloop.counter }}" id="{{ row.id }}"><img src="/site_media/images/filetree/edit.png" title="Edit Line Item"></a>
         </span>

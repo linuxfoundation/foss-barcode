@@ -73,7 +73,7 @@
         </td>
       </tr>
       <tr>
-        <td><b>{% autoescape off %}{{ itemform.foss_spdx.label }}{% endautoescape %}:</b></td>
+        <td><b>{{ itemform.optional_flag }}{% autoescape off %}{{ itemform.foss_spdx.label }}{% endautoescape %}:</b></td>
         <td>
             <input type="button" name="select_spdx" value="Select" 
                    title="Open a File/Directory Selector" 
@@ -84,7 +84,7 @@
         <td>{{ itemform.foss_spdx }}</td>
       </tr>
       <tr>
-        <td valign="top"><b>{{ itemform.foss_patches.label }}:</b></td>
+        <td valign="top"><b>{{ itemform.optional_flag }}{{ itemform.foss_patches.label }}:</b></td>
         <td valign="top">
             <input type="button" name="select_patch" value="Select"title="Open a File/Directory Selector" 
                    onclick="toggle_visibility('target_select_modal');set_destination('foss_patches');toggle_enabled('select_spdx');">
@@ -95,7 +95,7 @@
       </tr>
       <tr>
         <td colspan="2">
-            <b>{{ itemform.item_commit_message.css_classes }}{{ itemform.item_commit_message.label }}:</b>
+            <b>{{ itemform.required_flag }}{{ itemform.item_commit_message.label }}:</b>
         </td>
       </tr>
      </table>

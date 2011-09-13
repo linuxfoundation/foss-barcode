@@ -189,6 +189,10 @@ def detail(request, record_id, revision=None):
                 pr = Product_Record.objects.get(id = record_id)
                 old_spdx = pr.spdx_file
                 new_spdx = request.POST.get('spdx_file', '')
+                # this can be NULL
+                new_release_date = request.POST.get('release_date', '')
+                if new_release_date == '':
+                    new_release_date = None
 
                 Product_Record.objects.filter(id = record_id).update(company = request.POST.get('company', ''),
                                                                  website = request.POST.get('website', ''),
@@ -197,7 +201,7 @@ def detail(request, record_id, revision=None):
                                                                  release = request.POST.get('release', ''),
                                                                  contact = request.POST.get('contact', ''),
                                                                  email = request.POST.get('email', ''),
-                                                                 released = request.POST.get('released', ''),
+                                                                 release_date = new_release_date,
                                                                  spdx_file = os.path.basename(new_spdx),
                                                                  record_date = str(datetime.datetime.now()))
 
@@ -232,7 +236,7 @@ def detail(request, record_id, revision=None):
                 error_message += msg_strings['invalid_header']
 
         if (mode == "Unrelease Record"):
-            Product_Record.objects.filter(id = record_id).update(released = False, record_date = str(datetime.datetime.now()))
+            Product_Record.objects.filter(id = record_id).update(release_date = None, record_date = str(datetime.datetime.now()))
             pr = Product_Record.objects.get(id = record_id)
             pr.commit(msg_strings['unrelease_record'])
 

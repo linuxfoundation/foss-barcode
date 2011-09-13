@@ -3,9 +3,12 @@
   <!-- for the file browser -->
   <style type="text/css" media="screen">@import "/site_media/css/jqueryFileTree.css";</style>
   <style type="text/css" media="screen">@import "/site_media/css/containers.css";</style>
+  <!-- CSS file for the datepicker -->
+  <style type="text/css" media="screen">@import "/site_media/css/jquery-ui-1.8.16.custom.css";</style>
   <!-- CSS file for modal dialog -->
   <style type="text/css" media="screen">@import "/site_media/css/barcode-modals.css";</style>
   <script type="text/javascript" src="/site_media/js/jquery-1.4.2.min.js"></script>
+  <script type="text/javascript" src="/site_media/js/jquery-ui-1.8.16.custom.min.js"></script>
   <script type='text/javascript' src='/site_media/js/jquery.simplemodal.1.4.1.min.js'></script>
   <script type='text/javascript' src='/site_media/js/barcode-modals.js'></script>
   <script type="text/javascript" src="/site_media/js/jqueryFileTree.js"></script>
@@ -32,19 +35,19 @@
 <div class="container" id="entry_form">
 <table align="left" width="100%">
   <tr align="left">
-    <td align="right"><b>{{ recordform.company.css_classes }}{{ recordform.company.label }}:</b></td>
+    <td align="right"><b>{{ recordform.required_flag }}{{ recordform.company.label }}:</b></td>
     <td>{{ recordform.company }}</td>
     <td></td>
     <td>{{ recordform.company.errors }}</td>
   </tr>
   <tr align="left">
-    <td align="right"><b>{{ recordform.website.css_classes }}{{ recordform.website.label }}:</b></td>
+    <td align="right"><b>{{ recordform.required_flag }}{{ recordform.website.label }}:</b></td>
     <td>{{ recordform.website }}</td>
     <td></td>
     <td>{{ recordform.website.errors }}</td>
   </tr>
   <tr align="left">
-    <td align="right"><b>{{ recordform.product.css_classes }}{{ recordform.product.label }}:</b></td>
+    <td align="right"><b>{{ recordform.required_flag }}{{ recordform.product.label }}:</b></td>
     <td>{{ recordform.product }}</td>
     {% if products %}
       <td>
@@ -60,25 +63,25 @@
     <td>{{ recordform.product.errors }}</td>
   </tr>
   <tr align="left">
-    <td align="right"><b>{{ recordform.version.css_classes }}{{ recordform.version.label }}:</b></td>
+    <td align="right"><b>{{ recordform.required_flag }}{{ recordform.version.label }}:</b></td>
     <td>{{ recordform.version }}</td>
     <td></td>
     <td>{{ recordform.version.errors }}</td>
   </tr>
   <tr align="left">
-    <td align="right"><b>{{ recordform.release.css_classes }}{{ recordform.release.label }}:</b></td>
+    <td align="right"><b>{{ recordform.required_flag }}{{ recordform.release.label }}:</b></td>
     <td>{{ recordform.release }}</td>
     <td></td>
     <td>{{ recordform.release.errors }}</td>
   </tr>
   <tr align="left">
-    <td align="right"><b>{{ recordform.contact.css_classes }}{{ recordform.contact.label }}:</b></td>
+    <td align="right"><b>{{ recordform.optional_flag }}{{ recordform.contact.label }}:</b></td>
     <td>{{ recordform.contact }}</td>
     <td></td>
     <td></td>    
   </tr>
   <tr align="left">
-    <td align="right"><b>{{ recordform.email.css_classes }}{{ recordform.email.label }}:</b></td>
+    <td align="right"><b>{{ recordform.required_flag }}{{ recordform.email.label }}:</b></td>
     <td>{{ recordform.email }}</td>
     <td>
       {{ recordform.email.errors }}
@@ -86,7 +89,7 @@
     <td></td>   
   </tr>
   <tr align="left">
-    <td align="right"><b>{{ recordform.spdx_file.css_classes }}{% autoescape off %}{{ recordform.spdx_file.label }}{% endautoescape %}:</b></td>
+    <td align="right"><b>{{ recordform.optional_flag }}{% autoescape off %}{{ recordform.spdx_file.label }}{% endautoescape %}:</b></td>
     <td>{{ recordform.spdx_file }}</td>
     <td align="center">
         <a href="#" id="clear_foss_spdx"><img src="/site_media/images/edit-delete.png" 
@@ -98,13 +101,13 @@
     <td></td>    
   </tr>
   <tr align="left">
-    <td align="right"><b>{{ recordform.released.label }}:</b></td>
-    <td>{{ recordform.released }}</td>
+    <td align="right"><b>{{ recordform.optional_flag }}{{ recordform.release_date.label }}:</b></td>
+    <td>{{ recordform.release_date }}</td>
     <td></td>
     <td></td>    
   </tr>
   <tr align="left">
-    <th>(Fields marked * are required)</th>
+    <th>(Fields marked * are optional)</th>
     <td align="center">
       <input type="button" id="dupe_search" value="Continue..." onclick="search_dupes();">
     </td>    
@@ -140,22 +143,19 @@
     <col width=120>
   <tr>
     <td colspan="2"></td>
-    <th>{{ recordform.required_flag }}{{ recordform.foss_component.label }}</th>
+    <th>{{ recordform.required_flag }}Software<br>Component Name</th>
     <th>{{ recordform.required_flag }}{{ recordform.foss_version.label }}</th>
     <th>{{ recordform.required_flag }}Copyright<br>Information</th>
     <th>{{ recordform.required_flag }}Attribution<br>Notices</th>
-    <td colspan="2">
-        <b>{{ recordform.required_flag }}License Name and Version<br>
-        {{ recordform.required_flag }}License URL</b>
-    </td>
-    <th>{{ recordform.required_flag }}Original<br>Download URL</th>
+    <th colspan="2">{{ recordform.required_flag }}License Name, Version and URL</th>
+    <th>{{ recordform.required_flag }}Mint Version<br>Download URL</th>
     <td colspan="2" align="center">
-        <b>SPDX<sup>TM</sup>File</b> 
+        <b>SPDX<sup>TM</sup>File{{ recordform.optional_flag }}</b> 
         <input type="button" name="spdxfilename" value="Select" id="foss_spdx_select"
                              title="Open a File/Directory Selector"
                              onclick="toggle_visibility('target_select');set_destination('foss_spdx');toggle_enabled('patchfilename');"/>
     </td>
-    <th>Patches<br>(if applicable)</th>  
+    <th>Patch Files{{ recordform.optional_flag }}</th>  
     <td></td>
   </tr>
   <tr>
@@ -213,8 +213,8 @@
 <hr>
 <table width="100%" id="submit_buttons">
   <tr>
-    <td align="center"><input style="width: 200px" type="submit" name="submit_code" 
-                              value="Add Record" onclick="return enable_disabled();"/></td>
+    <td align="center"><input style="width: 300px" type="submit" name="submit_code" 
+                              value="Add Compliance Record" onclick="return enable_disabled();"/></td>
   </tr>
 </table>
 </form> <!-- overall form ends here to include the submit buttons -->
@@ -227,6 +227,16 @@
 
 {% block scripts %}
 <script language="JavaScript">
+    // datepicker for the release date
+    $(function() {
+        $( "#id_release_date" ).datepicker({
+            dateFormat: 'yy-mm-dd',
+            autoSize: true,
+            showOn: "button",
+            buttonImage: "/site_media/images/calendar.gif",
+            buttonImageOnly: true
+        });
+    });
     // this gets used by component-select.js
     {% if cached_components %}
     var ccache = {% autoescape off %}{{ cached_components }}{% endautoescape %};

@@ -234,8 +234,7 @@ class Product_Record(models.Model, FileDataDirMixin):
     contact = models.CharField('Compliance Contact Name', max_length=200, blank=True)
     email = models.CharField('Compliance Contact Email', max_length=200)
     spdx_file = models.CharField('SPDX<sup>TM</sup> File', max_length=200, blank=True)
-    # for future fine tuning of how things can be changed
-    released = models.BooleanField('Released to Production', default=False)
+    release_date = models.DateField('Release Date', null=True)
 
     def __unicode__(self):
         return self.product
@@ -496,6 +495,7 @@ class RecordForm(ModelForm):
         self.fields["foss_license"].choices = \
             [(x.id, str(x))
              for x in License.objects.all().order_by('license', 'version')]
+        self.fields["release_date"].required = False
 
     foss_component = forms.CharField(label="Component", max_length=200, required=False)
     foss_version = forms.CharField(label="Version", max_length=20, required=False)
@@ -505,19 +505,26 @@ class RecordForm(ModelForm):
     foss_license_url = forms.CharField(label="License URL", max_length=200, required=False)
     foss_url = forms.CharField(label="Download URL", max_length=200, required=False)
     foss_spdx = forms.CharField(label="SPDX<sup>TM</sup> File", max_length=100, required=False)
-    foss_patches = forms.CharField(label="Patches", max_length=200, required=False, widget=forms.Textarea(attrs={'cols': 20, 'rows': 4}))
+    foss_patches = forms.CharField(label="Patch Files", max_length=200, required=False, widget=forms.Textarea(attrs={'cols': 20, 'rows': 4}))
 
     required_css_class = '*'
-    required_flag = '*' # for component fields that we need, but are tagged False above
+    required_flag = '' # for component fields that we need, but are tagged False above
+    optional_flag = '*' # decision is to flag optional, not required fields now
 
 class HeaderForm(ModelForm):
     class Meta:
         model = Product_Record
 
+    def __init__(self, *args, **kwargs):
+        super(HeaderForm, self).__init__(*args, **kwargs)
+        self.fields["release_date"].required = False
+
     header_commit_message = forms.CharField(label="Change Comments (for change history)",
                                             widget=forms.Textarea(attrs={'cols': 80, 'rows': 4}))
 
     required_css_class = '*'
+    required_flag = ''
+    optional_flag = '*'
 
 class ItemForm(RecordForm):
     class Meta(RecordForm.Meta):

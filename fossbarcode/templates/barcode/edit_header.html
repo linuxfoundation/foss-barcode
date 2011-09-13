@@ -9,7 +9,7 @@
     <span class="red" id="header_warning"></span>
     <table>
       <tr>
-        <td><span class="red"><b>{{ headerform.company.css_classes }}{{ headerform.company.label }}:</b></span></td>
+        <td><span class="red"><b>{{ headerform.required_flag }}{{ headerform.company.label }}:</b></span></td>
         <td></td>
         <td><input type="input" id="id_company" name="company" value="{{ record.company }}"></td>
       </tr>
@@ -17,7 +17,7 @@
         <td colspan="3">{{ headerform.company.errors }}</td>
       </tr>
       <tr>
-        <td><b>{{ headerform.website.css_classes }}{{ headerform.website.label }}:</b></td>
+        <td><b>{{ headerform.required_flag }}{{ headerform.website.label }}:</b></td>
         <td></td>
         <td><input type="input" id="id_website" name="website" value="{{ record.website }}"></td>
       </tr>
@@ -25,7 +25,7 @@
         <td colspan="3">{{ headerform.website.errors }}</td>
       </tr>
       <tr>
-        <td><span class="red"><b>{{ headerform.product.css_classes }}{{ headerform.product.label }}:</b></span></td>
+        <td><span class="red"><b>{{ headerform.required_flag }}{{ headerform.product.label }}:</b></span></td>
         <td></td>
         <td><input type="input" id="id_product" name="product" value="{{ record.product }}"></td>
       </tr>
@@ -33,7 +33,7 @@
         <td colspan="3">{{ headerform.product.errors }}</td>
       </tr>
       <tr>
-        <td><span class="red"><b>{{ headerform.version.css_classes }}{{ headerform.version.label }}:</b></span></td>
+        <td><span class="red"><b>{{ headerform.required_flag }}{{ headerform.version.label }}:</b></span></td>
         <td></td>
         <td><input type="input" id="id_version" name="version" value="{{ record.version }}"></td>
       </tr>
@@ -41,7 +41,7 @@
         <td colspan="3">{{ headerform.version.errors }}</td>
       </tr>
       <tr>
-        <td><span class="red"><b>{{ headerform.release.css_classes }}{{ headerform.release.label }}:</b></span></td>
+        <td><span class="red"><b>{{ headerform.required_flag }}{{ headerform.release.label }}:</b></span></td>
         <td></td>
         <td><input type="input" id="id_release" name="release" value="{{ record.release }}"></td>
       </tr>
@@ -49,12 +49,12 @@
         <td colspan="3">{{ headerform.release.errors }}</td>
       </tr>
       <tr>
-        <td><b>{{ headerform.contact.css_classes }}{{ headerform.contact.label }}:</b></td>
+        <td><b>{{ headerform.optional_flag }}{{ headerform.contact.label }}:</b></td>
         <td></td>
         <td><input type="input" id="id_contact" name="contact" value="{{ record.contact }}"></td>
       </tr>
       <tr>
-        <td><b>{{ headerform.email.css_classes }}{{ headerform.email.label }}:</b></td>
+        <td><b>{{ headerform.required_flag }}{{ headerform.email.label }}:</b></td>
         <td></td>
         <td><input type="input" id="id_email" name="email" value="{{ record.email }}"></td>
       </tr>
@@ -62,12 +62,12 @@
         <td colspan="3">{{ headerform.email.errors }}</td>
       </tr>
       <tr>
-        <td><b>{{ headerform.released.label }}:</b></td>
+        <td><b>{{ headerform.optional_flag }}{{ headerform.release_date.label }}:</b></td>
         <td></td>
-        <td><input type="checkbox" id="id_released" name="released" value="{{ record.released }}"></td>
+        <td>{{ headerform.release_date }}</td>
       </tr>
       <tr>
-        <td colspan="3">{{ headerform.released.errors }}</td>
+        <td colspan="3">{{ headerform.release_date.errors }}</td>
       </tr>
       <tr>
         <td colspan="3">
@@ -75,7 +75,7 @@
         </td>
       </tr>
       <tr>
-        <td><b>{{ headerform.spdx_file.css_classes }}{% autoescape off %}{{ headerform.spdx_file.label }}{% endautoescape %}:</b></td>
+        <td><b>{{ headerform.optional_flag }}{% autoescape off %}{{ headerform.spdx_file.label }}{% endautoescape %}:</b></td>
         <td align="center">
           <input type="button" name="spdxfilename" value="Select" id="top_spdx_select"
                              title="Open a File/Directory Selector"
@@ -86,7 +86,7 @@
         <td><input type="input" id="id_spdx_file" name="spdx_file" value="{{ record.spdx_file }}"></td>    
       </tr>
       <tr>
-        <td colspan="2"><b>{{ headerform.header_commit_message.css_classes }}{{ headerform.header_commit_message.label }}:</b></td>
+        <td colspan="2"><b>{{ headerform.required_flag }}{{ headerform.header_commit_message.label }}:</b></td>
       </tr>
     </table>
     </div>
@@ -112,6 +112,15 @@
 {% endblock %}
 {% block scripts %}
 <script language="JavaScript">
+    $(function() {
+        $( "#id_release_date" ).datepicker({
+            dateFormat: 'yy-mm-dd',
+            autoSize: true,
+            showOn: "button",
+            buttonImage: "/site_media/images/calendar.gif",
+            buttonImageOnly: true
+        });
+    });
     // no manual entry for spdx_files
     document.getElementById('id_spdx_file').setAttribute('readonly', 'true');
     // in the input form we have to play games with top-level spdx vs line-item, here the backend handles the change
