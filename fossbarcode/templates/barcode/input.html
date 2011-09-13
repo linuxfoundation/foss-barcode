@@ -185,6 +185,19 @@
                                         onclick="get_bom_values();add_bom_row('foss_list', 'add')"/>
     </td>
   </tr>
+  <tr id="bom_new_license" style="display: none;">
+    <td colspan="6"></td>
+    <td colspan="2">
+      <form id="new_license_form">
+        <label for="license_name">New License Name:</label>
+        <input type="text" name="license_name" />
+        <label for="license_version">New License Version:</label>
+        <input type="text" name="license_version" />
+        <input type="button" onclick="new_license()" value="Add New License" />
+      </form>
+    </td>
+    <td colspan="5"></td>
+  </tr>
   <tr id="bom_editor">
     <td align="left" colspan="2"><input type="checkbox" name="selectall"
                     title="Select/Deselect All Records" 

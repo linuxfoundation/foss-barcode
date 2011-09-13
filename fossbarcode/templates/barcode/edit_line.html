@@ -46,7 +46,18 @@
       <tr>
         <td><b>{{ itemform.required_flag }}{{ itemform.foss_license.label }}:</b></td>
         <td></td>
-        <td>{{ itemform.foss_license }}</td>
+        <td>
+          <div id="existing_license">{{ itemform.foss_license }}</div>
+          <div id="new_license" style="display: none;">
+            <form id="new_license_form">
+              <label for="new_license_name">New License Name:</label>
+              <input type="text" name="new_license_name" /><br />
+              <label for="new_license_version">New License Version:</label>
+              <input type="text" name="new_license_version" /><br />
+              <input type="button" onclick="new_license()" value="Add New License" />
+            </form>
+          </div>
+        </td>
       </tr>
       <tr>
         <td colspan="3">{{ itemform.foss_license.errors }}</td>
