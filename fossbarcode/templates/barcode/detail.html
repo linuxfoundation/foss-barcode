@@ -17,6 +17,7 @@
   <script type="text/javascript" src="/site_media/js/jqueryFileTree.js"></script>
   <script type="text/javascript" src="/site_media/js/file-select-ops.js"></script>
   <script type="text/javascript" src="/site_media/js/visibility.js"></script>
+  <script type="text/javascript" src="/site_media/js/licenses.js"></script>
   <script type="text/javascript" src="/site_media/js/component-select.js"></script>
 </head>
 {% endblock %}
@@ -240,6 +241,9 @@
     }
 
     function line_edit_fill(row, record) {
+        // reload license drop-down
+        populate_licenses("id_foss_license");
+
         // different behavior for add vs edit
         if (row.search("add") == -1) {
             document.getElementById('line_item_no').innerHTML = row;

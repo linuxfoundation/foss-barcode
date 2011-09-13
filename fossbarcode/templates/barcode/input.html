@@ -17,6 +17,7 @@
   <script type="text/javascript" src="/site_media/js/checklist.js"></script>
   <script type="text/javascript" src="/site_media/js/record-check.js"></script>
   <script type="text/javascript" src="/site_media/js/component-select.js"></script>
+  <script type="text/javascript" src="/site_media/js/licenses.js"></script>
 </head>
 {% endblock %}
 
@@ -254,6 +255,11 @@
     {% if cached_components %}
     var ccache = {% autoescape off %}{{ cached_components }}{% endautoescape %};
     {% endif %}
+
+    // populate the license drop-down on load
+    $("#id_foss_license").ready(function() {
+        populate_licenses("id_foss_license");
+    });
 
     // pfield, sfield, modal are defined in file-select-ops.js
 
