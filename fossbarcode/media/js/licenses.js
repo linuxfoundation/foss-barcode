@@ -11,16 +11,22 @@ function populate_licenses(select_element_id) {
 	$.each(data, function() {
 	    items.push('<option value="'+ this[0] + '">' + this[1] + '</option>\n');
 	});
+	items.push('<option value="-1">Other License...</option>\n');
 	$('#' + select_element_id).html(items.join(''));
     });
 }
 
 function select_license(select_element_id, license_id) {
+    $('#' + select_element_id).children().each(function() {
+        if (this.value == license_id) {
+            this.selected = "selected";
+        } else {
+            this.selected = "";
+        }
+    });
 }
 
 function create_new_license(license_name, license_version, callback) {
-    return $.getJSON(barcode_new_license_url,
-		     { 'license_name': license_name,
-		       'license_version': license_version },
+    return $.getJSON(barcode_new_license_url + "?license_name=" + license_name + "&license_version=" + license_version,
 		     callback);
 }

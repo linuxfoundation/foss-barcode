@@ -256,9 +256,18 @@
     var ccache = {% autoescape off %}{{ cached_components }}{% endautoescape %};
     {% endif %}
 
-    // populate the license drop-down on load
+    // populate the license drop-down on load, and set up its events
     $("#id_foss_license").ready(function() {
         populate_licenses("id_foss_license");
+        $("#id_foss_license").change(function() {
+            if (this.value == '-1') {
+                $('#license_name').val('');
+                $('#license_version').val('');
+                $('#bom_new_license').show();
+            } else {
+                $('#bom_new_license').hide();
+            }
+        });
     });
 
     // pfield, sfield, modal are defined in file-select-ops.js
@@ -619,6 +628,16 @@
     }
     function clear_field(fname) {
         document.getElementById(fname).value = '';
+    }
+
+    function new_license() {
+        var new_license_name = $('#license_name').val();
+        var new_license_version = $('#license_version').val();
+        create_new_license(new_license_name, new_license_version,
+            function(new_license_id) {
+                populate_licenses('id_foss_license');
+                select_license('id_foss_license', new_license_id);
+            });
     }
 </script>
 {% endblock %}

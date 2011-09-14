@@ -96,7 +96,9 @@ def licenses_json(request):
                         content_type="application/json")
 
 # add new license, called from javascript, returns id of new license
-def new_license(request, license_name, license_version):
+def new_license(request):
+    license_name = request.GET["license_name"]
+    license_version = request.GET["license_version"]
     l = License(license=license_name, version=license_version)
     l.save()
     return HttpResponse(json.dumps(l.id), content_type="application/json")
