@@ -126,11 +126,12 @@
         {% endif %}
         </span>
       </td>
-      <th>Component</th>
+      <th>Software<br>Component Name</th>
       <th>Version</th>
       <th>Copyright<br>Information</th>
       <th>Attribution<br>Notices</th>
-      <th>License<br>Name and Version</th>
+      <th>License<br>Name, Version and URL</th>
+      <th>Mint Version<br>Download URL</th>
       <th>SPDX<sup>TM</sup><br>File</th>
       <th>Patch Files</th>
     </tr>
@@ -148,11 +149,12 @@
         {% endif %}
       </span>     
       </td>
-      <td id="foss_component{{ forloop.counter }}"><a href="{{ row.url }}" target="_blank">{{ row.component }}</a></td>
+      <td id="foss_component{{ forloop.counter }}">{{ row.component }}</td>
       <td id="foss_version{{ forloop.counter }}">{{ row.version }}</td>
       <td id="foss_copyright{{ forloop.counter }}">{{ row.copyright }}</td>
       <td id="foss_attribution{{ forloop.counter }}">{{ row.attribution }}</td>
       <td id="foss_license{{ forloop.counter }}"><a href="{{ row.license_url }}" target="_blank">{{ row.license }}</a></td>
+      <td id="foss_url{{ forloop.counter }}"><a href="{{ row.url }}" target="_blank">{{ row.url }}</a></td>
       {% autoescape off %}
       <td id="foss_spdx{{ forloop.counter }}">{{ row.spdx_file }}</td>
       <td id="foss_patches{{ forloop.counter }}">{{ row.patches }}</td>
@@ -208,6 +210,8 @@
         {% endif %}
         // default is to use the component select
         component_disabled(true);
+        // Edit is more appropriate here than New
+        document.getElementById("id_component_select")[1].innerHTML = "Edit..."
     }
 
     function submit_header_validate() {
@@ -246,9 +250,7 @@
             // walk through the table row and plug the values into the edit form, called when we click the icon, before the form appears
             for(var f in bom_fields){
                 var dest = "id_" + f;
-                if (f == "foss_url") {
-                    var src = "foss_component" + row;
-                } else if (f == "foss_license_url") {
+                if (f == "foss_license_url") {
                     var src = "foss_license" + row;
                 } else {
                     var src = f + row;
@@ -262,7 +264,7 @@
                         for (i = 0; i < items; i = i+2) {
                             document.getElementById(dest).value += document.getElementById(src).children[i].innerHTML + "\n";
                         }
-                    } else if (f == "foss_license_url" || f == "foss_url") {
+                    } else if (f == "foss_license_url") {
                         document.getElementById(dest).value += document.getElementById(src).children[0].href
                     } else if (f == "foss_license") {
                         var license_text = document.getElementById(src).children[0].innerHTML;

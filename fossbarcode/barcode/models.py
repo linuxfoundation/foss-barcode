@@ -497,13 +497,13 @@ class RecordForm(ModelForm):
              for x in License.objects.all().order_by('license', 'version')]
         self.fields["release_date"].required = False
 
-    foss_component = forms.CharField(label="Component", max_length=200, required=False)
+    foss_component = forms.CharField(label="Software Component Name", max_length=200, required=False)
     foss_version = forms.CharField(label="Version", max_length=20, required=False)
     foss_copyright = forms.CharField(label="Copyright Information", max_length=100, required=False)
     foss_attribution = forms.CharField(label="Attribution Notices", max_length=100, required=False)
-    foss_license = forms.ChoiceField(label="License", required=False, choices=[])
+    foss_license = forms.ChoiceField(label="License Name and Version", required=False, choices=[])
     foss_license_url = forms.CharField(label="License URL", max_length=200, required=False)
-    foss_url = forms.CharField(label="Download URL", max_length=200, required=False)
+    foss_url = forms.CharField(label="Mint Version Download URL", max_length=200, required=False)
     foss_spdx = forms.CharField(label="SPDX<sup>TM</sup> File", max_length=100, required=False)
     foss_patches = forms.CharField(label="Patch Files", max_length=200, required=False, widget=forms.Textarea(attrs={'cols': 20, 'rows': 4}))
 

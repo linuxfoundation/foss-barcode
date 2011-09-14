@@ -488,7 +488,7 @@ def records(request):
                     if releases.count() != 0:
                         rendered.append('<table border="1">')
                         # these colums widths are used by both the header and the content of the outline tables - defined once here and passed to template
-                        colwidths = '<col width=40><col width=40><col width=150><col width=150><col width=150><col width=100>'
+                        colwidths = '<col width=40><col width=60><col width=150><col width=150><col width=150><col width=100>'
                         rendered.append(colwidths)
                         for r in releases:
                             recid = str(r.id)
