@@ -435,7 +435,6 @@
 
         var tbody = document.getElementById(id).getElementsByTagName("TBODY")[0];
         var rindex = document.getElementById(id).rows.length - 4;
-        var patch_tag = pfield + rindex;
         var row = document.createElement("TR");
 
         // checkbox for deletes
@@ -484,6 +483,7 @@
         }
 
         // list of patches
+        var patch_tag = pfield + cvalue;
         var td9 = document.createElement("TD");        
         var ch9 = document.createElement("textarea");
         ch9.setAttribute("type", "textarea");
