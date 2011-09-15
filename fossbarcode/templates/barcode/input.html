@@ -191,9 +191,9 @@
     <td colspan="2">
       <form id="new_license_form">
         <label for="license_name">New License Name:</label>
-        <input type="text" name="license_name" />
+        <input type="text" name="license_name" id="license_name" />
         <label for="license_version">New License Version:</label>
-        <input type="text" name="license_version" />
+        <input type="text" name="license_version" id="license_version" />
         <input type="button" onclick="new_license()" value="Add New License" />
       </form>
     </td>
@@ -631,11 +631,11 @@
     }
 
     function new_license() {
+        $('#bom_new_license').hide();
         var new_license_name = $('#license_name').val();
         var new_license_version = $('#license_version').val();
         create_new_license(new_license_name, new_license_version,
             function(new_license_id) {
-                populate_licenses('id_foss_license');
                 select_license('id_foss_license', new_license_id);
             });
     }
