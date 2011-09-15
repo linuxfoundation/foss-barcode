@@ -12,7 +12,7 @@ fossbarcode/barcode.sqlite: fossbarcode/barcode/models.py fossbarcode/barcode/fi
 	touch fossbarcode/barcode.sqlite
 
 fixture_regen:
-	(cd fossbarcode && python manage.py dumpdata --format xml barcode) | \
+	(cd fossbarcode && python manage.py dumpdata --format xml barcode auth.user) | \
 	  xmllint --format - > fossbarcode/barcode/fixtures/initial_data.xml
 
 fossbarcode/media/docs/index.html:
