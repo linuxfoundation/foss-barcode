@@ -175,6 +175,22 @@
 
 {% block scripts %}
 <script language="JavaScript">
+    // populate the license drop-down on load, and set up its events
+    $("#id_foss_license").ready(function() {
+        populate_licenses("id_foss_license");
+        $("#id_foss_license").change(function() {
+            if (this.value == '-1') {
+                $('#new_license_name').val('');
+                $('#new_license_version').val('');
+                $('#existing_license').hide();
+                $('#new_license').show();
+            } else {
+                $('#new_license').hide();
+                $('#existing_license').show();
+            }
+        });
+    });
+
     // this gets used by component-select.js
     {% if cached_components %}
     var ccache = {% autoescape off %}{{ cached_components }}{% endautoescape %};
@@ -343,6 +359,17 @@
     }
     function clear_field(fname) {
         document.getElementById(fname).value = '';
+    }
+
+    function new_license() {
+        $('#new_license').hide();
+        $('#existing_license').show();
+        var new_license_name = $('#new_license_name').val();
+        var new_license_version = $('#new_license_version').val();
+        create_new_license(new_license_name, new_license_version,
+            function(new_license_id) {
+                select_license('id_foss_license', new_license_id);
+            });
     }
 
 </script>
