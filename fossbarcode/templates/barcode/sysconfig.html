@@ -40,9 +40,9 @@ Below are are list of user configurable settings. At a minumum you should set <i
             <select name="{{ record.name }}">
             {% for value, display in values %}
               {% if value == record.value %}
-                <option value="{{ value }}" selected>{{ value }} - {{ display }}</option>
+                <option value="{{ value }}" selected>{{ display }}</option>
               {% else %}
-                <option value="{{ value }}">{{ value }} - {{ display }}</option>
+                <option value="{{ value }}">{{ display }}</option>
               {% endif %}
             {% endfor %}
             </select>

@@ -16,9 +16,9 @@ import sys, os, re, urllib, subprocess, time, datetime
 # used to populate drop-downs for config options with fixed choices
 CONFIG_CHOICES = (
     ('display_code_type', (
-            ('128', _('Code 128 Barcode')),
-            ('qr', _('QR Code with only the checksum, URL')),
-            ('qr+', _('QR Code with BoM and other data embedded in MECARD data')),
+            ('128', _('Code 128 - 1 dimensional barcode')),
+            ('qr', _('QR Code - URL: format')),
+            ('qr+', _('QR Code - MECARD: format')),
         )
     ),
 )

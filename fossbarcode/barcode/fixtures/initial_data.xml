@@ -504,7 +504,7 @@
   <object pk="1" model="barcode.system_settings">
     <field type="CharField" name="name">host_site</field>
     <field type="CharField" name="ftype">t</field>
-    <field type="CharField" name="value">http://compliance.linuxfoundation.org/foss-products/</field>
+    <field type="CharField" name="value">http://yourcompany.com/foss-products/</field>
     <field type="CharField" name="descr">Public site hosting BoM records</field>
     <field type="DateTimeField" name="last_updated">2011-07-06 00:00:00</field>
     <field type="BooleanField" name="user_updated">False</field>
@@ -536,7 +536,7 @@
   <object pk="5" model="barcode.system_settings">
     <field type="CharField" name="name">company_name</field>
     <field type="CharField" name="ftype">t</field>
-    <field type="CharField" name="value">FOSS Company</field>
+    <field type="CharField" name="value">Your Company</field>
     <field type="CharField" name="descr">Default company name for new records </field>
     <field type="DateTimeField" name="last_updated">2011-08-29 11:35:01</field>
     <field type="BooleanField" name="user_updated">False</field>
@@ -544,7 +544,7 @@
   <object pk="6" model="barcode.system_settings">
     <field type="CharField" name="name">company_website</field>
     <field type="CharField" name="ftype">t</field>
-    <field type="CharField" name="value">http://fosscompany.org</field>
+    <field type="CharField" name="value">http://yourcompany.com</field>
     <field type="CharField" name="descr">Default website for new records </field>
     <field type="DateTimeField" name="last_updated">2011-08-29 11:35:01</field>
     <field type="BooleanField" name="user_updated">False</field>
@@ -560,7 +560,7 @@
   <object pk="8" model="barcode.system_settings">
     <field type="CharField" name="name">compliance_email</field>
     <field type="CharField" name="ftype">t</field>
-    <field type="CharField" name="value">compliance@fosscompany.org</field>
+    <field type="CharField" name="value">compliance@yourcompany.com</field>
     <field type="CharField" name="descr">Default compliance email for new records </field>
     <field type="DateTimeField" name="last_updated">2011-08-29 11:35:01</field>
     <field type="BooleanField" name="user_updated">False</field>
