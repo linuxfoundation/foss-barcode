@@ -88,6 +88,21 @@ def by_checksum(request, checksum):
     record_id = str(p.id)
     return HttpResponseRedirect('/barcode/' + record_id + '/detail/')
 
+# get current license list, intended for calling from javascript
+def licenses_json(request):
+    licenses = License.objects.all().order_by('license')
+    licenses_json = [(x.id, str(x)) for x in licenses]
+    return HttpResponse(json.dumps(licenses_json),
+                        content_type="application/json")
+
+# add new license, called from javascript, returns id of new license
+def new_license(request):
+    license_name = request.GET["license_name"]
+    license_version = request.GET["license_version"]
+    l = License(license=license_name, version=license_version)
+    l.save()
+    return HttpResponse(json.dumps(l.id), content_type="application/json")
+
 # system configuration settings
 def sysconfig(request):
     info_message = ""
