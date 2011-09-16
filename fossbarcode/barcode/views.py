@@ -605,7 +605,9 @@ def input(request):
             top_spdx = recorddata.spdx_file
             if top_spdx != '':
                 error_message += spdx_file_add(recorddata, top_spdx)
-               
+                recorddata.spdx_file = os.path.basename(top_spdx)
+                recorddata.save()
+
             # if we have foss components, store them also, and the patches
             if foss_components != '':
                 components = foss_components.split(",")
@@ -870,8 +872,6 @@ def spdx_file_add(pr, spdx_file):
     except:
         errmsg = msg_strings['copy_fail'] % (str(spdx_file), spdx_dest) + "<br>"
 
-    pr.spdx_file = os.path.basename(spdx_file)
-    pr.save()
     return errmsg
 
 # remove an spdx file from a record
