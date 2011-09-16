@@ -397,26 +397,26 @@
     function delete_bom_components(id) {
         // nothing is in the database yet, so this is handled a little differently than the other forms
         var t = document.getElementById(id);
+        var trows = t.getElementsByTagName('tr');
+        var rowcount = trows.length;
         var chk = document.getElementsByName("bomcheck");
-        // list index is 0... - actual row is +4     
+        // list index is 0, actual table row is +5 currently (header, component select, input fields, 
+        // possibly hidden new license fields, select all/delete)     
         if (typeof chk != 'undefined') {
-            if (typeof chk.length != 'undefined') {
+            if (chk.length) {
+                var rowskeep = rowcount - chk.length;
                 // work backwords or we miss rows
                 for (i = chk.length - 1; i >= 0; i--) {
                     if (chk[i].checked == true) {
-                        t.deleteRow(i + 4);
+                        t.deleteRow(rowskeep + i);
                         remove_bom_values(i);
                     }
                 }
-            } else {
-                // only one row to work with
-                if (chk.checked == true) {
-                    t.deleteRow(4);
-                    clear_bom_values();
-                }
             }
             document.getElementsByName("selectall")[0].checked = false;
-            hide_element("bom_editor");
+            chk = document.getElementsByName("bomcheck");
+            if (chk.length == 0)
+                hide_element("bom_editor");
         } else {
             return;
         }
