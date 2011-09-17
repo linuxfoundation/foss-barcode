@@ -530,7 +530,7 @@ class ItemForm(RecordForm):
     class Meta(RecordForm.Meta):
         exclude = ('company', 'product', 'version', 'release', 'checksum', 'website', 'record_date' 'contact', 'email', 'released')
 
-    item_commit_message = forms.CharField(label="Change Comments (for change history)",
+    item_commit_message = forms.CharField(label="Change Comments<br>(for change history)",
                                           widget=forms.Textarea(attrs={'cols': 80, 'rows': 4}))
 
     required_css_class = '*'

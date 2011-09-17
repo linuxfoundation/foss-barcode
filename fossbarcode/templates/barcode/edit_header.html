@@ -3,7 +3,7 @@
 <div id="header-modal-content">
   <!-- form needs to be inside the div -->
   <form name="headerform" method="post" action="" enctype="multipart/form-data">
-    <h3 id="header_title"></h3>
+    <div class="titlem"><span id="header_title"></span></div>
     <!-- usual "container" stype wasn't working here, use containerm -->
     <div class="containerm" id="modal_entry_form">
     <span class="red" id="header_warning"></span>
@@ -86,7 +86,7 @@
         <td><input type="input" id="id_spdx_file" name="spdx_file" value="{{ record.spdx_file }}"></td>    
       </tr>
       <tr>
-        <td colspan="2"><b>{{ headerform.required_flag }}{{ headerform.header_commit_message.label }}:</b></td>
+        <td colspan="2"><b>{{ headerform.required_flag }}{% autoescape off %}{{ headerform.header_commit_message.label }}{% endautoescape %}:</b></td>
       </tr>
     </table>
     </div>

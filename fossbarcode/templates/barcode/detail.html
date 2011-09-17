@@ -227,8 +227,6 @@
         {% endif %}
         // default is to use the component select
         component_disabled(true);
-        // Edit is more appropriate here than New
-        document.getElementById("id_component_select")[1].innerHTML = "Edit..."
     }
 
     function submit_header_validate() {
@@ -306,6 +304,7 @@
             document.getElementById('foss_record_id').value = record;
             document.getElementById('item_edit_mode').innerHTML = "Edit";
             document.getElementById('submit_item').value = "Update Item";
+            document.getElementById("id_component_select")[1].innerHTML = "Edit..."
             // filetree isn't working on a second display of the form, force it to reload here
             reload_filetree();
         } else {
@@ -318,6 +317,7 @@
             document.getElementById('foss_record_id').value = parseInt(record) + 1;
             document.getElementById('item_edit_mode').innerHTML = "Add";
             document.getElementById('submit_item').value = "Add Item";
+            document.getElementById("id_component_select")[1].innerHTML = "New..."
         }
     }
 

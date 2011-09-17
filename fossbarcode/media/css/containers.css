@@ -65,6 +65,11 @@
     width: 98%;
 }
 
+.titlem {
+    color: #84b8d9;
+    font-weight: bold;
+}
+
 /* overflow:auto is also an option here, but not fully supported in browsers */ 
 .foss_table table {
     table-layout: fixed;

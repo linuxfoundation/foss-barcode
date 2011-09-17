@@ -21,7 +21,7 @@ jQuery(function ($) {
         header_edit_mode(clicked);
 		$('#header-modal-content').modal({
             containerCss:{
-                height:540,
+                height:520,
                 padding:0,
                 width:850
             }
@@ -76,7 +76,7 @@ jQuery(function ($) {
             line_edit_fill(row, record);       
 		    $('#line-item-modal-content').modal({
                 containerCss:{
-                    height:540,
+                    height:580,
                     padding:0,
                     width:850
                 }

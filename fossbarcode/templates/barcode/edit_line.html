@@ -3,7 +3,7 @@
 <div id="line-item-modal-content">
   <!-- form needs to be inside the div -->
   <form id="itemform" method="post" action="" enctype="multipart/form-data">
-    <h3><span id="item_edit_mode">Edit</span> Line Item, id# <span id="line_item_no">N</span>:</h3>
+    <div class="titlem"><span id="item_edit_mode">Edit</span> Line Item, id# <span id="line_item_no">N</span>:</div>
     <!-- usual "container" stype wasn't working here, use containerm -->
     <div class="containerm" id="modal_entry_form">
      <table width="100%">
@@ -38,21 +38,23 @@
       <tr>
         <td colspan="3">{{ itemform.foss_attributions.errors }}</td>
       </tr>
-      <tr>
+      <tr id="existing_license">
         <td colspan="2"><b>{{ itemform.required_flag }}{{ itemform.foss_license.label }}:</b></td>
-        <td>
-          <div id="existing_license">{{ itemform.foss_license }}</div>
-          <div id="new_license" style="display: none;">
-            <form id="new_license_form">
-              <label for="new_license_name">New License Name:</label>
-              <input type="text" name="new_license_name" id="new_license_name" /><br />
-              <label for="new_license_version">New License Version:</label>
-              <input type="text" name="new_license_version" id="new_license_version" /><br />
-              <input type="button" onclick="new_license()" value="Add New License" />
-            </form>
-          </div>
-        </td>
+        <td>{{ itemform.foss_license }}</td>
       </tr>
+      <tr id="new_license" style="display: none;">
+        <form id="new_license_form">
+        <td colspan="2" valign="top">      
+          <b><label for="new_license_name">New License Name:</label><br />
+          <label for="new_license_version">New License Version:</label></b>
+        </td>
+        <td>
+          <input type="text" name="new_license_name" id="new_license_name" /><br />
+          <input type="text" name="new_license_version" id="new_license_version" /><br />
+          <input type="button" onclick="new_license()" value="Add New License" />
+        </td>
+        </form>
+      </tr>     
       <tr>
         <td colspan="3">{{ itemform.foss_license.errors }}</td>
       </tr>
@@ -98,7 +100,7 @@
       </tr>
       <tr>
         <td colspan="2">
-            <b>{{ itemform.required_flag }}{{ itemform.item_commit_message.label }}:</b>
+            <b>{{ itemform.required_flag }}{% autoescape off %}{{ itemform.item_commit_message.label }}{% endautoescape %}:</b>
         </td>
       </tr>
      </table>
