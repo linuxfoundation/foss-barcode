@@ -31,9 +31,15 @@ function select_license(select_element_id, license_id) {
     });
 }
 
-function create_new_license(license_name, license_version, callback) {
-    return $.getJSON(barcode_new_license_url + "?",
+function create_new_license(license_name, license_version, license_url, callback) {
+    return $.getJSON(barcode_new_license_url,
 		     { 'license_name': license_name,
-		       'license_version': license_version },
+		       'license_version': license_version,
+                       'license_url': license_url },
+		     callback);
+}
+
+function get_default_license_url(license_id, callback) {
+    return $.getJSON(barcode_licenses_url + license_id + "/json/",
 		     callback);
 }

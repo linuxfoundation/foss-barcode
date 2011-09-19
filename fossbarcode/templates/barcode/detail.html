@@ -189,6 +189,11 @@
             } else {
                 $('#new_license').hide();
                 $('#existing_license').show();
+                if ($('#id_foss_license_url').val() == '') {
+                    get_default_license_url(this.value, function(data) {
+                        $('#id_foss_license_url').val(data[3]);
+                    });
+                }
             }
         });
     });
@@ -368,7 +373,9 @@
         $('#existing_license').show();
         var new_license_name = $('#new_license_name').val();
         var new_license_version = $('#new_license_version').val();
+        var new_license_url = $('#new_license_url').val();
         create_new_license(new_license_name, new_license_version,
+                           new_license_url,
             function(new_license_id) {
                 select_license('id_foss_license', new_license_id);
             });
