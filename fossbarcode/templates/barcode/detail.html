@@ -189,6 +189,11 @@
             } else {
                 $('#new_license').hide();
                 $('#existing_license').show();
+                if ($('#id_foss_license_url').val() == '') {
+                    get_default_license_url(this.value, function(data) {
+                        $('#id_foss_license_url').val(data[3]);
+                    });
+                }
             }
         });
     });

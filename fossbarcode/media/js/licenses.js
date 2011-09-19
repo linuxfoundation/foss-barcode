@@ -38,3 +38,8 @@ function create_new_license(license_name, license_version, license_url, callback
                        'license_url': license_url },
 		     callback);
 }
+
+function get_default_license_url(license_id, callback) {
+    return $.getJSON(barcode_licenses_url + license_id + "/json/",
+		     callback);
+}

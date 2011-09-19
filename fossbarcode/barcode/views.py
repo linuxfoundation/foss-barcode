@@ -95,6 +95,12 @@ def licenses_json(request):
     return HttpResponse(json.dumps(licenses_json),
                         content_type="application/json")
 
+# get license info, returns JSON
+def license_json(request, license_id):
+    l = License.objects.get(id=license_id)
+    return HttpResponse(json.dumps((l.id, l.license, l.version, l.default_url)),
+                        content_type="application/json")
+
 # add new license, called from javascript, returns id of new license
 def new_license(request):
     license_name = request.GET["license_name"]
