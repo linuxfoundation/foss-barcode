@@ -194,6 +194,8 @@
         <input type="text" name="license_name" id="license_name" />
         <label for="license_version">New License Version:</label>
         <input type="text" name="license_version" id="license_version" />
+        <label for="license_url">New License Default URL:</label>
+        <input type="text" name="license_url" id="license_url" />
         <input type="button" onclick="new_license()" value="Add New License" />
       </form>
     </td>
@@ -634,7 +636,9 @@
         $('#bom_new_license').hide();
         var new_license_name = $('#license_name').val();
         var new_license_version = $('#license_version').val();
+        var new_license_url = $('#license_url').val();
         create_new_license(new_license_name, new_license_version,
+                           new_license_url,
             function(new_license_id) {
                 select_license('id_foss_license', new_license_id);
             });

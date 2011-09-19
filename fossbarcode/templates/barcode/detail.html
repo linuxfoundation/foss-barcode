@@ -368,7 +368,9 @@
         $('#existing_license').show();
         var new_license_name = $('#new_license_name').val();
         var new_license_version = $('#new_license_version').val();
+        var new_license_url = $('#new_license_url').val();
         create_new_license(new_license_name, new_license_version,
+                           new_license_url,
             function(new_license_id) {
                 select_license('id_foss_license', new_license_id);
             });
