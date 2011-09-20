@@ -269,7 +269,7 @@
             } else {
                 $('#bom_new_license').hide();
                 if ($('#id_foss_license_url').val() == '') {
-                    get_default_license_url(this.value, function(data) {
+                    get_license_info(this.value, function(data) {
                         $('#id_foss_license_url').val(data[3]);
                     });
                 }

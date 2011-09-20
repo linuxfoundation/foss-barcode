@@ -29,7 +29,7 @@ function select_license(select_element_id, url_element_id, license_id) {
 	items.push('<option value="-1">Other License...</option>\n');
 	$('#' + select_element_id).html(items.join(''));
         if ($('#' + url_element_id).val() == '') {
-            get_default_license_url(license_id, function(data) {
+            get_license_info(license_id, function(data) {
                 $('#' + url_element_id).val(data[3]);
             });
         }
@@ -44,7 +44,7 @@ function create_new_license(license_name, license_version, license_url, callback
 		     callback);
 }
 
-function get_default_license_url(license_id, callback) {
+function get_license_info(license_id, callback) {
     return $.getJSON(barcode_licenses_url + license_id + "/json/",
 		     callback);
 }
