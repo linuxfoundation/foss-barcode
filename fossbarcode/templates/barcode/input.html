@@ -485,7 +485,12 @@
             td.setAttribute("id", f + cvalue);
             if (f == sfield)
                 td.setAttribute("colspan", "2");
-            td.appendChild(document.createTextNode(bom_fields[f]));
+            var content = bom_fields[f];
+            if (f == "foss_license") {
+                var license_select = document.getElementById("id_foss_license");
+                content = license_select.options[license_select.selectedIndex].text;
+            }
+            td.appendChild(document.createTextNode(content));
             row.appendChild(td);
         }
 
