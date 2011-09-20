@@ -377,7 +377,8 @@
         create_new_license(new_license_name, new_license_version,
                            new_license_url,
             function(new_license_id) {
-                select_license('id_foss_license', new_license_id);
+                select_license('id_foss_license', 'id_foss_license_url', 
+                               new_license_id);
             });
     }
 
