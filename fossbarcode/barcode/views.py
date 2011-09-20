@@ -365,7 +365,7 @@ def detail(request, record_id, revision=None):
                         fd.patch_files = []
 
                 # save changes to component
-                if mode not in ["Delete Item", "Add Item"]:
+                if mode not in ["Delete Item"]:
                     fd.save()
 
                 # QR+ code changes with any change (record_date, components)
