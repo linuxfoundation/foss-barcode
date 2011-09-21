@@ -54,5 +54,13 @@ function update_license_url(new_license_id, old_license_id, license_url_id) {
         get_license_info(new_license_id, function(data) {
             $('#' + license_url_id).val(data[3]);
         });
+    } else if (old_license_id >= 0) {
+	get_license_info(old_license_id, function(data) {
+	    if ($('#' + license_url_id).val() == data[3]) {
+		get_license_info(new_license_id, function(data) {
+		    $('#' + license_url_id).val(data[3]);
+		});
+	    }
+	});
     }
 }

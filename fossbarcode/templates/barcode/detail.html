@@ -189,7 +189,9 @@
             } else {
                 $('#new_license').hide();
                 $('#existing_license').show();
-                update_license_url(this.value, 1, 'id_foss_license_url');
+                update_license_url(this.value, $('#old_license_id').text(),
+                                   'id_foss_license_url');
+                $('#old_license_id').text(this.value);
             }
         });
     });

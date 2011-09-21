@@ -236,6 +236,9 @@
 </form> <!-- overall form ends here to include the submit buttons -->
 </div>
 
+<!-- place to store the "old" license ID, for managing license URL changes -->
+<div id="old_license_id" style="display: none;">-2</div>
+
 {% endif %}
 <!-- this is the modal popup content for editing the line item data -->
 {% include "barcode/edit_line_input.html" %}
@@ -268,7 +271,9 @@
                 $('#bom_new_license').show();
             } else {
                 $('#bom_new_license').hide();
-                update_license_url(this.value, 1, 'id_foss_license_url');
+                update_license_url(this.value, $('#old_license_id').text(),
+                                   'id_foss_license_url');
+                $('#old_license_id').text(this.value);
             }
         });
     });
