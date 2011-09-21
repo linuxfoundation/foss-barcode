@@ -48,3 +48,11 @@ function get_license_info(license_id, callback) {
     return $.getJSON(barcode_licenses_url + license_id + "/json/",
 		     callback);
 }
+
+function update_license_url(new_license_id, old_license_id, license_url_id) {
+    if ($('#' + license_url_id).val() == '') {
+        get_license_info(new_license_id, function(data) {
+            $('#' + license_url_id).val(data[3]);
+        });
+    }
+}
