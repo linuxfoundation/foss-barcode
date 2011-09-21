@@ -454,6 +454,9 @@ class FOSS_Components(models.Model, FileDataMixin):
         super(FOSS_Components, self).delete(*args, **kwargs)
 
 class License(models.Model):
+    class Meta:
+        ordering = ['license', 'version']
+
     longname = models.CharField('License Long Name', max_length=200)
     license = models.CharField('License Name', max_length=200)
     version = models.CharField('Version', max_length=20, blank=True)
