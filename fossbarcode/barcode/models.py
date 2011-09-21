@@ -222,6 +222,9 @@ class FileDataDirMixin:
         return True
 
 class Product_Record(models.Model, FileDataDirMixin):
+    class Meta:
+        verbose_name = "product record"
+
     _subdirs = ["spdx_files", "patches"]
 
     company = models.CharField('Company Name', max_length=200)
@@ -390,6 +393,9 @@ class Product_Record(models.Model, FileDataDirMixin):
         return mecard
 
 class FOSS_Components(models.Model, FileDataMixin):
+    class Meta:
+        verbose_name = "FOSS component"
+
     _master_class_path = ["brecord"]
     _file_fields = {
         "package": (str, ""),
@@ -460,6 +466,9 @@ class License(models.Model):
         return retval
 
 class LicenseAlias(models.Model):
+    class Meta:
+        verbose_name_plural = "license aliases"
+
     license = models.ForeignKey(License)
     alias = models.CharField('Alias', max_length=20, unique=True)
     def __unicode__(self):
