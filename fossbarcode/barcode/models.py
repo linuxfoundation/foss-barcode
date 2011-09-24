@@ -242,6 +242,11 @@ class Product_Record(models.Model, FileDataDirMixin):
     def __unicode__(self):
         return self.product
 
+    def delete(self, *args, **kwargs):
+        product_path = self.file_path()
+        super(Product_Record, self).delete(*args, **kwargs)
+        shutil.rmtree(product_path)
+
     def clone(self, company=None, product=None, version=None, release=None, website=None, contact=None, email=None, spdx_file=None):
         # Create a clone of this product, including the same components,
         # patches, etc.  Must provide at least one different value for

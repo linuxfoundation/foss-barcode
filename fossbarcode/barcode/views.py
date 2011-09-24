@@ -799,13 +799,12 @@ def check_for_system_apps():
 # to remove a record
 def delete_record(recid):
     errmsg = ''
-    q = Product_Record.objects.filter(id = recid)
-    checksum = q[0].checksum
+    q = Product_Record.objects.get(id = recid)
+    checksum = q.checksum
     try:
-        q[0].remove_directory()
+        q.delete()
     except:
         errmsg += msg_strings['user_data_delete_fail'] + "<br>"
-    q.delete()
     return errmsg
 
 # delete table records requested by id from one of the input forms

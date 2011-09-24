@@ -95,7 +95,7 @@ class TestFileDataDirMixin(BarCodeHarness):
         subtree = repo.tree(tree["patches"][1])
         self.assertTrue("barstyle.css" in subtree)
 
-    def testDelete(self):
+    def testDeleteFile(self):
         dest_path = os.path.join(self.product.file_path(),
                                  "patches/barstyle.css")
         self.product.setup_directory()
@@ -252,6 +252,26 @@ class TestProductRecord(BarCodeHarness):
 
         self.product.switch_revision(old_revision)
         self.assertEqual(old_checksum, self.product.checksum)
+
+    def testDelete(self):
+        self.addComponent()
+        product_id = self.product.id
+        product_file_path = self.product.file_path()
+        self.assertTrue(os.path.exists(product_file_path))
+        self.assertTrue(os.path.exists(
+                os.path.join(product_file_path,
+                             self.component.data_file_name)))
+
+        self.product.delete()
+
+        not_found = False
+        try:
+            Product_Record.objects.get(id=product_id)
+        except Product_Record.DoesNotExist:
+            not_found = True
+        self.assertTrue(not_found)
+
+        self.assertFalse(os.path.exists(product_file_path))
 
 class TestFOSSComponents(BarCodeHarness):
     def testDelete(self):
