@@ -309,7 +309,7 @@ def detail(request, record_id, revision=None):
                     fd.version = new_version
                     fd.copyright = new_copyright
                     fd.attribution = new_attribution
-                    fd.license_id = new_license_id
+                    fd.license = License.objects.get(id=new_license_id)
                     fd.license_url = new_license_url
                     fd.url = new_url
                     fd.spdx_file = os.path.basename(new_spdx)
