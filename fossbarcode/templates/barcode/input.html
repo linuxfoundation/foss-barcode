@@ -693,6 +693,7 @@
             function(new_license_id) {
                 select_license('id_foss_license', 'id_foss_license_url',
                                new_license_id, old_license_id);
+                $('#old_license_id').text(new_license_id);
                 populate_licenses('id_m_foss_license');
             });
     }
@@ -709,6 +710,7 @@
             function(new_license_id) {
                 select_license('id_m_foss_license', 'id_m_foss_license_url', 
                                new_license_id, old_license_id);
+                $('#old_m_license_id').text(new_license_id);
                 populate_licenses('id_foss_license');
             });
     }
