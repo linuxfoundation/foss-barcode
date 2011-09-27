@@ -692,6 +692,20 @@
                                new_license_id);
             });
     }
+
+    function new_license_m() {
+        $('#new_license_m').hide();
+        $('#existing_license_m').show();
+        var new_license_name = $('#new_license_name_m').val();
+        var new_license_version = $('#new_license_version_m').val();
+        var new_license_url = $('#new_license_url_m').val();
+        create_new_license(new_license_name, new_license_version,
+                           new_license_url,
+            function(new_license_id) {
+                select_license('id_m_foss_license', 'id_m_foss_license_url', 
+                               new_license_id);
+            });
+    }
 </script>
 {% endblock %}
 
