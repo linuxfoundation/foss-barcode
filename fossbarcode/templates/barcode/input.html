@@ -402,7 +402,12 @@
             var fh = f + "s";
             var src = "id_m_" + f;
             var dest = f + row;
-            document.getElementById(dest).innerHTML = document.getElementById(src).value; 
+            var content = document.getElementById(src).value;
+            if (f == "foss_license") {
+                var license_select = document.getElementById(src);
+                content = license_select.options[license_select.selectedIndex].text;
+            }
+            document.getElementById(dest).innerHTML = content;
             var rlist = document.getElementById(fh).value;
             var rarray = rlist.split(",");
             // table is 1-indexed, hidden lists are zero indexed
