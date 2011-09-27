@@ -543,18 +543,28 @@
         document.getElementById('line_item_no').innerHTML = row;
         // walk through the table row and plug the values into the edit form, called when we click the icon, before the form appears
         for(var f in bom_fields){
-            var dest = "id_m_" + f;
-            var src = f + row;
-            if (document.getElementById(src).children.length > 0) {
-                document.getElementById(dest).value = document.getElementById(src).children[0].innerHTML;
+            var dest_id = "id_m_" + f;
+            var src_id = f + row;
+            var dest = document.getElementById(dest_id);
+            var src = document.getElementById(src_id);
+            if (f == "foss_license") {
+                var license_text = src.innerHTML;
+                var options = dest.children;
+                for (i=0; i<options.length; i++) {
+                    if (options.item(i).innerHTML == license_text) {
+                        options.item(i).selected = true;
+                    } else {
+                        options.item(i).selected = false;
+                    }
+                }
             } else {
-                document.getElementById(dest).value = document.getElementById(src).innerHTML;
+                dest.value = src.innerHTML;
             }
         }
         // and the patches
-        var dest = "id_m_" + pfield;
-        var src = "id_" + pfield + row;
-        document.getElementById(dest).value = document.getElementById(src).value;
+        var dest_id = "id_m_" + pfield;
+        var src_id = "id_" + pfield + row;
+        document.getElementById(dest_id).value = document.getElementById(src_id).value;
     }
 
     function line_edit_init(row) {
