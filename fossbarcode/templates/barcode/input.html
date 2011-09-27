@@ -559,6 +559,9 @@
         for(var f in bom_fields){
             bom_fields[f] = "";
         }
+
+        // reset license drop-down
+        document.getElementById('id_foss_license').selectedIndex = 0;
         
         // show our "select all" controls
         show_none("bom_editor");
