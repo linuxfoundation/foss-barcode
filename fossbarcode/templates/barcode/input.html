@@ -587,7 +587,9 @@
             }
         }
         // old license id
-        document.getElementById("old_m_license_id").innerHTML = old_license_id;
+        if (Number(old_license_id) >= 0) {
+            document.getElementById("old_m_license_id").innerHTML = old_license_id;
+        }
         // and the patches
         var dest_id = "id_m_" + pfield;
         var src_id = "id_" + pfield + row;

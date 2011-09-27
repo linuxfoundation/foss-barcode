@@ -264,6 +264,7 @@
     function line_edit_fill(row, record) {
         // different behavior for add vs edit
         if (row.search("add") == -1) {
+            var old_license_id = -2;
             document.getElementById('line_item_no').innerHTML = row;
             // walk through the table row and plug the values into the edit form, called when we click the icon, before the form appears
             for(var f in bom_fields){
@@ -290,6 +291,7 @@
                         for (i=0; i<options.length; i++) {
                             if (options.item(i).innerHTML == license_text) {
                                 options.item(i).selected = true;
+                                old_license_id = options.item(i).value;
                             } else {
                                 options.item(i).selected = false;
                             }
@@ -300,6 +302,9 @@
                 } else {
                     document.getElementById(dest).value = document.getElementById(src).innerHTML;
                 }
+            }
+	    if (Number(old_license_id) >= 0) {
+                document.getElementById("old_license_id").innerHTML = old_license_id;
             }
             document.getElementById('foss_record_id').value = record;
             document.getElementById('item_edit_mode').innerHTML = "Edit";
