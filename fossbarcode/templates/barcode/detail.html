@@ -292,9 +292,9 @@
                         var options = document.getElementById(dest).children;
                         for (i=0; i<options.length; i++) {
                             if (options.item(i).innerHTML == license_text) {
-                                options.item(i).selected = "selected";
+                                options.item(i).selected = true;
                             } else {
-                                options.item(i).selected = "";
+                                options.item(i).selected = false;
                             }
                         }
                     } else {
