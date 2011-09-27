@@ -39,11 +39,25 @@
       <tr>
         <td colspan="3">{{ itemform.foss_attributions.errors }}</td>
       </tr>
-      <tr>
-        <td><b>{{ itemform.foss_license.label }}:</b></td>
-        <td></td>
+      <tr id="existing_license_m">
+        <td colspan="2"><b>{{ itemform.required_flag }}{{ itemform.foss_license.label }}:</b></td>
         <td>{{ itemform.foss_license }}</td>
       </tr>
+      <tr id="new_license_m" style="display: none;">
+        <form id="new_license_form">
+        <td colspan="2" valign="top">      
+          <b><label for="new_license_name_m">New License Name:</label><br />
+          <label for="new_license_version_m">New License Version:</label><br />
+          <label for="new_license_url_m">New License Default URL:</label></b>
+        </td>
+        <td>
+          <input type="text" name="new_license_name_m" id="new_license_name_m" /><br />
+          <input type="text" name="new_license_version_m" id="new_license_version_m" /><br />
+          <input type="text" name="new_license_url_m" id="new_license_url_m" /><br />
+          <input type="button" onclick="new_license()" value="Add New License" />
+        </td>
+        </form>
+      </tr>     
       <tr>
         <td colspan="3">{{ itemform.foss_license.errors }}</td>
       </tr>
@@ -101,6 +115,8 @@
         <input type="hidden" name="foss_record_id" id="foss_record_id" value="">
     </div>
   </form>
+  <!-- store old license ID for license URL management -->
+  <div id="old_m_license_id" style="display: none;">-2</div>
 </div>
 {% endblock %}
 {% block scripts %}

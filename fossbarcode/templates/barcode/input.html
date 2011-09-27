@@ -261,7 +261,7 @@
     var ccache = {% autoescape off %}{{ cached_components }}{% endautoescape %};
     {% endif %}
 
-    // populate the license drop-down on load, and set up its events
+    // populate the license drop-downs on load, and set up their events
     $("#id_foss_license").ready(function() {
         populate_licenses("id_foss_license");
         $("#id_foss_license").change(function() {
@@ -274,6 +274,24 @@
                 update_license_url(this.value, $('#old_license_id').text(),
                                    'id_foss_license_url');
                 $('#old_license_id').text(this.value);
+            }
+        });
+    });
+
+    $("#id_m_foss_license").ready(function() {
+        populate_licenses("id_m_foss_license");
+        $("#id_m_foss_license").change(function() {
+            if (this.value == '-1') {
+                $('#new_license_name_m').val('');
+                $('#new_license_version_m').val('');
+                $('#existing_license_m').hide();
+                $('#new_license_m').show();
+            } else {
+                $('#new_license_m').hide();
+                $('#existing_license_m').show();
+                update_license_url(this.value, $('#old_m_license_id').text(),
+                                   'id_m_foss_license_url');
+                $('#old_m_license_id').text(this.value);
             }
         });
     });
@@ -540,6 +558,7 @@
     }
 
     function line_edit_fill(row) {
+        var old_license_id = "-2";
         document.getElementById('line_item_no').innerHTML = row;
         // walk through the table row and plug the values into the edit form, called when we click the icon, before the form appears
         for(var f in bom_fields){
@@ -553,6 +572,7 @@
                 for (i=0; i<options.length; i++) {
                     if (options.item(i).innerHTML == license_text) {
                         options.item(i).selected = true;
+                        old_license_id = options.item(i).value;
                     } else {
                         options.item(i).selected = false;
                     }
@@ -561,6 +581,8 @@
                 dest.value = src.innerHTML;
             }
         }
+        // old license id
+        document.getElementById("old_m_license_id").innerHTML = old_license_id;
         // and the patches
         var dest_id = "id_m_" + pfield;
         var src_id = "id_" + pfield + row;
