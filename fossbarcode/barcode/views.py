@@ -235,11 +235,6 @@ def detail(request, record_id, revision=None):
                 if checksum != new_checksum:
                     pr.checksum = new_checksum
                     pr.save()
-                    for extension in (".png", ".ps"):
-                        try:
-                            pr.delete_file(checksum + extension)
-                        except:
-                            error_message += msg_strings['delete_fail'] % (checksum + extension) + "<br>"
 
                 # top-level spdx_file
                 # save and/or delete SPDX file if there's a change
@@ -800,7 +795,6 @@ def check_for_system_apps():
 def delete_record(recid):
     errmsg = ''
     q = Product_Record.objects.get(id = recid)
-    checksum = q.checksum
     try:
         q.delete()
     except:
