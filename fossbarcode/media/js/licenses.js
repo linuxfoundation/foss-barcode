@@ -16,7 +16,7 @@ function populate_licenses(select_element_id) {
     });
 }
 
-function select_license(select_element_id, url_element_id, license_id) {
+function select_license(select_element_id, url_element_id, license_id, old_license_id) {
     $.getJSON(barcode_licenses_url, function(data) {
 	var items = [];
 	$.each(data, function() {
@@ -28,11 +28,22 @@ function select_license(select_element_id, url_element_id, license_id) {
 	});
 	items.push('<option value="-1">Other License...</option>\n');
 	$('#' + select_element_id).html(items.join(''));
-        if ($('#' + url_element_id).val() == '') {
+
+	// check whether we need to update a non-blank license URL
+	var license_url_element = $('#' + url_element_id);
+        if (license_url_element.val() == '') {
             get_license_info(license_id, function(data) {
                 $('#' + url_element_id).val(data[3]);
             });
-        }
+        } else if (Number(old_license_id) >= 0) {
+	    get_license_info(old_license_id, function(data) {
+		if (license_url_element.val() == data[3]) {
+		    get_license_info(license_id, function(data) {
+			$('#' + url_element_id).val(data[3]);
+		    });
+		}
+	    });
+	}
     });
 }
 
