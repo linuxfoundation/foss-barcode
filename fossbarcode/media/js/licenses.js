@@ -5,7 +5,7 @@
 var barcode_licenses_url = '/barcode/licenses/';
 var barcode_new_license_url = '/barcode/licenses/new';
 
-function populate_licenses(select_element_id) {
+function populate_licenses(select_element_id, url_element_id) {
     $.getJSON(barcode_licenses_url, function(data) {
 	var items = [];
 	items.push('<option value="-2" selected="selected">Select License...</option>\n');
@@ -14,6 +14,7 @@ function populate_licenses(select_element_id) {
 	});
 	items.push('<option value="-1">Other License...</option>\n');
 	$('#' + select_element_id).html(items.join(''));
+	$('#' + url_element_id).attr("disabled", true);
     });
 }
 

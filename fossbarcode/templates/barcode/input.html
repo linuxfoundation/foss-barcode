@@ -263,16 +263,21 @@
 
     // populate the license drop-downs on load, and set up their events
     $("#id_foss_license").ready(function() {
-        populate_licenses("id_foss_license");
+        populate_licenses("id_foss_license", "id_foss_license_url");
         $("#id_foss_license").change(function() {
             if (this.value == '-1') {
                 $('#license_name').val('');
                 $('#license_version').val('');
                 $('#license_url').val('');
                 $('#bom_new_license').show();
+                $('#id_foss_license_url').val('');
             } else {
-                if (this.value == '-2')
+                if (this.value == '-2') {
                     $('#id_foss_license_url').val('');
+                    $('#id_foss_license_url').attr('disabled', true);
+                } else {
+                    $('#id_foss_license_url').attr('disabled', false);
+                }
                 $('#bom_new_license').hide();
                 update_license_url(this.value, $('#old_license_id').text(),
                                    'id_foss_license_url');
@@ -282,7 +287,7 @@
     });
 
     $("#id_m_foss_license").ready(function() {
-        populate_licenses("id_m_foss_license");
+        populate_licenses("id_m_foss_license", "id_m_foss_license_url");
         $("#id_m_foss_license").change(function() {
             if (this.value == '-1') {
                 $('#new_license_name_m').val('');
@@ -290,9 +295,14 @@
                 $('#new_license_url_m').val('');
                 $('#existing_license_m').hide();
                 $('#new_license_m').show();
+                $('#id_m_foss_license_url').val('');
             } else {
-                if (this.value == '-2')
+                if (this.value == '-2') {
                     $('#id_m_foss_license_url').val('');
+                    $('#id_m_foss_license_url').attr('disabled', true);
+                } else {
+                    $('#id_m_foss_license_url').attr('disabled', false);
+                }
                 $('#new_license_m').hide();
                 $('#existing_license_m').show();
                 update_license_url(this.value, $('#old_m_license_id').text(),
@@ -709,7 +719,7 @@
                 select_license('id_foss_license', 'id_foss_license_url',
                                new_license_id, old_license_id);
                 $('#old_license_id').text(new_license_id);
-                populate_licenses('id_m_foss_license');
+                populate_licenses('id_m_foss_license', 'id_m_foss_license_url');
             });
     }
 
@@ -726,7 +736,7 @@
                 select_license('id_m_foss_license', 'id_m_foss_license_url', 
                                new_license_id, old_license_id);
                 $('#old_m_license_id').text(new_license_id);
-                populate_licenses('id_foss_license');
+                populate_licenses('id_foss_license', 'id_foss_license_url');
             });
     }
 </script>

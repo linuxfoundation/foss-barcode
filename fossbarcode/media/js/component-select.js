@@ -32,8 +32,15 @@ function select_to_component() {
 }
 function component_disabled(mode) {
     for(var f in bom_fields) {
-        if (f != "foss_version" && f != "foss_spdx" && f != "foss_patches") {
-            var id = "id_" + f;
+        var id = "id_" + f;
+        if (f == "foss_license_url") {
+            var license_id = document.getElementById("id_foss_license").value;
+            if (license_id == -2) {
+                document.getElementById(id).disabled = true;
+            } else {
+                document.getElementById(id).disabled = mode;
+            }
+        } else if (f != "foss_version" && f != "foss_spdx" && f != "foss_patches") {
             document.getElementById(id).disabled = mode;
         }
     }
