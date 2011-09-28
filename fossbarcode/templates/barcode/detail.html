@@ -188,6 +188,8 @@
                 $('#existing_license').hide();
                 $('#new_license').show();
             } else {
+                if (this.value == '-2')
+                    $('#id_foss_license_url').val('');
                 $('#new_license').hide();
                 $('#existing_license').show();
                 update_license_url(this.value, $('#old_license_id').text(),

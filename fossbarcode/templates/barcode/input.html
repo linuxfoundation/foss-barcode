@@ -271,6 +271,8 @@
                 $('#license_url').val('');
                 $('#bom_new_license').show();
             } else {
+                if (this.value == '-2')
+                    $('#id_foss_license_url').val('');
                 $('#bom_new_license').hide();
                 update_license_url(this.value, $('#old_license_id').text(),
                                    'id_foss_license_url');
@@ -289,6 +291,8 @@
                 $('#existing_license_m').hide();
                 $('#new_license_m').show();
             } else {
+                if (this.value == '-2')
+                    $('#id_m_foss_license_url').val('');
                 $('#new_license_m').hide();
                 $('#existing_license_m').show();
                 update_license_url(this.value, $('#old_m_license_id').text(),
