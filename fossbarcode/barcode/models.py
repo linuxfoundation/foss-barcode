@@ -513,6 +513,7 @@ class RecordForm(ModelForm):
         self.fields["foss_license"].choices = \
             [(x.id, str(x))
              for x in License.objects.all().order_by('license', 'version')]
+        self.fields["foss_license"].choices.append((-2, 'Invalid'))    
         self.fields["release_date"].required = False
 
     foss_component = forms.CharField(label="Software Component Name", max_length=200, required=False)
