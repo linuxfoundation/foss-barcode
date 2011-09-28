@@ -455,13 +455,16 @@
         }
     }
     function add_bom_row(id, mode){
-        var filled = true;
+        var validated = true;
         for(var f in bom_fields){
             if ((bom_fields[f]) == "" && (f != sfield))
-                filled = false;
-        } 
-        // refuse to add unless all required fields are filled       
-        if ((mode == "add") && (filled == false)) {       
+                validated = false;
+        }
+        if (document.getElementById("id_foss_license").value < 0) {
+            validated = false;
+        }
+        // refuse to add unless all required fields are validated       
+        if ((mode == "add") && (validated == false)) {       
             alert("Please fill all required component fields.");
             return;
         }
@@ -616,14 +619,17 @@
     }
 
     function line_validate_change() {
-        var filled = true;
+        var validated = true;
         for(var f in bom_fields){
             var src = "id_m_" + f;
             if (document.getElementById(src).value == "" && f != "foss_spdx" && f != "foss_patches")
-                filled = false;
+                validated = false;
         }
-        // refuse to submit unless all required fields are filled       
-        if (filled == false) {      
+        if (document.getElementById("id_m_foss_license").value < 0) {
+            validated = false;
+        }
+        // refuse to submit unless all required fields are validated       
+        if (validated == false) {      
             alert("Please fill all required component fields, including the commit message");
         } else {
             // plug the values back into the table row and the hidden field

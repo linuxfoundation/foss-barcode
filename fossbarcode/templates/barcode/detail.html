@@ -336,6 +336,8 @@
         }
         if (document.getElementById('id_item_commit_message').value == "")
             filled = false;
+        if (document.getElementById('id_foss_license').value < 0)
+            filled = false;
         // refuse to submit unless all required fields are filled       
         if (filled == false) {      
             alert("Please fill all required component fields, including the commit message");
