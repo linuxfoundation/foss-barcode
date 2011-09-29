@@ -235,7 +235,7 @@ class Product_Record(models.Model, FileDataDirMixin):
     website = models.CharField('Company Website', max_length=200)
     record_date = models.DateTimeField('Last Updated', auto_now=True)
     contact = models.CharField('Compliance Contact Name', max_length=200, blank=True)
-    email = models.CharField('Compliance Contact Email', max_length=200)
+    email = models.EmailField('Compliance Contact Email', max_length=200)
     spdx_file = models.CharField('SPDX<sup>TM</sup> File', max_length=200, blank=True)
     release_date = models.DateField('Release Date', null=True)
 
@@ -465,7 +465,8 @@ class License(models.Model):
     longname = models.CharField('License Long Name', max_length=200)
     license = models.CharField('License Name', max_length=200)
     version = models.CharField('Version', max_length=20, blank=True)
-    default_url = models.CharField('Default URL', max_length=200)
+    default_url = models.URLField('Default URL', max_length=200,
+                                  verify_exists=False)
     def __unicode__(self):
         if self.version:
             retval = self.license + u' ' + self.version
@@ -495,9 +496,9 @@ class System_Settings(models.Model):
 
 class Component_Cache(models.Model):
     component = models.CharField(max_length=200, db_index=True, unique=True)
-    url = models.CharField(max_length=256)
+    url = models.URLField(max_length=256, verify_exists=False)
     license_id = models.IntegerField()
-    license_url = models.CharField(max_length=256)
+    license_url = models.URLField(max_length=256, verify_exists=False)
     copyright = models.CharField(max_length=200, blank=True)
     attribution = models.CharField(max_length=200, blank=True)
 
@@ -521,8 +522,8 @@ class RecordForm(ModelForm):
     foss_copyright = forms.CharField(label="Copyright Information", max_length=100, required=False)
     foss_attribution = forms.CharField(label="Attribution Notices", max_length=100, required=False)
     foss_license = forms.ChoiceField(label="License Name and Version", required=False, choices=[])
-    foss_license_url = forms.CharField(label="License URL", max_length=200, required=False)
-    foss_url = forms.CharField(label="Mint Version Download URL", max_length=200, required=False)
+    foss_license_url = forms.URLField(label="License URL", max_length=200, required=False, verify_exists=False)
+    foss_url = forms.URLField(label="Mint Version Download URL", max_length=200, required=False, verify_exists=False)
     foss_spdx = forms.CharField(label="SPDX<sup>TM</sup> File", max_length=100, required=False)
     foss_patches = forms.CharField(label="Patch Files", max_length=200, required=False, widget=forms.Textarea(attrs={'cols': 20, 'rows': 4}))
 
