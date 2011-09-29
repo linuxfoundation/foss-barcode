@@ -453,10 +453,10 @@ via <i>brecord_id</i>.</li>
 <ol>
   <li>Edit <tt>"host_site"</tt> in the System Configuration tab. The url should be of the nature <tt>"http://hostname/barcode/checksum/"</tt>. You can simulate a public-facing layout in your local install by using <tt>"http://localhost:8000/barcode/checksum/"</tt>. Users that follow the checksum url from the MECARD data will be directed to this page, with the checksum appended, which will redirect to the correct record_id.</li>
   <li>Edit <tt>"public_logo"</tt> in the System Configuration tab. This should be a 190x60 pixel logo file. Place the file in the media/images directory. This file will replace the banner image when the site is in public-facing mode.</li>
-  <li>Edit <tt>"public_facing"</tt> in site_settings.py, setting the value to <tt>"True"</tt>. Once this is set, the installation will be in public-facing mode. To turn it back off, change the value to <tt>"False"</tt>(This is in a file rather than the database, as System Configuration is no longer available once you're in public-facing mode).</li>
+  <li>Edit <tt>"public_facing"</tt> in site_settings.py, setting the value to <tt>"True"</tt>. Once this is set, the installation will be in public-facing mode. To turn it back off, change the value to <tt>"False"</tt>(This is in a file rather than the database, as System Configuration is no longer available once you're in public-facing mode), plus we need to sync the database between the 2 systems and keep this setting independent.</li>
 </ol>
 
-<p>The live public site would then need to sync the database, as well as everything under media/user_data. This could be enabled via a cron job or such.</p>
+<p>The live public site would then need to sync the database, as well as everything under media/user_data. This could be enabled via rsync over ssh in a cron job or such.</p>
 
 </div>
 

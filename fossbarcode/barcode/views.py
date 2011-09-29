@@ -854,9 +854,10 @@ def render_detail(id, revision=None):
 
 # get a system configuration value
 def get_config_value(cname):
+    from re import escape
     settings_list = System_Settings.objects.filter(name = cname)
     if settings_list:
-        return settings_list[0].value
+        return escape(settings_list[0].value)
     else:
         return False
 

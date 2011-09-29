@@ -112,15 +112,6 @@
 {% endblock %}
 {% block scripts %}
 <script language="JavaScript">
-    $(function() {
-        $( "#id_release_date" ).datepicker({
-            dateFormat: 'yy-mm-dd',
-            autoSize: true,
-            showOn: "button",
-            buttonImage: "/site_media/images/calendar.gif",
-            buttonImageOnly: true
-        });
-    });
     // no manual entry for spdx_files
     document.getElementById('id_spdx_file').setAttribute('readonly', 'true');
     // in the input form we have to play games with top-level spdx vs line-item, here the backend handles the change

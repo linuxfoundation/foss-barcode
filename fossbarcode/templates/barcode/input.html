@@ -16,6 +16,7 @@
   <script type="text/javascript" src="/site_media/js/visibility.js"></script>
   <script type="text/javascript" src="/site_media/js/checklist.js"></script>
   <script type="text/javascript" src="/site_media/js/record-check.js"></script>
+  <script type="text/javascript" src="/site_media/js/date-picker.js"></script>
   <script type="text/javascript" src="/site_media/js/component-select.js"></script>
   <script type="text/javascript" src="/site_media/js/licenses.js"></script>
 </head>
@@ -246,16 +247,6 @@
 
 {% block scripts %}
 <script language="JavaScript">
-    // datepicker for the release date
-    $(function() {
-        $( "#id_release_date" ).datepicker({
-            dateFormat: 'yy-mm-dd',
-            autoSize: true,
-            showOn: "button",
-            buttonImage: "/site_media/images/calendar.gif",
-            buttonImageOnly: true
-        });
-    });
     // this gets used by component-select.js
     {% if cached_components %}
     var ccache = {% autoescape off %}{{ cached_components }}{% endautoescape %};
