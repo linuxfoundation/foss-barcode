@@ -598,12 +598,12 @@ def input(request):
         for (urllist_validate, urldesc) in [(foss_license_urls, "License URL"),
                                             (foss_urls, "Download URL")]:
             urls_validate = urllist_validate.split(",")
-            for url_validate in urls_validate:
+            for i in range(0, len(urls_validate)-1):
                 try:
-                    validator.clean(url_validate)
+                    validator.clean(urls_validate[i])
                 except ValidationError:
                     component_error += "%s '%s' is invalid<br>" \
-                        % (urldesc, url_validate)
+                        % (urldesc, urls_validate[i])
 
         # back to "normal" processing
         if recordform.is_valid() and component_error == '': # All validation rules pass
