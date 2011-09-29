@@ -7,6 +7,7 @@ from django.http import Http404
 from django.conf import settings
 from django.utils import simplejson as json
 from django.utils.translation import ugettext as _
+from django.forms import URLField, ValidationError
 
 from fossbarcode import task
 from site_settings import public_facing
@@ -591,6 +592,18 @@ def input(request):
             components = foss_components.split(",")
             for i in range(0, len(components)-1):
                 foss_patches += request.POST.get('foss_patches' + str(i), '') + ","
+
+        # also validate URLs
+        validator = URLField()
+        for (urllist_validate, urldesc) in [(foss_license_urls, "License URL"),
+                                            (foss_urls, "Download URL")]:
+            urls_validate = urllist_validate.split(",")
+            for url_validate in urls_validate:
+                try:
+                    validator.clean(url_validate)
+                except ValidationError:
+                    component_error += "%s '%s' is invalid<br>" \
+                        % (urldesc, url_validate)
 
         # back to "normal" processing
         if recordform.is_valid() and component_error == '': # All validation rules pass
