@@ -153,8 +153,10 @@
       </td>
       <td id="foss_component{{ forloop.counter }}">{{ row.component }}</td>
       <td id="foss_version{{ forloop.counter }}">{{ row.version }}</td>
+      {% autoescape off %}
       <td id="foss_copyright{{ forloop.counter }}">{{ row.copyright }}</td>
       <td id="foss_attribution{{ forloop.counter }}">{{ row.attribution }}</td>
+      {% endautoescape %}
       <td id="foss_license{{ forloop.counter }}"><a href="{{ row.license_url }}" target="_blank">{{ row.license }}</a></td>
       <td id="foss_url{{ forloop.counter }}"><a href="{{ row.url }}" target="_blank">{{ row.url }}</a></td>
       {% autoescape off %}

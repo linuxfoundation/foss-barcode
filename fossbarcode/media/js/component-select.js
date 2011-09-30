@@ -40,6 +40,12 @@ function component_disabled(mode) {
             } else {
                 document.getElementById(id).disabled = mode;
             }
+        } else if (f == "foss_copyright" || f == "foss_attribution") {
+            if (document.getElementById(id).value != '') {
+                document.getElementById(id).disabled = mode;
+                var select_id = f + "_select";
+                document.getElementById(select_id).disabled = mode;
+            }
         } else if (f != "foss_version" && f != "foss_spdx" && f != "foss_patches") {
             document.getElementById(id).disabled = mode;
         }

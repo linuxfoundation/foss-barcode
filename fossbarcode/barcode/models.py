@@ -225,7 +225,7 @@ class Product_Record(models.Model, FileDataDirMixin):
     class Meta:
         verbose_name = "product record"
 
-    _subdirs = ["spdx_files", "patches"]
+    _subdirs = ["spdx_files", "patches", "copyrights", "attributions"]
 
     company = models.CharField('Company Name', max_length=200)
     product = models.CharField('Product Name', max_length=200)
@@ -406,7 +406,9 @@ class FOSS_Components(models.Model, FileDataMixin):
         "package": (str, ""),
         "version": (str, ""),
         "copyright": (str, ""),
+        "copyright_file": (int, 0),
         "attribution": (str, ""),
+        "attribution_file": (int, 0),
         "license_id": (int, -1),
         "license_url": (str, ""),
         "url": (str, ""),

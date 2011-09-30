@@ -142,6 +142,7 @@
     <col width=120>
     <col width=30>
     <col width=145>
+    <col width=30>
     <col width=120>
   <tr>
     <td colspan="2"></td>
@@ -155,23 +156,33 @@
         <b>SPDX<sup>TM</sup>File{{ recordform.optional_flag }}</b> 
         <input type="button" name="spdxfilename" value="Select" id="foss_spdx_select"
                              title="Open a File/Directory Selector"
-                             onclick="toggle_visibility('target_select');set_destination('foss_spdx');toggle_enabled('patchfilename');"/>
+                             onclick="toggle_visibility('target_select');set_destination('foss_spdx', 'target_select');toggle_enabled('patchfilename');"/>
     </td>
     <th>Patch Files{{ recordform.optional_flag }}</th>  
-    <td></td>
+    <td colspan="2"></td>
   </tr>
   <tr>
     <td colspan="2"></td>
     <td colspan="7">{% autoescape off %}{{ component_select }}{% endautoescape %}</td>
-    <td colspan="4"></td>
+    <td colspan="5"></td>
   </tr>
   <tr>
     <!-- needed to control the width here, so hand tweaked size in css -->
     <td colspan="2"></td>
     <td>{{ recordform.foss_component }}</td>
     <td>{{ recordform.foss_version }}</td>
-    <td>{{ recordform.foss_copyright }}</td>
-    <td>{{ recordform.foss_attribution }}</td>
+    <td>
+        {{ recordform.foss_copyright }}<br />
+        <input type="button" name="copyrightfilename" value="or Select File" id="foss_copyright_select"
+               title="Open a File/Directory Selector"
+               onclick="toggle_visibility('target_select');set_destination('foss_copyright', 'target_select')"/>
+    </td>
+    <td>
+        {{ recordform.foss_attribution }}<br />
+        <input type="button" name="attributionfilename" value="or Select File" id="foss_attribution_select"
+               title="Open a File/Directory Selector"
+               onclick="toggle_visibility('target_select');set_destination('foss_attribution', 'target_select')"/>
+    </td>
     <td colspan="2">
       {{ recordform.foss_license }}<br>
       {{ recordform.foss_license_url }}
@@ -182,7 +193,7 @@
         <a href="#" id="clear_foss_spdx"><img src="/site_media/images/edit-delete.png" 
                     title="Clear SPDX" onclick="clear_spdx('id_foss_spdx', 'top_spdx_select');"></a>
     </td>
-    <td align="center" colspan="2"><input type="button" name="addfoss" 
+    <td align="center" colspan="3"><input type="button" name="addfoss" 
                                         value="Add Component" 
                                         onclick="get_bom_values();add_bom_row('foss_list', 'add')"/>
     </td>
@@ -208,7 +219,7 @@
                     onclick="toggleall(this.form,'bomcheck','selectall')" />
     </td>
     <td colspan="9"></td>
-    <td align="center" colspan="2"><input type="button" name="delete_rows" value="Delete Selected Components"
+    <td align="center" colspan="3"><input type="button" name="delete_rows" value="Delete Selected Components"
                 onclick="delete_bom_components('foss_list')" />
     </td>
   </tr> <!-- editor -->
@@ -344,9 +355,9 @@
                     p.value = fossp[i];                
             }
         } else {
-            hide_element("foss_list");
-            hide_element("bom_editor");
-            hide_element("submit_buttons");
+            //hide_element("foss_list");
+            //hide_element("bom_editor");
+            //hide_element("submit_buttons");
         }
         // disable manual input for the spdx_file field
         document.getElementById("id_spdx_file").setAttribute("readonly", "true");
@@ -554,17 +565,31 @@
         td9.appendChild(ch9);   
         row.appendChild(td9);
 
-        // buttons for file selectors
+        // buttons for file selectors and to clear the field
         var td10 = document.createElement("TD");
         td10.setAttribute("align", "center");
-        var ch10 = document.createElement("input");
-        ch10.setAttribute("type", "button");
-        ch10.setAttribute("value", "Select\nPatch(es)");
-        ch10.setAttribute("onclick", "toggle_visibility('target_select');toggle_enabled('spdxfilename');set_destination('" + patch_tag + "')");
-        ch10.setAttribute("name","patchfilename");
-        ch10.setAttribute("title", "Open a File/Directory Selector");
+        var ch10 = document.createElement("a");
+        ch10.setAttribute("href", "#");
+        ch10.setAttribute("class", "basic");
+        ch10.setAttribute("name", "patch_clear" + cvalue);
+        ch10.setAttribute("onclick", onclick="clear_field('id_foss_patches" + cvalue + "')");
+        var tdi = document.createElement("img");
+        tdi.setAttribute("src", "/site_media/images/edit-delete.png");
+        tdi.setAttribute("title", "Clear Patches");
+        ch10.appendChild(tdi);
         td10.appendChild(ch10);
         row.appendChild(td10);
+
+        var td11 = document.createElement("TD");
+        td11.setAttribute("align", "center");
+        var ch11 = document.createElement("input");
+        ch11.setAttribute("type", "button");
+        ch11.setAttribute("value", "Select\nPatch(es)");
+        ch11.setAttribute("onclick", "toggle_visibility('target_select');toggle_enabled('spdxfilename');set_destination('" + patch_tag + "', 'target_select')");
+        ch11.setAttribute("name","patchfilename");
+        ch11.setAttribute("title", "Open a File/Directory Selector");
+        td11.appendChild(ch11);
+        row.appendChild(td11);
         
         tbody.appendChild(row);
 
