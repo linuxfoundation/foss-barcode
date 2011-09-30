@@ -857,7 +857,10 @@ def get_config_value(cname):
     from re import escape
     settings_list = System_Settings.objects.filter(name = cname)
     if settings_list:
-        return escape(settings_list[0].value)
+        if cname != 'display_code_type':
+            return escape(settings_list[0].value)
+        else:
+            return settings_list[0].value
     else:
         return False
 
@@ -951,9 +954,18 @@ def cache_get_components():
     widget += '<option value="">Select...</option>'
     widget += '<option value="manual_entry">New...</option>'
     indexer = 0
+    max_display = 24
+    suffix = '...'
     for c in component_list:
         cl = License.objects.get(id = c.license_id)
-        widget += '<option value="' + str(indexer) + '">' + c.component + ': ' + c.url + ' | ' + cl.license + ' ' + cl.version + ': ' + c.license_url + '</option>'
+        # really long urls tend to mess up the model edit dialogs, truncate them
+        display_url = c.url
+        display_license_url = c.license_url
+        if len(display_url) > max_display:
+            display_url = display_url[:max_display] + suffix
+        if len(display_license_url) > max_display:
+            display_license_url = display_license_url[:max_display] + suffix
+        widget += '<option value="' + str(indexer) + '">' + c.component + ': ' + display_url + ' | ' + cl.license + ' ' + cl.version + ': ' + display_license_url + '</option>'
         indexer += 1
     widget += '</select>'
 
