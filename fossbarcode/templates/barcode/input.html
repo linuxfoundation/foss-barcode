@@ -323,7 +323,11 @@
                        "foss_url": "", 
                        "foss_spdx": "" };
 
+    // this is used by add_bom_row to set license names
+    var license_ids = new Array();
+
     function setdefaults() {
+        license_ids = new Array();
         // if the user submitted with missing data, we lose the FOSS table content, repopulate
         if (document.getElementById("foss_components").value != "") {
             var fossc = document.getElementById("foss_components").value.split(",");
@@ -438,6 +442,7 @@
         var trows = t.getElementsByTagName('tr');
         var rowcount = trows.length;
         var chk = document.getElementsByName("bomcheck");
+        license_ids = new Array();
         // list index is 0, actual table row is +5 currently (header, component select, input fields, 
         // possibly hidden new license fields, select all/delete)     
         if (typeof chk != 'undefined') {
@@ -521,8 +526,18 @@
                 td.setAttribute("colspan", "2");
             var content = bom_fields[f];
             if (f == "foss_license") {
-                var license_select = document.getElementById("id_foss_license");
-                content = license_select.options[license_select.selectedIndex].text;
+                content = "Loading...";
+                var license_id = Number(bom_fields[f]);
+                if (license_ids[license_id] == undefined) {
+                    license_ids[license_id] = new Array();
+                }
+                license_ids[license_id].push(cvalue);
+                get_license_info(bom_fields[f], function(data) {
+                    for (var l in license_ids[data[0]]) {
+                        var license_element_id = "foss_license" + license_ids[data[0]][l];
+                        document.getElementById(license_element_id).innerHTML = data[1] + " " + data[2];
+                    }
+                });
             }
             td.appendChild(document.createTextNode(content));
             row.appendChild(td);
