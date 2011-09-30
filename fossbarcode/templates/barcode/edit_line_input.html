@@ -25,7 +25,11 @@
       </tr>
       <tr>
         <td><b>{{ itemform.foss_copyright.label }}:</b></td>
-        <td></td>
+        <td>
+          <input type="button" name="copyrightfilename" value="or Select File" id="foss_copyright_select"
+                 title="Open a File/Directory Selector"
+                 onclick="toggle_visibility('target_select_modal');set_destination('foss_copyright_m', 'target_select_modal')"/>
+        </td>
         <td>{{ itemform.foss_copyright }}</td>
       </tr>
       <tr>
@@ -33,7 +37,11 @@
       </tr>
       <tr>
         <td><b>{{ itemform.foss_attribution.label }}:</b></td>
-        <td></td>
+        <td>
+          <input type="button" name="attributionfilename" value="or Select File" id="foss_attribution_select"
+                 title="Open a File/Directory Selector"
+                 onclick="toggle_visibility('target_select_modal');set_destination('foss_attribution_m', 'target_select_modal')"/>
+        </td>
         <td>{{ itemform.foss_attribution }}</td>
       </tr>
       <tr>
@@ -82,7 +90,7 @@
         <td>
           <input type="button" name="select_spdx" value="Select" 
                  title="Open a File/Directory Selector" 
-                 onclick="toggle_visibility('target_select_modal');set_destination('foss_spdx_m');toggle_enabled('select_patch');">
+                 onclick="toggle_visibility('target_select_modal');set_destination('foss_spdx_m', 'target_select_modal');toggle_enabled('select_patch');">
           <a href="#" id="clear spdx"><img src="/site_media/images/edit-delete.png" 
                       title="Clear SPDX" onclick="clear_field('id_m_foss_spdx')";></a>
         </td>
@@ -93,7 +101,7 @@
         <td valign="top">
           <input type="button" name="select_patch" value="Select"
                                 title="Open a File/Directory Selector" 
-                                onclick="toggle_visibility('target_select_modal');set_destination('foss_patches_m');toggle_enabled('select_spdx');">
+                                onclick="toggle_visibility('target_select_modal');set_destination('foss_patches_m', 'target_select_modal');toggle_enabled('select_spdx');">
           <a href="#" id="clear patches"><img src="/site_media/images/edit-delete.png" 
                       title="Clear Patches" onclick="clear_field('id_m_foss_patches');"></a>
         </td>
@@ -137,6 +145,8 @@
     // name clashes with the main form
     document.getElementById('id_m_foss_spdx').setAttribute('name', 'foss_spdx_m');
     document.getElementById('id_m_foss_patches').setAttribute('name', 'foss_patches_m');
+    document.getElementById('id_m_foss_copyright').setAttribute('name', 'foss_copyright_m');
+    document.getElementById('id_m_foss_attribution').setAttribute('name', 'foss_attribution_m');
 </script>
 {% endblock %}
 

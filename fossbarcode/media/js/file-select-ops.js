@@ -1,6 +1,7 @@
 // used by both the input tab, and the modal line_edit tabs
 
 var path_dest = "";
+var src_id = "";
 // used in several places to differentiate which field we're selecting files for
 var pfield = "foss_patches";
 var sfield = "foss_spdx";
@@ -29,8 +30,9 @@ function reload_filetree() {
             filenametoentry(file);
     });
 }
-function set_destination(dest) {
+function set_destination(dest, source_id) {
     path_dest = dest;
+    src_id = source_id;
 }
 function toggle_enabled(button) { 
     var e = document.getElementsByName(button)[0];
@@ -45,14 +47,18 @@ function filenametoentry(filename) {
     lastchar = filename.slice(-1);
     // only files, no dirs
     if (lastchar != '/') {
-        if ((path_dest == sfield) || (path_dest == "spdx_file")) {
+        if (path_dest.search("foss_patches") >= 0) {
+            document.getElementsByName(path_dest)[0].value += filename + "\n";
+        } else {
             // replace, don't append
             document.getElementsByName(path_dest)[0].value = filename;
-            // trigger onchange so we can enable/disable header/detail spdx stuff
-            document.getElementsByName(path_dest)[0].onchange();
-        } else {
-            document.getElementsByName(path_dest)[0].value += filename + "\n";
-        }
+            if ([sfield, 'spdx_file'].indexOf(path_dest) >= 0) {
+                // trigger onchange so we can enable/disable header/detail spdx stuff
+                document.getElementsByName(path_dest)[0].onchange();
+            }
+            // hide after select for the single file mode
+            hide_element(src_id);
+        }        
         if ((path_dest.indexOf(pfield) != -1) && (modal != true))
             update_patch_list(path_dest);
     }

@@ -25,14 +25,24 @@
         <td colspan="3">{{ itemform.foss_version.errors }}</td>
       </tr>
       <tr>
-        <td colspan="2"><b>{{ itemform.required_flag }}{{ itemform.foss_copyright.label }}:</b></td>
+        <td colspan><b>{{ itemform.required_flag }}{{ itemform.foss_copyright.label }}:</b></td>
+        <td>
+          <input type="button" name="copyrightfilename" value="or Select File" id="foss_copyright_select"
+                 title="Open a File/Directory Selector"
+                 onclick="toggle_visibility('target_select_modal');set_destination('foss_copyright', 'target_select_modal')"/>
+        </td>
         <td>{{ itemform.foss_copyright }}</td>
       </tr>
       <tr>
         <td colspan="3">{{ itemform.foss_copyright.errors }}</td>
       </tr>
       <tr>
-        <td colspan="2"><b>{{ itemform.required_flag }}{{ itemform.foss_attribution.label }}:</b></td>
+        <td><b>{{ itemform.required_flag }}{{ itemform.foss_attribution.label }}:</b></td>
+        <td>
+          <input type="button" name="attributionfilename" value="or Select File" id="foss_attribution_select"
+                 title="Open a File/Directory Selector"
+                 onclick="toggle_visibility('target_select_modal');set_destination('foss_attribution', 'target_select_modal')"/>
+        </td>
         <td>{{ itemform.foss_attribution }}</td>
       </tr>
       <tr>
@@ -84,7 +94,7 @@
         <td>
             <input type="button" name="select_spdx" value="Select" 
                    title="Open a File/Directory Selector" 
-                   onclick="toggle_visibility('target_select_modal');set_destination('foss_spdx');toggle_enabled('select_patch');">
+                   onclick="toggle_visibility('target_select_modal');set_destination('foss_spdx', 'target_select_modal');toggle_enabled('select_patch');">
             <a href="#" id="clear spdx"><img src="/site_media/images/edit-delete.png" 
                         title="Clear SPDX" onclick="clear_field('id_foss_spdx')";></a>
         </td>
@@ -94,7 +104,7 @@
         <td valign="top"><b>{{ itemform.optional_flag }}{{ itemform.foss_patches.label }}:</b></td>
         <td valign="top">
             <input type="button" name="select_patch" value="Select"title="Open a File/Directory Selector" 
-                   onclick="toggle_visibility('target_select_modal');set_destination('foss_patches');toggle_enabled('select_spdx');">
+                   onclick="toggle_visibility('target_select_modal');set_destination('foss_patches', 'target_select_modal');toggle_enabled('select_spdx');">
             <a href="#" id="clear patches"><img src="/site_media/images/edit-delete.png" 
                         title="Clear Patches" onclick="clear_field('id_foss_patches');"></a>
         </td>

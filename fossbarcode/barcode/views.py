@@ -294,7 +294,7 @@ def detail(request, record_id, revision=None):
 
                     fd.save()
                     foss_id = fd.id
-                    cache_add_component(new_component, new_url, new_license_id, 
+                    cache_update_component(new_component, new_url, new_license_id, 
                                         new_license_url, new_copyright, new_attribution)
                 else:
                     error_message += msg_strings['unknown_request'] + "<br>"
@@ -362,6 +362,8 @@ def detail(request, record_id, revision=None):
 
                 # save changes to component
                 if mode not in ["Delete Item"]:
+                    # copyright, attribution can be text or a file now
+                    error_message += set_copyright_attribution(pr, fd, new_copyright, new_attribution)
                     fd.save()
 
                 # QR+ code changes with any change (record_date, components)
@@ -615,8 +617,6 @@ def input(request):
             if not recorddata.setup_directory():
                 error_message += msg_strings['create_fail'] % data_dest + "<br>"
             
-            patch_dest = os.path.join(data_dest, "patches")
-
             # top-level spdx_file
             top_spdx = recorddata.spdx_file
             if top_spdx != '':
@@ -644,7 +644,10 @@ def input(request):
                                                    license_id = licenses[i], license_url = license_urls[i], 
                                                    url = urls[i], spdx_file = os.path.basename(spdxs[i]), patch_files = [])
 
-                        result = cache_add_component(foss, urls[i], licenses[i], license_urls[i], copyrights[i], attributions[i])
+                        result = cache_update_component(foss, urls[i], licenses[i], license_urls[i], copyrights[i], attributions[i])
+
+                        # copyright, attribution can be text or a file now
+                        error_message += set_copyright_attribution(recorddata, fossdata, copyrights[i], attributions[i])
 
                         # check for SPDX files and save in user_data
                         if spdxs[i] != '':
@@ -661,7 +664,7 @@ def input(request):
                                         recorddata.new_file_from_existing(patch, "patches")
                                         fossdata.patch_files.append(os.path.basename(patch))
                                     except:
-                                        error_message += msg_strings['copy_fail'] % (str(patch), patch_dest) + "<br>"
+                                        error_message += msg_strings['copy_fail'] % (str(patch), os.path.join(data_dest, "patches")) + "<br>"
 
                         # save information after everything's collected
                         fossdata.save()
@@ -834,8 +837,19 @@ def render_detail(id, revision=None):
         if revision:
             f.switch_revision(revision)
         fossid = f.id
+
+        if f.copyright_file != 0:
+            copyright = media_root + str(id) + "/copyrights/" + f.copyright + '">' + f.copyright + "</a>"
+        else:
+            copyright = f.copyright
+
+        if f.attribution_file != 0:
+            attribution = media_root + str(id) + "/attributions/" + f.attribution + '">' + f.attribution + "</a>"
+        else:
+            attribution = f.attribution
+
         if f.spdx_file != '':
-            spdx_file = media_root + str(id) + "/spdx_files/" + f.spdx_file + '">' + f.spdx_file + "</a><br>"
+            spdx_file = media_root + str(id) + "/spdx_files/" + f.spdx_file + '">' + f.spdx_file + "</a>"
         else:
             spdx_file = ''
 
@@ -847,7 +861,7 @@ def render_detail(id, revision=None):
             for p in f.patch_files:
                 patches += media_root + str(id) + "/patches/" + p + '">' + p + "</a><br>"
         foss.append({'id': f.id, 'component': f.package, 'version': f.version, 
-                     'copyright': f.copyright, 'attribution': f.attribution, 
+                     'copyright': copyright, 'attribution': attribution, 
                      'license': f.license, 'license_url': f.license_url, 
                      'url': f.url, 'spdx_file': spdx_file, 'patches': patches})
     return foss
@@ -913,12 +927,41 @@ def spdx_check_for_change(pr, old_spdx, new_spdx):
             errmsg += spdx_file_delete(pr, old_spdx)
 
     return errmsg
-    
+
+# decide if these are files or plain text and update Product_Record (pr) and Foss_Component (fc) accordingly
+def set_copyright_attribution(pr, fc, copyright, attribution):
+    errmsg = ''
+    data_dest = pr.file_path()
+    if copyright != '':
+        if os.path.exists(copyright):
+            try:
+                pr.new_file_from_existing(copyright, "copyrights")
+                fc.copyright = os.path.basename(copyright)
+                fc.copyright_file = True
+            except:
+                errmsg += msg_strings['copy_fail'] % (str(copyright), os.path.join(data_dest, "copyrights")) + "<br>" 
+        else:
+            fc.copyright_file = False
+                        
+    if attribution != '':
+        if os.path.exists(attribution):
+            try:
+                pr.new_file_from_existing(attribution, "attributions")
+                fc.attribution = os.path.basename(attribution)
+                fc.attribution_file = True
+            except:
+                errmsg += msg_strings['copy_fail'] % (str(attribution), os.path.join(data_dest, "attributions")) + "<br>"  
+        else:
+            fc.attribution_file = False
+
+    return errmsg
+   
 # add a record to the component cache for input select
 def cache_add_component(component, url, license, license_url, copyright, attribution):
     errmsg = ''
     if component != '':
         cc_list = Component_Cache.objects.filter(component = component)
+        copyright, attribution = empty_if_file(copyright, attribution)
         if len(cc_list) == 0:
             try:
                 cc = Component_Cache(component = component, url = url, license_id = license,
@@ -934,16 +977,25 @@ def cache_update_component(component, url, license, license_url, copyright, attr
     errmsg = ''
     if component != '':
         cc_list = Component_Cache.objects.filter(component = component)
+        copyright, attribution = empty_if_file(copyright, attribution)
         if len(cc_list) != 0:
             try:
                 Component_Cache.objects.filter(component = component).update(url = url, license_id = license, license_url = license_url, 
-                                                                            copyright = copyright, attribution = attribution)
+                                                                             copyright = copyright, attribution = attribution)
             except:
                 errmsg = msg_strings['cc_update_fail'] + "<br>"
         else:
            errmsg = cache_add_component(component, url, license, license_url, copyright, attribution)
 
     return errmsg
+
+# FIXME don't set copyright, attribution in the cache if they are files (may not exist later)
+def empty_if_file(c, a):
+    if os.path.exists(c):
+        c = ''
+    if os.path.exists(a):
+        a = ''
+    return c,a
 
 # retrieve the cached component list, both the raw list in json and a preformatted select widget
 def cache_get_components():
