@@ -698,6 +698,7 @@
         } else {
             var record = check_for_record();
             if (record == "None") {
+                header_disabled(true);
                 show_none("foss_list");
                 show_none("submit_buttons");
                 hide_element("dupe_search");
@@ -705,6 +706,15 @@
                 var answer = confirm("There appears to already be an entry with that company, product, version, release. Would you care to edit that entry instead?")
 	            if (answer)
 		            window.location = "/barcode/" + record + "/detail/";
+            }
+        }
+    }
+    function header_disabled(mode) {
+        for(var f in header_fields){
+            // leave these fields editable
+            if (["website", "contact", "email"].indexOf(f) == -1) {
+                var id = "id_" + f;
+                document.getElementById(id).disabled = mode;
             }
         }
     }

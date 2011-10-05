@@ -4,6 +4,17 @@ function select_to_component() {
     var cindex = document.getElementById("id_component_select").value;
     if (cindex == "manual_entry") {
         component_disabled(false);
+        for(var f in bom_fields) {
+            if (f != "foss_patches") {
+                var id = "id_" + f;
+                if (f != "foss_license") {
+                    document.getElementById(id).value = "";
+                } else {
+                    var options = document.getElementById(id).children;
+                    options.item(0).selected = "selected";
+                }
+            }
+        }
     } else if (cindex == "") {
         return 0;
     } else {
