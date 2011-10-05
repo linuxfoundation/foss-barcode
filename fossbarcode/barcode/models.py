@@ -173,6 +173,20 @@ class FileDataDirMixin:
 
         self._add_blob_from_file(dest_subpath)
 
+    def new_file_from_submit(self, file_data, subdir=None):
+        if subdir:
+            dest_path = os.path.join(self.file_path(), subdir)
+            dest_subpath = os.path.join(subdir, file_data.name)
+        else:
+            dest_path = self.file_path()
+            dest_subpath = file_data.name
+        dest = open(os.path.join(dest_path, file_data.name), 'w+')
+        for chunk in file_data.chunks():
+            dest.write(chunk)
+        dest.close()
+
+        self._add_blob_from_file(dest_subpath)
+
     def register_new_file(self, subpath):
         self._add_blob_from_file(subpath)
 
@@ -519,6 +533,7 @@ class RecordForm(ModelForm):
         self.fields["foss_license"].choices.append((-2, 'Invalid'))    
         self.fields["release_date"].required = False
 
+    spdx_input_file = forms.FileField(required=False)
     foss_component = forms.CharField(label="Software Component Name", max_length=200, required=False)
     foss_version = forms.CharField(label="Version", max_length=20, required=False)
     foss_copyright = forms.CharField(label="Copyright Information", max_length=100, required=False)

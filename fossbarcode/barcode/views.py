@@ -39,9 +39,11 @@ msg_strings = {
     'create_fail': _('Failed to create %s'),
     'delete_fail': _('Failed to delete: %s'),
     'delete_line_item': _('Delete line item for "%s"'),
-    'invalid_header': _('Invalid header update data, see header dialog...'),
+    'file_create_fail': _('Failed to create %s in %s'),
+    'invalid_header': _('Invalid header update data, see header dialog...'),   
     'invalid_line_item': _('Invalid line item update data, see item dialog...'),
     'no_data': _('No data for record %s'),
+    'no_input_data': _('No input data for %s'),
     'no_record': _('Record not found...'),
     'unknown_request': _('Unknown request made'),
     'unrelease_record': _('Unrelease record for edits'),
@@ -620,9 +622,13 @@ def input(request):
             # top-level spdx_file
             top_spdx = recorddata.spdx_file
             if top_spdx != '':
-                error_message += spdx_file_add(recorddata, top_spdx)
-                recorddata.spdx_file = os.path.basename(top_spdx)
-                recorddata.save()
+                input_field = 'spdx_input_file'
+                try:
+                    spdx = request.FILES[input_field]
+                    error_message += spdx_input_file_add(recorddata, spdx)
+
+                except:
+                    error_message += msg_strings['no_file_data'] % input_field + "<br>"
 
             # if we have foss components, store them also, and the patches
             if foss_components != '':
@@ -896,13 +902,24 @@ def foss_spdx_purge(recid, new_spdx):
 # add an spdx file to a record
 def spdx_file_add(pr, spdx_file):
     errmsg = ''
-    data_dest = pr.file_path()
-    spdx_dest = os.path.join(data_dest, "spdx_files")
+    spdx_dest = os.path.join(pr.file_path(), "spdx_files")
 
     try:
         pr.new_file_from_existing(spdx_file, "spdx_files")
     except:
         errmsg = msg_strings['copy_fail'] % (str(spdx_file), spdx_dest) + "<br>"
+
+    return errmsg
+
+# add an spdx file (from an UploadedFile object) to a record
+def spdx_input_file_add(pr, spdx):
+    errmsg = ''
+    spdx_dest = os.path.join(pr.file_path(), "spdx_files")
+
+    try:
+        pr.new_file_from_submit(spdx, "spdx_files")
+    except:
+        errmsg = msg_strings['file_create_fail'] % (spdx.name, spdx_dest) + "<br>"
 
     return errmsg
 

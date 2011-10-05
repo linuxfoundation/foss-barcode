@@ -7,6 +7,8 @@
   <style type="text/css" media="screen">@import "/site_media/css/jquery-ui-1.8.16.custom.css";</style>
   <!-- CSS file for modal dialog -->
   <style type="text/css" media="screen">@import "/site_media/css/barcode-modals.css";</style>
+  <!-- CSS file to customize file select layouts -->
+  <style type="text/css" media="screen">@import "/site_media/css/fakefile.css";</style>
   <script type="text/javascript" src="/site_media/js/jquery-1.4.2.min.js"></script>
   <script type="text/javascript" src="/site_media/js/jquery-ui-1.8.16.custom.min.js"></script>
   <script type='text/javascript' src='/site_media/js/jquery.simplemodal.1.4.1.min.js'></script>
@@ -92,14 +94,19 @@
   </tr>
   <tr align="left">
     <td align="right"><b>{{ recordform.optional_flag }}{% autoescape off %}{{ recordform.spdx_file.label }}{% endautoescape %}:</b></td>
-    <td>{{ recordform.spdx_file }}</td>
-    <td align="center">
+    <td colspan="2" valign="center">
+      <!-- crafted css to mask the file input field with a text field/button, use the same name/id as the django FileField -->
+      <div class="fileinputs">
+	    <input type="file" class="file" id="id_spdx_input_file" name="spdx_input_file" 
+               onchange="file_input_to_field('id_spdx_input_file', 'id_spdx_file');"/>
+	    <div class="fakefile">
+		  {{ recordform.spdx_file }}
+          <!-- this is just for looks, we really activate the invisible one above -->
+		  <input type="button" name="spdxfilename" value="Select"/>
+	    </div>
         <a href="#" id="clear_foss_spdx"><img src="/site_media/images/edit-delete.png" 
-                    title="Clear SPDX" onclick="clear_spdx('id_spdx_file', 'foss_spdx_select');"></a>
-        <input type="button" name="spdxfilename" value="Select" id="top_spdx_select"
-                             title="Open a File/Directory Selector"
-                             onclick="toggle_visibility('target_select');set_destination('spdx_file')"/>
-    </td>
+                    title="Clear SPDX" onClick="clear_spdx('id_spdx_file', 'foss_spdx_select');clear_value_by_id('id_spdx_input_file');"></a>
+      </div>
     <td></td>    
   </tr>
   <tr align="left">
@@ -732,17 +739,38 @@
                 // if we set the top-level one, clear all the line item entries
                 if (sid.search("foss") != -1) {
                     var rowcount = document.getElementById("foss_list").getElementsByTagName("TR").length;
-                    for (i = 0; i < rowcount - 3; i++) {
-                        cell_id = "foss_spdx" + i;
-                        document.getElementById(cell_id).innerHTML = ''
+                    // there aren't any if there's no checkboxes
+                    var chk = document.getElementsByName("bomcheck");
+                    if (typeof chk != 'undefined') {
+                        rowlimit = chk.length;
+                        for (i = 0; i < rowlimit; i++) {
+                            cell_id = "foss_spdx" + i;
+                            document.getElementById(cell_id).innerHTML = ''
+                        }
                     }
                 }
             }
         }
     }
+    function file_input_to_field(sid, did) {
+        document.getElementById(did).value = extractFilename(document.getElementById(sid).value);
+    }
+    function extractFilename(path) {  
+        var x;
+        x = path.lastIndexOf('\\');
+        if (x >= 0) // Windows-based path
+            return path.substr(x+1);
+        x = path.lastIndexOf('/');
+        if (x >= 0) // Unix-based path
+            return path.substr(x+1);
+        return path; // just the filename
+    }
     function clear_spdx(tid, sid) {
-        document.getElementById(tid).value = '';
+        clear_value_by_id(tid);
         spdx_change(tid, sid);
+    }
+    function clear_value_by_id(did) {
+        document.getElementById(did).value = '';
     }
     function clear_field(fname) {
         document.getElementById(fname).value = '';
