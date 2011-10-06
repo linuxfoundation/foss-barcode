@@ -321,6 +321,9 @@
             document.getElementById('item_edit_mode').innerHTML = "Edit";
             document.getElementById('submit_item').value = "Update Item";
             document.getElementById("id_component_select")[1].innerHTML = "Edit..."
+            // for an edit, supress the dropdown and make everything editable
+            hide_element('id_component_select');
+            component_disabled(false);
             // filetree isn't working on a second display of the form, force it to reload here
             reload_filetree();
         } else {
@@ -334,6 +337,7 @@
             document.getElementById('item_edit_mode').innerHTML = "Add";
             document.getElementById('submit_item').value = "Add Item";
             document.getElementById("id_component_select")[1].innerHTML = "New..."
+            show_block('id_component_select');
         }
     }
 
