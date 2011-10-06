@@ -107,6 +107,7 @@
         <a href="#" id="clear_foss_spdx"><img src="/site_media/images/edit-delete.png" 
                     title="Clear SPDX" onClick="clear_spdx('id_spdx_file', 'foss_spdx_select');clear_value_by_id('id_spdx_input_file');"></a>
       </div>
+    </td>
     <td></td>    
   </tr>
   <tr align="left">
@@ -752,28 +753,9 @@
             }
         }
     }
-    function file_input_to_field(sid, did) {
-        document.getElementById(did).value = extractFilename(document.getElementById(sid).value);
-    }
-    function extractFilename(path) {  
-        var x;
-        x = path.lastIndexOf('\\');
-        if (x >= 0) // Windows-based path
-            return path.substr(x+1);
-        x = path.lastIndexOf('/');
-        if (x >= 0) // Unix-based path
-            return path.substr(x+1);
-        return path; // just the filename
-    }
     function clear_spdx(tid, sid) {
         clear_value_by_id(tid);
         spdx_change(tid, sid);
-    }
-    function clear_value_by_id(did) {
-        document.getElementById(did).value = '';
-    }
-    function clear_field(fname) {
-        document.getElementById(fname).value = '';
     }
 
     function new_license() {

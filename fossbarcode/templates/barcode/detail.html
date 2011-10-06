@@ -3,6 +3,8 @@
   <style type="text/css">@import "/site_media/css/containers.css";</style>
   <!-- CSS file for modal dialog -->
   <style type="text/css" media="screen">@import "/site_media/css/barcode-modals.css";</style>
+  <!-- CSS file to customize file select layouts -->
+  <style type="text/css" media="screen">@import "/site_media/css/fakefile.css";</style>
   <!-- CSS file for the datepicker -->
   <style type="text/css" media="screen">@import "/site_media/css/jquery-ui-1.8.16.custom.css";</style>
   <!-- used for modal dialog -->
@@ -380,9 +382,6 @@
         document.getElementById('id_header_commit_message').value = commit_txt;
         document.getElementById('submit_header').value = submit_txt;
         reload_filetree();
-    }
-    function clear_field(fname) {
-        document.getElementById(fname).value = '';
     }
 
     function new_license() {

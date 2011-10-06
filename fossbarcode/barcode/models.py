@@ -180,7 +180,7 @@ class FileDataDirMixin:
         else:
             dest_path = self.file_path()
             dest_subpath = file_data.name
-        dest = open(os.path.join(dest_path, file_data.name), 'w+')
+        dest = open(os.path.join(dest_path, file_data.name), 'wb+')
         for chunk in file_data.chunks():
             dest.write(chunk)
         dest.close()

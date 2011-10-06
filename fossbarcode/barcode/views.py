@@ -43,7 +43,7 @@ msg_strings = {
     'invalid_header': _('Invalid header update data, see header dialog...'),   
     'invalid_line_item': _('Invalid line item update data, see item dialog...'),
     'no_data': _('No data for record %s'),
-    'no_input_data': _('No input data for %s'),
+    'no_file_data': _('No input file data for %s'),
     'no_record': _('Record not found...'),
     'unknown_request': _('Unknown request made'),
     'unrelease_record': _('Unrelease record for edits'),
@@ -181,11 +181,22 @@ def detail(request, record_id, revision=None):
         headerform = HeaderForm(request.POST) # A form bound to the POST data
         itemform = ItemForm(request.POST) # A form bound to the POST data
 
-        if (mode == "Clone Record"):
+        if (mode == "Clone Record" or mode == "Update Header"):
             if headerform.is_valid(): # All validation rules pass            
                 pr = Product_Record.objects.get(id = record_id)
-                old_spdx = pr.spdx_file
+                old_spdx = pr.spdx_file         
                 new_spdx = request.POST.get('spdx_file', '')
+                spdx = ''
+                if new_spdx != '' and old_spdx != new_spdx:
+                    input_field = 'spdx_input_file'
+                    try:
+                        spdx = request.FILES[input_field]
+
+                    except:
+                        error_message += msg_strings['no_file_data'] % input_field + "<br>"
+            
+        if (mode == "Clone Record"):
+            if headerform.is_valid(): # All validation rules pass            
                 try:
                     newpr = pr.clone( company = request.POST.get('company', ''),
                                       product = request.POST.get('product', ''), 
@@ -194,7 +205,7 @@ def detail(request, record_id, revision=None):
                                       website = request.POST.get('website', ''),
                                       contact = request.POST.get('contact', ''),
                                       email = request.POST.get('email', ''),
-                                      spdx_file = os.path.basename(new_spdx) )
+                                      spdx_file = new_spdx )
 
                     record_id = str(newpr.id)
                 except:
@@ -202,19 +213,15 @@ def detail(request, record_id, revision=None):
 
                 # top-level spdx_file
                 # save and/or delete SPDX file if there's a change
-                if old_spdx != os.path.basename(new_spdx):
-                    if new_spdx != '':
-                        error_message += spdx_file_add(newpr, new_spdx)
+                if old_spdx != new_spdx:
+                    if new_spdx != '' and spdx != '':
+                        error_message += spdx_input_file_add(newpr, spdx)
 
                     if old_spdx != '':
                         error_message += spdx_file_delete(newpr, old_spdx)
 
         if (mode == "Update Header"):
             if headerform.is_valid(): # All validation rules pass
-                # need this old value
-                pr = Product_Record.objects.get(id = record_id)
-                old_spdx = pr.spdx_file
-                new_spdx = request.POST.get('spdx_file', '')
                 # this can be NULL
                 new_release_date = request.POST.get('release_date', '')
                 if new_release_date == '':
@@ -228,7 +235,7 @@ def detail(request, record_id, revision=None):
                                                                  contact = request.POST.get('contact', ''),
                                                                  email = request.POST.get('email', ''),
                                                                  release_date = new_release_date,
-                                                                 spdx_file = os.path.basename(new_spdx),
+                                                                 spdx_file = new_spdx,
                                                                  record_date = str(datetime.datetime.now()))
 
                 # compute the new checksum, compare with the old and update if needed
@@ -241,7 +248,7 @@ def detail(request, record_id, revision=None):
 
                 # top-level spdx_file
                 # save and/or delete SPDX file if there's a change
-                error_message += spdx_check_for_change(pr, old_spdx, new_spdx)
+                error_message += spdx_check_for_change2(pr, old_spdx, new_spdx, spdx)
 
                 # if we have an spdx file and didn't before, we need to purge the component entries
                 if new_spdx != '' and old_spdx == '':
@@ -940,6 +947,18 @@ def spdx_check_for_change(pr, old_spdx, new_spdx):
     if old_spdx != os.path.basename(new_spdx):
         if new_spdx != '':
             errmsg += spdx_file_add(pr, new_spdx)
+        if old_spdx != '':
+            errmsg += spdx_file_delete(pr, old_spdx)
+
+    return errmsg
+
+# FIXME - this will replace routine above once all the spdx file input changes flow through
+# check if the spdx file has changed on an edit
+def spdx_check_for_change2(pr, old_spdx, new_spdx, spdx):  
+    errmsg = ''
+    if old_spdx != new_spdx:
+        if new_spdx != '' and spdx != '':
+            errmsg += spdx_input_file_add(pr, spdx)
         if old_spdx != '':
             errmsg += spdx_file_delete(pr, old_spdx)
 

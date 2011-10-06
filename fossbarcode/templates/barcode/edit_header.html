@@ -76,23 +76,25 @@
       </tr>
       <tr>
         <td><b>{{ headerform.optional_flag }}{% autoescape off %}{{ headerform.spdx_file.label }}{% endautoescape %}:</b></td>
-        <td align="center">
-          <input type="button" name="spdxfilename" value="Select" id="top_spdx_select"
-                             title="Open a File/Directory Selector"
-                             onclick="toggle_visibility('target_select_modalh');set_destination('spdx_file', 'target_select_modalh')"/>
-          <a href="#" id="clear_foss_spdx"><img src="/site_media/images/edit-delete.png" 
-                      title="Clear SPDX" onclick="clear_field('id_spdx_file');"></a>
+        <td colspan="2" valign="center">
+          <!-- crafted css to mask the file input field with a text field/button, use the same name/id as the django FileField -->
+          <div class="fileinputs">
+	        <input type="file" class="file" id="id_spdx_input_file" name="spdx_input_file" 
+                   onchange="file_input_to_field('id_spdx_input_file', 'id_spdx_file');"/>
+	        <div class="fakefile">
+		      <input type="input" id="id_spdx_file" name="spdx_file" value="{{ record.spdx_file }}">
+              <!-- this is just for looks, we really activate the invisible one above -->
+		      <input type="button" name="spdxfilename" value="Select"/>
+	        </div>
+            <a href="#" id="clear_foss_spdx"><img src="/site_media/images/edit-delete.png" 
+                        title="Clear SPDX" onClick="clear_field('id_spdx_file');clear_value_by_id('id_spdx_input_file');"></a>
+          </div>
         </td>
-        <td><input type="input" id="id_spdx_file" name="spdx_file" value="{{ record.spdx_file }}"></td>    
       </tr>
       <tr>
         <td colspan="2"><b>{{ headerform.required_flag }}{% autoescape off %}{{ headerform.header_commit_message.label }}{% endautoescape %}:</b></td>
       </tr>
     </table>
-    </div>
-    <!-- jQuery File Tree browser -->
-    <div class="containerm" id="target_select_modalh" style="display: none;"> 
-	    <div id="targeth" class="browser"></div> 
     </div>
     <div>
         {{ headerform.header_commit_message.errors }}

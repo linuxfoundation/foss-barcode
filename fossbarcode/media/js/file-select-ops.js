@@ -1,4 +1,4 @@
-// used by both the input tab, and the modal line_edit tabs
+// used by both the input tab, and the modal line/header edit tabs
 
 var path_dest = "";
 var src_id = "";
@@ -63,3 +63,24 @@ function filenametoentry(filename) {
             update_patch_list(path_dest);
     }
 }
+// 4 functions below all involved in the various ops for the "fake" file inputs
+function file_input_to_field(sid, did) {
+    document.getElementById(did).value = extractFilename(document.getElementById(sid).value);
+}
+function extractFilename(path) {  
+    var x;
+    x = path.lastIndexOf('\\');
+    if (x >= 0) // Windows-based path
+        return path.substr(x+1);
+    x = path.lastIndexOf('/');
+    if (x >= 0) // Unix-based path
+        return path.substr(x+1);
+    return path; // just the filename
+}
+function clear_value_by_id(did) {
+    document.getElementById(did).value = '';
+}
+function clear_field(fname) {
+    document.getElementById(fname).value = '';
+}
+
