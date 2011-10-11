@@ -191,7 +191,6 @@ def detail(request, record_id, revision=None):
                     input_field = 'spdx_input_file'
                     try:
                         spdx = request.FILES[input_field]
-
                     except:
                         error_message += msg_strings['no_file_data'] % input_field + "<br>"
             
@@ -488,7 +487,7 @@ def records(request):
                     error_message = delete_record(record)
 
     rendered = []
-    himage = '<img src="/site_media/images/filetree/code.png" title="Change History">'
+    himage = '<img src="/site_media/images/code.png" title="Change History">'
     liclose = '</ul></li>'
     liopen = '<li>'
     # use <li class="liOpen"> to force open state if there aren't many records
@@ -555,12 +554,16 @@ def input(request):
     foss_components = ''
     foss_versions = ''
     foss_copyrights = ''
+    foss_copyright_data = ''
     foss_attributions = ''
+    foss_attribution_data = ''
     foss_licenses = ''
     foss_license_urls = ''
     foss_urls = ''
     foss_spdxs = ''
+    foss_spdx_data = ''
     foss_patches = ''
+    foss_patch_data = ''
     component_error = ''
     needs_setup = 0
 
@@ -587,22 +590,21 @@ def input(request):
         foss_components = request.POST.get('foss_components', '')
         foss_versions = request.POST.get('foss_versions', '')
         foss_copyrights = request.POST.get('foss_copyrights', '')
+        foss_copyright_data = request.POST.get('foss_copyright_data', '')
         foss_attributions = request.POST.get('foss_attributions', '')
+        foss_attribution_data = request.POST.get('foss_attribution_data', '')
         foss_licenses = request.POST.get('foss_licenses', '')
         foss_license_urls = request.POST.get('foss_license_urls', '')
         foss_urls = request.POST.get('foss_urls', '')
         foss_spdxs = request.POST.get('foss_spdxs', '')
+        foss_spdx_data = request.POST.get('foss_spdx_data', '')
+        foss_patches = request.POST.get('foss_patches', '')
+        foss_patch_data = request.POST.get('foss_patch_data', '')
 
         # need at least one full component entry to proceed
         if foss_components == '' or foss_versions == '' or foss_copyrights == '' \
           or foss_attributions == '' or foss_licenses == '' or foss_license_urls == '' or foss_urls == '':
             component_error = "At least one full component record is required...<br>"
-  
-        # patches are each in their own text area
-        if foss_components != '':
-            components = foss_components.split(",")
-            for i in range(0, len(components)-1):
-                foss_patches += request.POST.get('foss_patches' + str(i), '') + ","
 
         # also validate URLs
         validator = URLField()
@@ -642,11 +644,16 @@ def input(request):
                 components = foss_components.split(",")
                 versions = foss_versions.split(",")
                 copyrights = foss_copyrights.split(",")
+                copyright_data = foss_copyright_data.split(",")
                 attributions = foss_attributions.split(",")
+                attribution_data = foss_attribution_data.split(",")
                 licenses = foss_licenses.split(",")
                 license_urls = foss_license_urls.split(",")
                 urls = foss_urls.split(",")
                 spdxs = foss_spdxs.split(",")
+                spdx_data = foss_spdx_data.split(",")
+                patches = foss_patches.split(",")
+                patch_data = foss_patch_data.split(",")
 
                 i = 0
                 for foss in components:
@@ -655,29 +662,36 @@ def input(request):
                                                    package = foss, version = versions[i],
                                                    copyright = copyrights[i], attribution = attributions[i],
                                                    license_id = licenses[i], license_url = license_urls[i], 
-                                                   url = urls[i], spdx_file = os.path.basename(spdxs[i]), patch_files = [])
+                                                   url = urls[i], spdx_file = spdxs[i], patch_files = [])
 
-                        result = cache_update_component(foss, urls[i], licenses[i], license_urls[i], copyrights[i], attributions[i])
+                        result = cache_update_component2(foss, urls[i], licenses[i], license_urls[i], 
+                                                         copyrights[i], copyright_data[i], attributions[i], attribution_data[i])
 
                         # copyright, attribution can be text or a file now
-                        error_message += set_copyright_attribution(recorddata, fossdata, copyrights[i], attributions[i])
+                        error_message += set_copyright_attribution2(recorddata, fossdata, copyrights[i], 
+                                                                    copyright_data[i], attributions[i], attribution_data[i])
 
                         # check for SPDX files and save in user_data
                         if spdxs[i] != '':
-                            error_message += spdx_file_add(recorddata, spdxs[i])
+                            spdx = decode_data_to_file(spdxs[i], spdx_data[i])
+                            error_message += spdx_input_file_add(recorddata, spdx)
 
                         # check for patches and save in user_data
-                        patch_files = request.POST.get('foss_patches' + str(i), '')
-                        if patch_files != "":
-                            patches = patch_files.split("\n")
-                            for patch in patches:
-                                patch = patch[:-1]
-                                if patch != "":
+                        if patches[i] != "":
+                            pnames = patches[i].split("\n")
+                            pdata = patch_data[i].split("\n")
+                            for pindex, pname in enumerate(pnames):
+                                # sometimes has an embedded \r
+                                pname = pname.replace("\r", "")
+                                if pname != "":
+                                    pcontent = pdata[pindex]
+                                    patch = decode_data_to_file(pname, pcontent)
+
                                     try:
-                                        recorddata.new_file_from_existing(patch, "patches")
-                                        fossdata.patch_files.append(os.path.basename(patch))
+                                        recorddata.new_file_from_submit(patch, "patches")
+                                        fossdata.patch_files.append(pname)
                                     except:
-                                        error_message += msg_strings['copy_fail'] % (str(patch), os.path.join(data_dest, "patches")) + "<br>"
+                                        error_message += msg_strings['copy_fail'] % (str(pname), os.path.join(data_dest, "patches")) + "<br>"
 
                         # save information after everything's collected
                         fossdata.save()
@@ -721,11 +735,12 @@ def input(request):
                               'recordform': recordform, 'itemform': itemform, 'needs_setup': needs_setup,
                               'company_prefills': company_prefills, 'products': products,
                               'foss_components': foss_components, 'foss_versions': foss_versions,
-                              'foss_copyrights': foss_copyrights, 'foss_attributions': foss_attributions,
+                              'foss_copyrights': foss_copyrights, 'foss_copyright_data': foss_copyright_data,
+                              'foss_attributions': foss_attributions, 'foss_attribution_data': foss_attribution_data,
                               'foss_licenses': foss_licenses, 'foss_license_urls': foss_license_urls, 
-                              'foss_urls': foss_urls, 'foss_spdxs': foss_spdxs,
+                              'foss_urls': foss_urls, 'foss_spdxs': foss_spdxs, 'foss_spdx_data': foss_spdx_data,
                               'cached_components': cached_components, 'component_select': component_select,
-                              'foss_patches': foss_patches, 'tab_input': True })
+                              'foss_patches': foss_patches, 'foss_patch_data': foss_patch_data, 'tab_input': True })
 
 ### these are all basically documentation support
 
@@ -930,6 +945,16 @@ def spdx_input_file_add(pr, spdx):
 
     return errmsg
 
+# convert base64 encoded file data to a named File object
+def decode_data_to_file(fname, fdata):
+    from django.core.files.base import ContentFile
+    import base64
+
+    datafile = ContentFile(base64.b64decode(fdata))
+    datafile.name = fname
+
+    return datafile
+
 # remove an spdx file from a record
 def spdx_file_delete(pr, spdx_file):
     errmsg = ''
@@ -965,6 +990,35 @@ def spdx_check_for_change2(pr, old_spdx, new_spdx, spdx):
     return errmsg
 
 # decide if these are files or plain text and update Product_Record (pr) and Foss_Component (fc) accordingly
+def set_copyright_attribution2(pr, fc, copyright, copyright_data, attribution, attribution_data):
+    errmsg = ''
+    data_dest = pr.file_path()
+    if copyright != '':
+        if copyright_data != '':
+            try:
+                data_file = decode_data_to_file(copyright, copyright_data)
+                pr.new_file_from_submit(data_file, "copyrights")
+                fc.copyright_file = True
+            except:
+                errmsg += msg_strings['file_create_fail'] % (data_file.name, os.path.join(data_dest, "copyrights")) + "<br>"
+        else:
+            fc.copyright_file = False
+                        
+    if attribution != '':
+        if attribution_data != '':
+            try:
+                data_file = decode_data_to_file(attribution, attribution_data)
+                pr.new_file_from_submit(data_file, "attributions")
+                fc.attribution_file = True
+            except:
+                errmsg += msg_strings['file_create_fail'] % (data_file.name, os.path.join(data_dest, "attributions")) + "<br>"
+        else:
+            fc.attribution_file = False
+
+    return errmsg
+
+# FIXME - will be replaced the routine above once all the file select changes flow through
+# decide if these are files or plain text and update Product_Record (pr) and Foss_Component (fc) accordingly
 def set_copyright_attribution(pr, fc, copyright, attribution):
     errmsg = ''
     data_dest = pr.file_path()
@@ -991,7 +1045,7 @@ def set_copyright_attribution(pr, fc, copyright, attribution):
             fc.attribution_file = False
 
     return errmsg
-   
+  
 # add a record to the component cache for input select
 def cache_add_component(component, url, license, license_url, copyright, attribution):
     errmsg = ''
@@ -1025,7 +1079,29 @@ def cache_update_component(component, url, license, license_url, copyright, attr
 
     return errmsg
 
-# FIXME don't set copyright, attribution in the cache if they are files (may not exist later)
+# FIXME - to replace routine above once all file select changes flow through
+# update a component cache record (or add if there isn't one)
+def cache_update_component2(component, url, license, license_url, copyright, copyright_data, attribution, attribution_data):
+    errmsg = ''
+    if component != '':
+        cc_list = Component_Cache.objects.filter(component = component)
+        # if there is file data, don't cache the text (filename)
+        if copyright_data != '':
+            copyright = ''
+        if attribution_data != '':
+            attribution = ''
+        if len(cc_list) != 0:
+            try:
+                Component_Cache.objects.filter(component = component).update(url = url, license_id = license, license_url = license_url, 
+                                                                             copyright = copyright, attribution = attribution)
+            except:
+                errmsg = msg_strings['cc_update_fail'] + "<br>"
+        else:
+           errmsg = cache_add_component(component, url, license, license_url, copyright, attribution)
+
+    return errmsg
+
+# FIXME don't set copyright, attribution in the cache if they are files (may not exist later) - FIXME - will go away
 def empty_if_file(c, a):
     if os.path.exists(c):
         c = ''

@@ -45,14 +45,14 @@
           &nbsp;&nbsp;
           {% if not revision and not public_facing and not record.release_date %}
           <span id="header-modal">    
-            <a href="#" name="edit_header" class="basic"><img src="/site_media/images/filetree/edit.png" title="Edit Record Header"></a>
+            <a href="#" name="edit_header" class="basic"><img src="/site_media/images/edit.png" title="Edit Record Header"></a>
           </span>
           <span id="header-modal">    
             <a href="#" name="clone_record" class="basic"><img src="/site_media/images/edit-copy.png" title="Clone Record"></a>
           </span>
           {% endif %}
           <span id="history-modal" float="left">
-            <a href="#" name="history1" id="{{ record.id }}" class="basic"><img src="/site_media/images/filetree/code.png" title="Change History"></a>
+            <a href="#" name="history1" id="{{ record.id }}" class="basic"><img src="/site_media/images/code.png" title="Change History"></a>
           </span>
           {% if not revision and not public_facing and record.release_date %}
           <span id="unrelease-modal">    
@@ -145,7 +145,7 @@
       <span id="noprint">
         {% if not revision and not public_facing and not record.release_date %}
         <span id="line-item-modal">
-            <a href="#" class="basic" name="line_item{{ forloop.counter }}" id="{{ row.id }}"><img src="/site_media/images/filetree/edit.png" title="Edit Line Item"></a>
+            <a href="#" class="basic" name="line_item{{ forloop.counter }}" id="{{ row.id }}"><img src="/site_media/images/edit.png" title="Edit Line Item"></a>
         </span>
         <span id="line-delete-modal">
             <a href="#" class="basic" name="line_item{{ forloop.counter }}" id="{{ row.id }}"><img src="/site_media/images/edit-delete.png" title="Delete Line Item"></a>
@@ -243,6 +243,8 @@
         {% endif %}
         // default is to use the component select
         component_disabled(true);
+        // FIXME - temporary until we redo the file selects in the line item edit
+        reload_filetree();
     }
 
     function submit_header_validate() {
