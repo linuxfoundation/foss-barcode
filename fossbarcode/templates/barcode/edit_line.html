@@ -8,53 +8,66 @@
     <div class="containerm" id="modal_entry_form">
      <table width="100%">
       <tr>
-        <td colspan="3">{% autoescape off %}{{ component_select }}{% endautoescape %}</td>
+        <td colspan="4">{% autoescape off %}{{ component_select }}{% endautoescape %}</td>
       </tr>
       <tr>
-        <td colspan="2"><b>{{ itemform.required_flag }}{{ itemform.foss_component.label }}:</b></td>
+        <td><b>{{ itemform.required_flag }}{{ itemform.foss_component.label }}:</b></td>
         <td>{{ itemform.foss_component }}</td>
+        <td colspan="2"></td>
       </tr>
       <tr>
-        <td colspan="3">{{ itemform.foss_component.errors }}</td>
+        <td colspan="4">{{ itemform.foss_component.errors }}</td>
       </tr>
       <tr>
-        <td colspan="2"><b>{{ itemform.required_flag }}{{ itemform.foss_version.label }}:</b></td>
+        <td><b>{{ itemform.required_flag }}{{ itemform.foss_version.label }}:</b></td>
         <td>{{ itemform.foss_version }}</td>
-        </tr>
+        <td colspan="2"></td>
+      </tr>
       <tr>
-        <td colspan="3">{{ itemform.foss_version.errors }}</td>
+        <td colspan="4">{{ itemform.foss_version.errors }}</td>
       </tr>
       <tr>
         <td colspan><b>{{ itemform.required_flag }}{{ itemform.foss_copyright.label }}:</b></td>
-        <td>
-          <input type="button" name="copyrightfilename" value="or Select File" id="foss_copyright_select"
-                 title="Open a File/Directory Selector"
-                 onclick="toggle_visibility('target_select_modal');set_destination('foss_copyright', 'target_select_modal')"/>
-        </td>
         <td>{{ itemform.foss_copyright }}</td>
+        <td colspan="2">
+          <div class="fileinputs">
+	        <input type="file" class="file" id="id_copyright_input_file" name="copyright_input_file" 
+                   onchange="file_input_to_field('id_copyright_input_file', 'id_foss_copyright', false);"/>
+	        <div class="fakefile">		      
+              <!-- this is just for looks, we really activate the invisible one above -->
+		      <input type="button" name="copyrightfilename" value="or Select File"/>
+	        </div>
+          </div>
+        </td>
       </tr>
       <tr>
-        <td colspan="3">{{ itemform.foss_copyright.errors }}</td>
+        <td colspan="4">{{ itemform.foss_copyright.errors }}</td>
       </tr>
       <tr>
         <td><b>{{ itemform.required_flag }}{{ itemform.foss_attribution.label }}:</b></td>
-        <td>
-          <input type="button" name="attributionfilename" value="or Select File" id="foss_attribution_select"
-                 title="Open a File/Directory Selector"
-                 onclick="toggle_visibility('target_select_modal');set_destination('foss_attribution', 'target_select_modal')"/>
-        </td>
         <td>{{ itemform.foss_attribution }}</td>
+        <td colspan="2">
+          <div class="fileinputs">
+	        <input type="file" class="file" id="id_attribution_input_file" name="attribution_input_file" 
+                   onchange="file_input_to_field('id_attribution_input_file', 'id_foss_attribution', false);"/>
+	        <div class="fakefile">		      
+              <!-- this is just for looks, we really activate the invisible one above -->
+		      <input type="button" name="attributionfilename" value="or Select File"/>
+	        </div>
+          </div>
+        </td>
       </tr>
       <tr>
-        <td colspan="3">{{ itemform.foss_attributions.errors }}</td>
+        <td colspan="4">{{ itemform.foss_attributions.errors }}</td>
       </tr>
       <tr id="existing_license">
-        <td colspan="2"><b>{{ itemform.required_flag }}{{ itemform.foss_license.label }}:</b></td>
+        <td><b>{{ itemform.required_flag }}{{ itemform.foss_license.label }}:</b></td>
         <td>{{ itemform.foss_license }}</td>
+        <td colspan="2"></td>
       </tr>
       <tr id="new_license" style="display: none;">
         <form id="new_license_form">
-        <td colspan="2" valign="top">      
+        <td valign="top">      
           <b><label for="new_license_name">New License Name:</label><br />
           <label for="new_license_version">New License Version:</label><br />
           <label for="new_license_url">New License Default URL:</label></b>
@@ -66,49 +79,68 @@
           <input type="button" onclick="new_license()" value="Add New License" />
         </td>
         </form>
+        <td colspan="2"></td>
       </tr>     
       <tr>
-        <td colspan="3">{{ itemform.foss_license.errors }}</td>
+        <td colspan="4">{{ itemform.foss_license.errors }}</td>
       </tr>
       <tr>
-        <td colspan="2"><b>{{ itemform.required_flag }}{{ itemform.foss_license_url.label }}:</b></td>
+        <td><b>{{ itemform.required_flag }}{{ itemform.foss_license_url.label }}:</b></td>
         <td>{{ itemform.foss_license_url }}</td>
+        <td colspan="2"></td>
       </tr>
       <tr>
-        <td colspan="3">{{ itemform.foss_license_url.errors }}</td>
+        <td colspan="4">{{ itemform.foss_license_url.errors }}</td>
       </tr>
       <tr>
-        <td colspan="2"><b>{{ itemform.required_flag }}{{ itemform.foss_url.label }}:</b></td>
+        <td><b>{{ itemform.required_flag }}{{ itemform.foss_url.label }}:</b></td>
         <td>{{ itemform.foss_url }}</td>
+        <td colspan="2"></td>
       </tr>
       <tr>
-        <td colspan="3">{{ itemform.foss_url.errors }}</td>
+        <td colspan="4">{{ itemform.foss_url.errors }}</td>
       </tr>
       <tr>
-        <td colspan="3">
+        <td colspan="4">
           <span class="red" id="spdx_warn_line"><b>Warning:</b> Adding a line-item SPDX file will remove any header SPDX file.</span>
         </td>
       </tr>
       <tr>
         <td><b>{{ itemform.optional_flag }}{% autoescape off %}{{ itemform.foss_spdx.label }}{% endautoescape %}:</b></td>
-        <td>
-            <input type="button" name="select_spdx" value="Select" 
-                   title="Open a File/Directory Selector" 
-                   onclick="toggle_visibility('target_select_modal');set_destination('foss_spdx', 'target_select_modal');toggle_enabled('select_patch');">
-            <a href="#" id="clear spdx"><img src="/site_media/images/edit-delete.png" 
-                        title="Clear SPDX" onclick="clear_field('id_foss_spdx')";></a>
-        </td>
         <td>{{ itemform.foss_spdx }}</td>
+        <td valign="center">  
+          <a href="#" id="clear_spdx"><img src="/site_media/images/edit-delete.png" 
+                      title="Clear SPDX" onClick="clear_field('id_foss_spdx');clear_value_by_id('id_f_spdx_input_file');"></a>
+        </td>
+        <td valign="center">
+          <div class="fileinputs">
+	        <input type="file" class="file" id="id_foss_spdx_input_file" name="foss_spdx_input_file" 
+                   onchange="file_input_to_field('id_foss_spdx_input_file', 'id_foss_spdx', false);"/>
+	        <div class="fakefile">
+              <!-- this is just for looks, we really activate the invisible one above -->
+		      <input type="button" name="spdxfilename" value="Select"/>
+	        </div>
+          </div>
+        </td>
       </tr>
       <tr>
         <td valign="top"><b>{{ itemform.optional_flag }}{{ itemform.foss_patches.label }}:</b></td>
-        <td valign="top">
-            <input type="button" name="select_patch" value="Select"title="Open a File/Directory Selector" 
-                   onclick="toggle_visibility('target_select_modal');set_destination('foss_patches', 'target_select_modal');toggle_enabled('select_spdx');">
-            <a href="#" id="clear patches"><img src="/site_media/images/edit-delete.png" 
-                        title="Clear Patches" onclick="clear_field('id_foss_patches');"></a>
-        </td>
         <td rowspan="2">{{ itemform.foss_patches }}</td>
+        <td valign="top">
+          <a href="#" id="clear_patches"><img src="/site_media/images/edit-delete.png" 
+                      title="Clear Patches" 
+                      onClick="clear_field('id_foss_patches');clear_extra('id_foss_patches', 'encoded_data');clear_value_by_id('id_patches_input_file');"></a>
+        </td>       
+        <td valign="top">	
+          <div class="fileinputs">
+ 	        <input type="file" class="file" id="id_patches_input_file" name="patches_input_file" multiple="" 
+                   onchange="file_input_to_field('id_patches_input_file', 'id_foss_patches', true);"/>
+	        <div class="fakefile">	      
+              <!-- this is just for looks, we really activate the invisible one above -->
+		      <input type="button" name="patchfilenames" value="Select"/>
+	        </div>
+          </div>
+        </td>
       </tr>
       <tr>
         <td colspan="2">
@@ -116,10 +148,6 @@
         </td>
       </tr>
      </table>
-    </div>
-    <!-- jQuery File Tree browser -->
-    <div class="containerm" id="target_select_modal" style="display: none;"> 
-	    <div id="target" class="browser"></div> 
     </div>
     <div>
         {{ itemform.item_commit_message.errors }}
@@ -135,6 +163,8 @@
         </table>
         <!-- so the back end knows which record to update -->
         <input type="hidden" name="foss_record_id" id="foss_record_id" value="">
+        <!-- place to store the encoded patch data -->
+        <input type="hidden", name="foss_patch_data", id="foss_patch_data", value="">
     </div>
   </form>
   <!-- store old license ID for license URL management -->
@@ -143,8 +173,6 @@
 {% endblock %}
 {% block scripts %}
 <script language="JavaScript">
-    // filenametoentry doesn't need to update_patch_list in the modal form
-    var modal = true;
     // no manual entry for spdx_files, patches
     document.getElementById('id_foss_spdx').setAttribute('readonly', 'true');
     document.getElementById('id_foss_patches').setAttribute('readonly', 'true');

@@ -30,7 +30,7 @@
         <td colspan="2">
           <div class="fileinputs">
 	        <input type="file" class="file" id="id_m_copyright_input_file" name="m_copyright_input_file" 
-                   onchange="file_input_to_field('id_m_copyright_input_file', 'id_m_foss_copyright');"/>
+                   onchange="file_input_to_field('id_m_copyright_input_file', 'id_m_foss_copyright', true);"/>
 	        <div class="fakefile">		      
               <!-- this is just for looks, we really activate the invisible one above -->
 		      <input type="button" name="copyrightfilename" value="or Select File"/>
@@ -47,7 +47,7 @@
         <td colspan="2">
           <div class="fileinputs">
 	        <input type="file" class="file" id="id_m_attribution_input_file" name="m_attribution_input_file" 
-                   onchange="file_input_to_field('id_m_attribution_input_file', 'id_m_foss_attribution');"/>
+                   onchange="file_input_to_field('id_m_attribution_input_file', 'id_m_foss_attribution', true);"/>
 	        <div class="fakefile">		      
               <!-- this is just for looks, we really activate the invisible one above -->
 		      <input type="button" name="attributionfilename" value="or Select File"/>
@@ -109,7 +109,7 @@
         <td valign="center">
           <div class="fileinputs">
 	        <input type="file" class="file" id="id_m_spdx_input_file" name="m_spdx_input_file" 
-                   onchange="file_input_to_field('id_m_spdx_input_file', 'id_m_foss_spdx');"/>
+                   onchange="file_input_to_field('id_m_spdx_input_file', 'id_m_foss_spdx', true);"/>
 	        <div class="fakefile">
               <!-- this is just for looks, we really activate the invisible one above -->
 		      <input type="button" name="spdxfilename" value="Select"/>
@@ -128,7 +128,7 @@
         <td valign="top">	
           <div class="fileinputs">
  	        <input type="file" class="file" id="id_m_patches_input_file" name="m_patches_input_file" multiple="" 
-                   onchange="file_input_to_field('id_m_patches_input_file', 'id_m_foss_patches');"/>
+                   onchange="file_input_to_field('id_m_patches_input_file', 'id_m_foss_patches', true);"/>
 	        <div class="fakefile">	      
               <!-- this is just for looks, we really activate the invisible one above -->
 		      <input type="button" name="patchfilenames" value="Select"/>

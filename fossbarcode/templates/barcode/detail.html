@@ -7,6 +7,8 @@
   <style type="text/css" media="screen">@import "/site_media/css/fakefile.css";</style>
   <!-- CSS file for the datepicker -->
   <style type="text/css" media="screen">@import "/site_media/css/jquery-ui-1.8.16.custom.css";</style>
+  <!-- CSS to add file icons for file attachments -->
+  <style type="text/css" media="screen">@import "/site_media/css/iconize.css";</style>
   <!-- used for modal dialog -->
   <script type="text/javascript" src="/site_media/js/jquery-1.4.2.min.js"></script>
   <script type="text/javascript" src="/site_media/js/jquery-ui-1.8.16.custom.min.js"></script>
@@ -15,9 +17,6 @@
   <script type='text/javascript' src='/site_media/js/history.js'></script>
   <script type="text/javascript" src="/site_media/js/record-check.js"></script>
   <script type="text/javascript" src="/site_media/js/date-picker.js"></script>
-  <!-- for the file browser -->
-  <style type="text/css" media="screen">@import "/site_media/css/jqueryFileTree.css";</style>
-  <script type="text/javascript" src="/site_media/js/jqueryFileTree.js"></script>
   <script type="text/javascript" src="/site_media/js/file-select-ops.js"></script>
   <script type="text/javascript" src="/site_media/js/visibility.js"></script>
   <script type="text/javascript" src="/site_media/js/licenses.js"></script>
@@ -243,8 +242,6 @@
         {% endif %}
         // default is to use the component select
         component_disabled(true);
-        // FIXME - temporary until we redo the file selects in the line item edit
-        reload_filetree();
     }
 
     function submit_header_validate() {
@@ -328,8 +325,6 @@
             // for an edit, supress the dropdown and make everything editable
             hide_element('id_component_select');
             component_disabled(false);
-            // filetree isn't working on a second display of the form, force it to reload here
-            reload_filetree();
         } else {
             // start with an empty form
             for(var f in bom_fields){
@@ -361,6 +356,9 @@
             alert("Please fill all required component fields, including the commit message");
             return false;
         } else {
+            // fill the hidden input with any patch data
+            if (document.getElementById("id_foss_patches").value != '')
+                document.getElementById("foss_patch_data").value = document.getElementById("id_foss_patches").attributes["encoded_data"].value;
             // re-enable the disabled fields before submit or we wipe the record out
             component_disabled(false);
             return true;
@@ -383,7 +381,6 @@
         document.getElementById('header_title').innerHTML = title_txt;
         document.getElementById('id_header_commit_message').value = commit_txt;
         document.getElementById('submit_header').value = submit_txt;
-        reload_filetree();
     }
 
     function new_license() {

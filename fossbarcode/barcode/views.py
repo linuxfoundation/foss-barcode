@@ -177,6 +177,7 @@ def detail(request, record_id, revision=None):
 
     if request.method == 'POST': # If the form has been submitted...
         mode = urllib.unquote(request.POST.get('submit'))
+        file_data = request.FILES
 
         headerform = HeaderForm(request.POST) # A form bound to the POST data
         itemform = ItemForm(request.POST) # A form bound to the POST data
@@ -247,7 +248,7 @@ def detail(request, record_id, revision=None):
 
                 # top-level spdx_file
                 # save and/or delete SPDX file if there's a change
-                error_message += spdx_check_for_change2(pr, old_spdx, new_spdx, spdx)
+                error_message += spdx_check_for_change(pr, old_spdx, new_spdx, spdx)
 
                 # if we have an spdx file and didn't before, we need to purge the component entries
                 if new_spdx != '' and old_spdx == '':
@@ -286,8 +287,8 @@ def detail(request, record_id, revision=None):
                     new_license_id = request.POST.get('foss_license', '')
                     new_license_url = request.POST.get('foss_license_url', '')
                     new_url = request.POST.get('foss_url', '')
+                    new_spdx = request.POST.get('foss_spdx', '')
 
-                new_spdx = request.POST.get('foss_spdx', '')
                 if (mode == "Update Item" or mode == "Delete Item"):               
                     foss_id = request.POST.get('foss_record_id', '')
                     fd = FOSS_Components.objects.get(brecord = record_id, id = foss_id)
@@ -298,12 +299,10 @@ def detail(request, record_id, revision=None):
                                          version = new_version, copyright = new_copyright, 
                                          attribution = new_attribution, license_id = new_license_id, 
                                          license_url = new_license_url, url = new_url, 
-                                         spdx_file = os.path.basename(new_spdx))
+                                         spdx_file = new_spdx)
 
                     fd.save()
                     foss_id = fd.id
-                    cache_update_component(new_component, new_url, new_license_id, 
-                                        new_license_url, new_copyright, new_attribution)
                 else:
                     error_message += msg_strings['unknown_request'] + "<br>"
 
@@ -316,32 +315,38 @@ def detail(request, record_id, revision=None):
                     fd.license = License.objects.get(id=new_license_id)
                     fd.license_url = new_license_url
                     fd.url = new_url
-                    fd.spdx_file = os.path.basename(new_spdx)
-
-                    cache_update_component(new_component, new_url, new_license_id, 
-                                           new_license_url, new_copyright, new_attribution)
+                    fd.spdx_file = new_spdx
 
                 if (mode == "Delete Item"):
                     fd.delete()
 
                 # save and/or delete SPDX file if there's a change
-                error_message += spdx_check_for_change(pr, old_spdx, new_spdx)
+                spdx = ''
+                if new_spdx != '' and old_spdx != new_spdx:
+                    input_field = 'foss_spdx_input_file'
+                    try:
+                        spdx = request.FILES[input_field]
+                    except:
+                        error_message += msg_strings['no_file_data'] % input_field + "<br>"
+
+                error_message += spdx_check_for_change(pr, old_spdx, new_spdx, spdx)
                 
                 # if we have an spdx file here, we can't have a top-level one
                 top_spdx = pr.spdx_file
                 if new_spdx != '' and top_spdx != '':
                     pr.spdx_file = ''
                     pr.save()
-                    if top_spdx != os.path.basename(new_spdx):
+                    if top_spdx != new_spdx:
                         error_message += spdx_file_delete(pr, top_spdx)
 
                 # update/save/del patches
                 patch_files = request.POST.get('foss_patches', '')
+                patch_data = request.POST.get('foss_patch_data', '')
                 if patch_files != '':
-                    patches = patch_files.split("\r\n")
+                    pnames = patch_files.split("\r\n")
 
                     # remove patches no longer listed 
-                    old_patches = [x for x in fd.patch_files if x not in patches]
+                    old_patches = [x for x in fd.patch_files if x not in pnames]
                     for p in old_patches:
                         try:
                             pr.delete_file("patches/" + p)
@@ -350,13 +355,8 @@ def detail(request, record_id, revision=None):
                         fd.patch_files.remove(p)
 
                     # and add any new ones
-                    for patch in patches:
-                        if patch != '' and patch not in fd.patch_files:
-                            try:
-                                pr.new_file_from_existing(patch, "patches")
-                                fd.patch_files.append(os.path.basename(patch))
-                            except:
-                                error_message += msg_strings['copy_fail'] % (str(patch), "patches") + "<br>"
+                    if patch_data != '':
+                        error_message += patch_input_file_add(pr, fd, patch_files, patch_data)
 
                 else:
                     # no patches specified, remove any that might be present
@@ -371,8 +371,23 @@ def detail(request, record_id, revision=None):
                 # save changes to component
                 if mode not in ["Delete Item"]:
                     # copyright, attribution can be text or a file now
-                    error_message += set_copyright_attribution(pr, fd, new_copyright, new_attribution)
+                    copyright_data = ""
+                    attribution_data = ""
+                    if new_copyright != "":                        
+                        input_field = 'copyright_input_file';
+                        if input_field in file_data:
+                            copyright_data = file_data[input_field]
+
+                    if new_attribution != "":
+                        input_field = 'attribution_input_file'
+                        if input_field in file_data:
+                            attribution_data = file_data[input_field]
+
+                    error_message += set_copyright_attribution(pr, fd, new_copyright, copyright_data, new_attribution, attribution_data)
                     fd.save()
+
+                    cache_update_component(new_component, new_url, new_license_id, 
+                                           new_license_url, new_copyright, copyright_data, new_attribution, attribution_data)
 
                 # QR+ code changes with any change (record_date, components)
                 # FIXME - doesn't pickup changes if we do this before commit
@@ -664,11 +679,11 @@ def input(request):
                                                    license_id = licenses[i], license_url = license_urls[i], 
                                                    url = urls[i], spdx_file = spdxs[i], patch_files = [])
 
-                        result = cache_update_component2(foss, urls[i], licenses[i], license_urls[i], 
+                        result = cache_update_component(foss, urls[i], licenses[i], license_urls[i], 
                                                          copyrights[i], copyright_data[i], attributions[i], attribution_data[i])
 
                         # copyright, attribution can be text or a file now
-                        error_message += set_copyright_attribution2(recorddata, fossdata, copyrights[i], 
+                        error_message += set_copyright_attribution(recorddata, fossdata, copyrights[i], 
                                                                     copyright_data[i], attributions[i], attribution_data[i])
 
                         # check for SPDX files and save in user_data
@@ -677,21 +692,7 @@ def input(request):
                             error_message += spdx_input_file_add(recorddata, spdx)
 
                         # check for patches and save in user_data
-                        if patches[i] != "":
-                            pnames = patches[i].split("\n")
-                            pdata = patch_data[i].split("\n")
-                            for pindex, pname in enumerate(pnames):
-                                # sometimes has an embedded \r
-                                pname = pname.replace("\r", "")
-                                if pname != "":
-                                    pcontent = pdata[pindex]
-                                    patch = decode_data_to_file(pname, pcontent)
-
-                                    try:
-                                        recorddata.new_file_from_submit(patch, "patches")
-                                        fossdata.patch_files.append(pname)
-                                    except:
-                                        error_message += msg_strings['copy_fail'] % (str(pname), os.path.join(data_dest, "patches")) + "<br>"
+                        error_message = patch_input_file_add(recorddata, fossdata, patches[i], patch_data[i])
 
                         # save information after everything's collected
                         fossdata.save()
@@ -789,31 +790,6 @@ def documentation(request):
                               {'name': gui_name, 
                                'version': gui_version, 
                                'gui_docs': docs })
-
-# this does not have a corresponding dirlist.html
-# this is dynamic filetree content fed to jqueryFileTree for the input.html file/dir selection
-# script for jqueryFileTree points to /barcode/dirlist/
-def dirlist(request):
-    # filter out some directories that aren't useful from "/"
-    not_wanted = [ '/proc', '/dev', '/sys', '/initrd' ]
-    r=['<ul class="jqueryFileTree" style="display: none;">']
-    try:
-        d=urllib.unquote(request.POST.get('dir'))
-        content = os.listdir(d)
-        # slows things a little, but looks more like 'ls'
-        for f in sorted(content, key=unicode.lower):
-            ff=os.path.join(d,f)
-            if ff not in not_wanted and f != 'lost+found':
-                if os.path.isdir(ff): 
-                    r.append('<li class="directory collapsed"><a href="#" rel="%s/">%s</a></li>' % (ff,f))
-                else:
-                    e=os.path.splitext(f)[1][1:] # get .ext and remove dot
-                    r.append('<li class="file ext_%s"><a href="#" rel="%s">%s</a></li>' % (e,ff,f))
-        r.append('</ul>')
-    except Exception,e:
-        r.append(_('Could not load directory: %s') % str(e))
-    r.append('</ul>')
-    return HttpResponse(''.join(r))
 
 ### utility functions
 
@@ -921,18 +897,6 @@ def foss_spdx_purge(recid, new_spdx):
 
     return errmsg
 
-# add an spdx file to a record
-def spdx_file_add(pr, spdx_file):
-    errmsg = ''
-    spdx_dest = os.path.join(pr.file_path(), "spdx_files")
-
-    try:
-        pr.new_file_from_existing(spdx_file, "spdx_files")
-    except:
-        errmsg = msg_strings['copy_fail'] % (str(spdx_file), spdx_dest) + "<br>"
-
-    return errmsg
-
 # add an spdx file (from an UploadedFile object) to a record
 def spdx_input_file_add(pr, spdx):
     errmsg = ''
@@ -942,6 +906,25 @@ def spdx_input_file_add(pr, spdx):
         pr.new_file_from_submit(spdx, "spdx_files")
     except:
         errmsg = msg_strings['file_create_fail'] % (spdx.name, spdx_dest) + "<br>"
+
+    return errmsg
+
+# add a patch file, given the name and encoded data
+def patch_input_file_add(pr, fd, patches, patch_data):
+    errmsg = ''
+    patch_dest = os.path.join(pr.file_path(), "spdx_files")                        
+    if patches != "":
+        pnames = patches.split("\r\n")
+        pdata = patch_data.split("\r\n")
+        for pindex, pname in enumerate(pnames):
+            if pname != "" and pname not in fd.patch_files:
+                patch = decode_data_to_file(pname, pdata[pindex])
+
+                try:
+                    pr.new_file_from_submit(patch, "patches")
+                    fd.patch_files.append(pname)
+                except:
+                    errmsg = msg_strings['copy_fail'] % (str(pname), patch_dest) + "<br>"
 
     return errmsg
 
@@ -967,19 +950,7 @@ def spdx_file_delete(pr, spdx_file):
     return errmsg
 
 # check if the spdx file has changed on an edit
-def spdx_check_for_change(pr, old_spdx, new_spdx):  
-    errmsg = ''
-    if old_spdx != os.path.basename(new_spdx):
-        if new_spdx != '':
-            errmsg += spdx_file_add(pr, new_spdx)
-        if old_spdx != '':
-            errmsg += spdx_file_delete(pr, old_spdx)
-
-    return errmsg
-
-# FIXME - this will replace routine above once all the spdx file input changes flow through
-# check if the spdx file has changed on an edit
-def spdx_check_for_change2(pr, old_spdx, new_spdx, spdx):  
+def spdx_check_for_change(pr, old_spdx, new_spdx, spdx):  
     errmsg = ''
     if old_spdx != new_spdx:
         if new_spdx != '' and spdx != '':
@@ -990,62 +961,45 @@ def spdx_check_for_change2(pr, old_spdx, new_spdx, spdx):
     return errmsg
 
 # decide if these are files or plain text and update Product_Record (pr) and Foss_Component (fc) accordingly
-def set_copyright_attribution2(pr, fc, copyright, copyright_data, attribution, attribution_data):
+def set_copyright_attribution(pr, fc, copyright, copyright_data, attribution, attribution_data):
     errmsg = ''
     data_dest = pr.file_path()
     if copyright != '':
         if copyright_data != '':
-            try:
+            # submit from a detail edit is already a File object
+            if hasattr(copyright_data, 'file'):
+                data_file = copyright_data               
+            else:
                 data_file = decode_data_to_file(copyright, copyright_data)
+
+            try:
                 pr.new_file_from_submit(data_file, "copyrights")
                 fc.copyright_file = True
             except:
-                errmsg += msg_strings['file_create_fail'] % (data_file.name, os.path.join(data_dest, "copyrights")) + "<br>"
+                errmsg += msg_strings['file_create_fail'] % (copyright, os.path.join(data_dest, "copyrights")) + "<br>"
         else:
-            fc.copyright_file = False
+            if not os.path.exists(os.path.join(data_dest, "copyrights", copyright)):
+                fc.copyright_file = False
                         
     if attribution != '':
         if attribution_data != '':
-            try:
+            # submit from a detail edit is already a File object
+            if hasattr(attribution_data, 'file'):
+                data_file = attribution_data               
+            else:
                 data_file = decode_data_to_file(attribution, attribution_data)
+
+            try:
                 pr.new_file_from_submit(data_file, "attributions")
                 fc.attribution_file = True
             except:
-                errmsg += msg_strings['file_create_fail'] % (data_file.name, os.path.join(data_dest, "attributions")) + "<br>"
+                errmsg += msg_strings['file_create_fail'] % (attribution, os.path.join(data_dest, "attributions")) + "<br>"
         else:
-            fc.attribution_file = False
+            if not os.path.exists(os.path.join(data_dest, "attributions", attribution)):
+                fc.attribution_file = False
 
     return errmsg
 
-# FIXME - will be replaced the routine above once all the file select changes flow through
-# decide if these are files or plain text and update Product_Record (pr) and Foss_Component (fc) accordingly
-def set_copyright_attribution(pr, fc, copyright, attribution):
-    errmsg = ''
-    data_dest = pr.file_path()
-    if copyright != '':
-        if os.path.exists(copyright):
-            try:
-                pr.new_file_from_existing(copyright, "copyrights")
-                fc.copyright = os.path.basename(copyright)
-                fc.copyright_file = True
-            except:
-                errmsg += msg_strings['copy_fail'] % (str(copyright), os.path.join(data_dest, "copyrights")) + "<br>" 
-        else:
-            fc.copyright_file = False
-                        
-    if attribution != '':
-        if os.path.exists(attribution):
-            try:
-                pr.new_file_from_existing(attribution, "attributions")
-                fc.attribution = os.path.basename(attribution)
-                fc.attribution_file = True
-            except:
-                errmsg += msg_strings['copy_fail'] % (str(attribution), os.path.join(data_dest, "attributions")) + "<br>"  
-        else:
-            fc.attribution_file = False
-
-    return errmsg
-  
 # add a record to the component cache for input select
 def cache_add_component(component, url, license, license_url, copyright, attribution):
     errmsg = ''
@@ -1063,25 +1017,7 @@ def cache_add_component(component, url, license, license_url, copyright, attribu
     return errmsg
 
 # update a component cache record (or add if there isn't one)
-def cache_update_component(component, url, license, license_url, copyright, attribution):
-    errmsg = ''
-    if component != '':
-        cc_list = Component_Cache.objects.filter(component = component)
-        copyright, attribution = empty_if_file(copyright, attribution)
-        if len(cc_list) != 0:
-            try:
-                Component_Cache.objects.filter(component = component).update(url = url, license_id = license, license_url = license_url, 
-                                                                             copyright = copyright, attribution = attribution)
-            except:
-                errmsg = msg_strings['cc_update_fail'] + "<br>"
-        else:
-           errmsg = cache_add_component(component, url, license, license_url, copyright, attribution)
-
-    return errmsg
-
-# FIXME - to replace routine above once all file select changes flow through
-# update a component cache record (or add if there isn't one)
-def cache_update_component2(component, url, license, license_url, copyright, copyright_data, attribution, attribution_data):
+def cache_update_component(component, url, license, license_url, copyright, copyright_data, attribution, attribution_data):
     errmsg = ''
     if component != '':
         cc_list = Component_Cache.objects.filter(component = component)
@@ -1101,7 +1037,7 @@ def cache_update_component2(component, url, license, license_url, copyright, cop
 
     return errmsg
 
-# FIXME don't set copyright, attribution in the cache if they are files (may not exist later) - FIXME - will go away
+# don't set copyright, attribution in the cache if they are files - loaded from client side, local in original record
 def empty_if_file(c, a):
     if os.path.exists(c):
         c = ''

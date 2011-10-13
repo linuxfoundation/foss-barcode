@@ -5,66 +5,10 @@ var src_id = "";
 // used in several places to differentiate which field we're selecting files for
 var pfield = "foss_patches";
 var sfield = "foss_spdx";
-// filenametoentry needs to update_patch_list in the normal form, not the modal one
-var modal = false;
 
-// while the old setup (with reload_filetree code in the .ready) works on the input page
-// had issues in the detail/modal edit, so make it callable
-$(document).ready( function() {
-    //reload_filetree();
-});
-function reload_filetree() {
-    $('#target').fileTree({
-        root: '/',
-        script: '/barcode/dirlist/',
-        loadMessage: 'waiting to load'
-        }, function(file) {
-            filenametoentry(file);
-    });
-    // header edit modal form needs a different target
-    $('#targeth').fileTree({
-        root: '/',
-        script: '/barcode/dirlist/',
-        loadMessage: 'waiting to load'
-        }, function(file) {
-            filenametoentry(file);
-    });
-}
-function set_destination(dest, source_id) {
-    path_dest = dest;
-    src_id = source_id;
-}
-function toggle_enabled(button) { 
-    var e = document.getElementsByName(button)[0];
-    if (typeof e != 'undefined') {
-        if (e.disabled == true)
-            e.disabled = false;
-        else
-            e.disabled = true;
-    }     
-}
-function filenametoentry(filename) {
-    lastchar = filename.slice(-1);
-    // only files, no dirs
-    if (lastchar != '/') {
-        if (path_dest.search("foss_patches") >= 0) {
-            document.getElementsByName(path_dest)[0].value += filename + "\n";
-        } else {
-            // replace, don't append
-            document.getElementsByName(path_dest)[0].value = filename;
-            if ([sfield, 'spdx_file'].indexOf(path_dest) >= 0) {
-                // trigger onchange so we can enable/disable header/detail spdx stuff
-                document.getElementsByName(path_dest)[0].onchange();
-            }
-            // hide after select for the single file mode
-            hide_element(src_id);
-        }        
-        if ((path_dest.indexOf(pfield) != -1) && (modal != true))
-            update_patch_list(path_dest);
-    }
-}
 // several functions below all involved in the various ops for the "fake" file inputs
-function file_input_to_field(sid, did) {
+function file_input_to_field(sid, did, attach_and_clear) {
+    // if attach_and_clear is false, we just copy the name, we'll process the file input on the back end
     var finput = document.getElementById(sid);
     var flist = "";
     if (finput.files.length > 1) {
@@ -75,7 +19,13 @@ function file_input_to_field(sid, did) {
         flist = finput.files[0].name
     }
     document.getElementById(did).value = flist;
-    encode_file_data(sid, did);
+    
+    // copy file data to special attribute and clear when we're done if called for
+    // we use this for cases like the BoM, where we'll submit multiple files (of the same category) at once
+    if (attach_and_clear == true) {
+        encode_file_data(sid, did); 
+        clear_value_by_id(sid);
+    }
 }
 function clear_value_by_id(did) {
     document.getElementById(did).value = '';
@@ -122,6 +72,4 @@ function encode_file_data(sid, did) {
 
         reader.readAsDataURL(f);
     }
-    // and clear when we're done
-    clear_value_by_id(sid);
 }

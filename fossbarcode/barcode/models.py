@@ -184,7 +184,7 @@ class FileDataDirMixin:
         for chunk in file_data.chunks():
             dest.write(chunk)
         dest.close()
-
+ 
         self._add_blob_from_file(dest_subpath)
 
     def register_new_file(self, subpath):
@@ -533,7 +533,9 @@ class RecordForm(ModelForm):
         self.fields["foss_license"].choices.append((-2, 'Invalid'))    
         self.fields["release_date"].required = False
 
+    # header level spdx client-side file input, the rest are handled in a special "encoded_data" embedded attribute (many-to-one submit)
     spdx_input_file = forms.FileField(required=False)
+
     foss_component = forms.CharField(label="Software Component Name", max_length=200, required=False)
     foss_version = forms.CharField(label="Version", max_length=20, required=False)
     foss_copyright = forms.CharField(label="Copyright Information", max_length=100, required=False)
@@ -566,6 +568,11 @@ class HeaderForm(ModelForm):
 class ItemForm(RecordForm):
     class Meta(RecordForm.Meta):
         exclude = ('company', 'product', 'version', 'release', 'checksum', 'website', 'record_date' 'contact', 'email', 'released')
+
+    # used to collect client-side file inputs - here, in the detail edit these are only single submissions
+    copyright_input_file = forms.FileField(required=False)
+    attribution_input_file = forms.FileField(required=False)
+    foss_spdx_input_file = forms.FileField(required=False)
 
     item_commit_message = forms.CharField(label="Change Comments<br>(for change history)",
                                           widget=forms.Textarea(attrs={'cols': 80, 'rows': 4}))

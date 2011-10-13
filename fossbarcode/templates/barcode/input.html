@@ -95,7 +95,7 @@
       <!-- crafted css to mask the file input field with a text field/button, use the same name/id as the django FileField -->
       <div class="fileinputs">
 	    <input type="file" class="file" id="id_spdx_input_file" name="spdx_input_file" 
-               onchange="file_input_to_field('id_spdx_input_file', 'id_spdx_file');"/>
+               onchange="file_input_to_field('id_spdx_input_file', 'id_spdx_file', false);"/>
 	    <div class="fakefile">
 		  {{ recordform.spdx_file }}
           <!-- this is just for looks, we really activate the invisible one above -->
@@ -173,7 +173,7 @@
       {{ recordform.foss_copyright }}
       <div class="fileinputs">
 	    <input type="file" class="file" id="id_foss_copyright_input_file" name="foss_copyright_input_file"
-               onchange="file_input_to_field('id_foss_copyright_input_file', 'id_foss_copyright');"/>
+               onchange="file_input_to_field('id_foss_copyright_input_file', 'id_foss_copyright', true);"/>
 	    <div class="fakefile">
           <!-- this is just for looks, we really activate the invisible one above -->
 	      <input type="button" class="bbutton" name="copyright_filename" value="or Select File"/>
@@ -184,7 +184,7 @@
       {{ recordform.foss_attribution }}
       <div class="fileinputs">
 	    <input type="file" class="file" id="id_foss_attribution_input_file" name="foss_attribution_input_file" 
-               onchange="file_input_to_field('id_foss_attribution_input_file', 'id_foss_attribution');"/>
+               onchange="file_input_to_field('id_foss_attribution_input_file', 'id_foss_attribution', true);"/>
 	    <div class="fakefile">
           <!-- this is just for looks, we really activate the invisible one above -->
 	      <input type="button" class="bbutton" name="attribution_filename" value="or Select File"/>
@@ -200,7 +200,7 @@
       {{ recordform.foss_spdx }}
       <div class="fileinputs">
 	    <input type="file" class="file" id="id_foss_spdx_input_file" name="foss_spdx_input_file" 
-               onchange="file_input_to_field('id_foss_spdx_input_file', 'id_foss_spdx');"/>
+               onchange="file_input_to_field('id_foss_spdx_input_file', 'id_foss_spdx', true);"/>
 	    <div class="fakefile">
           <!-- this is just for looks, we really activate the invisible one above -->
 	      <input type="button" class="bbutton" name="spdx_filename" value="Select"/>
@@ -646,7 +646,7 @@
         ch11.setAttribute("class", "file");
         ch11.setAttribute("multiple", "");
         ch11.setAttribute("id", "id_patch_input_file" + cvalue);
-        ch11.setAttribute("onchange", "file_input_to_field('id_patch_input_file" + cvalue + "', 'id_" + patch_tag + "');");
+        ch11.setAttribute("onchange", "file_input_to_field('id_patch_input_file" + cvalue + "', 'id_" + patch_tag + "', true);");
         div11.appendChild(ch11);
         var div12 = document.createElement("div");
         div12.setAttribute("class", "fakefile");
