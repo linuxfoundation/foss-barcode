@@ -501,7 +501,7 @@ class LicenseAlias(models.Model):
 
 class System_Settings(models.Model):
     name = models.CharField(max_length=32, db_index=True)
-    ftype = models.CharField(max_length=1, default='t', choices=(('b', 'boolean'), ('t', 'text'), ('c', 'choices')))
+    ftype = models.CharField(max_length=1, default='t', choices=(('b', 'boolean'), ('n', 'number'), ('t', 'text'), ('c', 'choices')))
     value = models.CharField(max_length=128)
     descr = models.CharField(max_length=256)
     last_updated = models.DateTimeField('Updated', auto_now=True)

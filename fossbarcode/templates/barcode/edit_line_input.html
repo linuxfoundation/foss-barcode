@@ -103,7 +103,7 @@
 		<td>{{ itemform.foss_spdx }}</td>
         <td valign="center">  
           <a href="#" id="clear_spdx"><img src="/site_media/images/edit-delete.png" 
-                      title="Clear SPDX" onClick="clear_field('id_m_foss_spdx');clear_extra('id_m_foss_spdx', 'encoded_data');clear_value_by_id('id_m_spdx_input_file');"></a>
+                      title="Clear SPDX" onClick="clear_field('id_m_foss_spdx');clear_extras('id_m_foss_spdx', ['encoded_data', 'data_sizes']);clear_value_by_id('id_m_spdx_input_file');"></a>
 
         </td>
         <td valign="center">
@@ -123,7 +123,7 @@
         <td valign="top">
           <a href="#" id="clear_patches"><img src="/site_media/images/edit-delete.png" 
                       title="Clear Patches" 
-                      onClick="clear_field('id_m_foss_patches');clear_extra('id_m_foss_patches', 'encoded_data');clear_value_by_id('id_m_patches_input_file');"></a>
+                      onClick="clear_field('id_m_foss_patches');clear_extras('id_m_foss_patches', ['encoded_data', 'data_sizes']);clear_value_by_id('id_m_patches_input_file');"></a>
         </td>       
         <td valign="top">	
           <div class="fileinputs">
@@ -141,7 +141,7 @@
     <div class="commit_table">
       <table width="100%">
         <tr>
-          <td align="center"><input type="button" name="submit" value="Update Item" onclick="line_validate_change();"></td>
+          <td align="center"><input type="button" id="submit_item" name="submit" value="Update Item" onclick="line_validate_change();"></td>
         </tr>
       </table>       
       <!-- so the back end knows which record to update -->
@@ -163,8 +163,8 @@
     document.getElementById('id_m_foss_copyright').setAttribute('name', 'foss_copyright_m');
     document.getElementById('id_m_foss_attribution').setAttribute('name', 'foss_attribution_m');
     // if these are manually edited, blank out any file data
-    document.getElementById("id_m_foss_copyright").setAttribute("onchange", "clear_value_by_id('id_m_copyright_input_file');clear_extra('id_m_foss_copyright', 'encoded_data');");
-    document.getElementById("id_m_foss_attribution").setAttribute("onchange", "clear_value_by_id('id_m_attribution_input_file');clear_extra('id_m_foss_attribution', 'encoded_data');");
+    document.getElementById("id_m_foss_copyright").setAttribute("onchange", "clear_value_by_id('id_m_copyright_input_file');clear_extras('id_m_foss_copyright', ['encoded_data'. 'data_sizes']);");
+    document.getElementById("id_m_foss_attribution").setAttribute("onchange", "clear_value_by_id('id_m_attribution_input_file');clear_extras('id_m_foss_attribution', 'encoded_data', 'data_sizes']);");
 </script>
 {% endblock %}
 

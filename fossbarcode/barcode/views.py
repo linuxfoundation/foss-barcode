@@ -165,6 +165,8 @@ def detail(request, record_id, revision=None):
     # gather some config values we need
     host_site = get_config_value('host_site')
     display_code_type = get_config_value('display_code_type')
+    # file queue limits
+    fqueue = get_queue_limits()
 
     # and the cached component list
     cached_components, component_select = cache_get_components()
@@ -176,6 +178,7 @@ def detail(request, record_id, revision=None):
             record_history.append((commit, datetime.date.fromtimestamp(commit_time), msg))
 
     if request.method == 'POST': # If the form has been submitted...
+        sessionid = request.COOKIES['sessionid']
         mode = urllib.unquote(request.POST.get('submit'))
         file_data = request.FILES
 
@@ -356,7 +359,7 @@ def detail(request, record_id, revision=None):
 
                     # and add any new ones
                     if patch_data != '':
-                        error_message += patch_input_file_add(pr, fd, patch_files, patch_data)
+                        error_message += patch_input_file_add(pr, fd, patch_files, patch_data, sessionid)
 
                 else:
                     # no patches specified, remove any that might be present
@@ -405,6 +408,9 @@ def detail(request, record_id, revision=None):
                 else:
                     pr.commit(request.POST.get('item_commit_message', ''))
 
+                # cleanup any queued files
+                clean_queued_files(sessionid)
+
                 # back to the page, with a clean slate and any error messages, we need to re-render to pickup changes
                 foss = render_detail(record_id)
                 record_list = Product_Record.objects.filter(id = record_id)
@@ -423,7 +429,7 @@ def detail(request, record_id, revision=None):
                                                       'cached_components': cached_components, 'component_select': component_select,
                                                       'public_facing':  public_facing, 'public_logo': public_logo,
                                                       'headerform': headerform, 'itemform': itemform,
-                                                      'reload_trigger': str(time.time()) })
+                                                      'fqueue': fqueue, 'reload_trigger': str(time.time()) })
 
 # record search page
 def search(request):
@@ -487,7 +493,33 @@ def search_dupes(request):
         r = record_list[0].id
     
     return HttpResponse(''.join(str(r)))
- 
+
+# background file upload for large files, to be processed after we POST the form
+def queued_upload(request):
+    basedir = os.path.join(settings.STATIC_DOC_ROOT, "queued_uploads")
+    if request.method == 'POST':
+        filename = request.META['HTTP_X_FILENAME']
+        subdir = request.META['HTTP_X_SUBDIR']
+        sessionid = request.COOKIES['sessionid']
+
+        file_data = request.raw_post_data
+
+        if not os.path.isdir(os.path.join(basedir, sessionid, subdir)):
+            try:
+                os.makedirs(os.path.join(basedir, sessionid, subdir))
+            except IOError:
+                pass
+        try:
+            dest = open(os.path.join(basedir, sessionid, subdir, filename), 'wb+')
+            dest.write(file_data)
+            dest.close()
+        except IOError:
+            pass
+
+        return HttpResponse(filename)
+    else:
+        return HttpResponse('Please POST something...')
+
 # record list page - this is also a form, for record deletions
 def records(request):
     error_message = ''
@@ -566,19 +598,24 @@ def input(request):
         return HttpResponseRedirect('/barcode/records/')
 
     error_message = check_for_system_apps()
+    # hidden fields in input form, need to save/restore on a form error
     foss_components = ''
     foss_versions = ''
     foss_copyrights = ''
     foss_copyright_data = ''
+    foss_copyright_sizes = ''
     foss_attributions = ''
     foss_attribution_data = ''
+    foss_attribution_sizes = ''
     foss_licenses = ''
     foss_license_urls = ''
     foss_urls = ''
     foss_spdxs = ''
     foss_spdx_data = ''
+    foss_spdx_sizes = ''
     foss_patches = ''
     foss_patch_data = ''
+    foss_patch_sizes = ''
     component_error = ''
     needs_setup = 0
 
@@ -587,6 +624,8 @@ def input(request):
                         'website': get_config_value('company_website'),
                         'contact': get_config_value('compliance_name'),
                         'email': get_config_value('compliance_email')}
+    # file queue limits
+    fqueue = get_queue_limits()
 
     # plus whatever product names we may already have in the system
     products = Product_Record.objects.values_list('product', flat=True).distinct()
@@ -600,21 +639,26 @@ def input(request):
 
     if request.method == 'POST': # If the form has been submitted...
         recordform = RecordForm(request.POST) # A form bound to the POST data      
- 
+        sessionid = request.COOKIES['sessionid']
+
         # we need these whether it's valid or not to repopulate on a bad submit        
         foss_components = request.POST.get('foss_components', '')
         foss_versions = request.POST.get('foss_versions', '')
         foss_copyrights = request.POST.get('foss_copyrights', '')
         foss_copyright_data = request.POST.get('foss_copyright_data', '')
+        foss_copyright_sizes = request.POST.get('foss_copyright_sizes', '')
         foss_attributions = request.POST.get('foss_attributions', '')
         foss_attribution_data = request.POST.get('foss_attribution_data', '')
+        foss_attribution_sizes = request.POST.get('foss_attribution_sizes', '')
         foss_licenses = request.POST.get('foss_licenses', '')
         foss_license_urls = request.POST.get('foss_license_urls', '')
         foss_urls = request.POST.get('foss_urls', '')
         foss_spdxs = request.POST.get('foss_spdxs', '')
         foss_spdx_data = request.POST.get('foss_spdx_data', '')
+        foss_spdx_sizes = request.POST.get('foss_spdx_sizes', '')
         foss_patches = request.POST.get('foss_patches', '')
         foss_patch_data = request.POST.get('foss_patch_data', '')
+        foss_patch_sizes = request.POST.get('foss_patch_sizes', '')
 
         # need at least one full component entry to proceed
         if foss_components == '' or foss_versions == '' or foss_copyrights == '' \
@@ -684,15 +728,18 @@ def input(request):
 
                         # copyright, attribution can be text or a file now
                         error_message += set_copyright_attribution(recorddata, fossdata, copyrights[i], 
-                                                                    copyright_data[i], attributions[i], attribution_data[i])
+                                                                    copyright_data[i], attributions[i], attribution_data[i], sessionid)
 
                         # check for SPDX files and save in user_data
                         if spdxs[i] != '':
-                            spdx = decode_data_to_file(spdxs[i], spdx_data[i])
-                            error_message += spdx_input_file_add(recorddata, spdx)
+                            if spdx_data[i] != "queued":
+                                spdx = decode_data_to_file(spdxs[i], spdx_data[i])
+                                error_message += spdx_input_file_add(recorddata, spdx)
+                            else:
+                                error_message = queued_file_to_record(recorddata, spdxs[i], "spdx_files", sessionid)
 
                         # check for patches and save in user_data
-                        error_message = patch_input_file_add(recorddata, fossdata, patches[i], patch_data[i])
+                        error_message = patch_input_file_add(recorddata, fossdata, patches[i], patch_data[i], sessionid)
 
                         # save information after everything's collected
                         fossdata.save()
@@ -717,6 +764,9 @@ def input(request):
             # Commit the whole thing to version control
             recorddata.commit(msg_strings['commit_new_record'])
 
+            # cleanup any queued files
+            clean_queued_files(sessionid)
+
             if error_message == '':
                 return HttpResponseRedirect('/barcode/' + str(recordid) + '/detail/')
 
@@ -736,12 +786,17 @@ def input(request):
                               'recordform': recordform, 'itemform': itemform, 'needs_setup': needs_setup,
                               'company_prefills': company_prefills, 'products': products,
                               'foss_components': foss_components, 'foss_versions': foss_versions,
-                              'foss_copyrights': foss_copyrights, 'foss_copyright_data': foss_copyright_data,
-                              'foss_attributions': foss_attributions, 'foss_attribution_data': foss_attribution_data,
+                              'foss_copyrights': foss_copyrights, 
+                              'foss_copyright_data': foss_copyright_data, 'foss_copyright_sizes': foss_copyright_sizes,
+                              'foss_attributions': foss_attributions, 
+                              'foss_attribution_data': foss_attribution_data, 'foss_attribution_sizes': foss_attribution_sizes,
                               'foss_licenses': foss_licenses, 'foss_license_urls': foss_license_urls, 
-                              'foss_urls': foss_urls, 'foss_spdxs': foss_spdxs, 'foss_spdx_data': foss_spdx_data,
+                              'foss_urls': foss_urls, 'foss_spdxs': foss_spdxs, 
+                              'foss_spdx_data': foss_spdx_data, 'foss_spdx_sizes': foss_spdx_sizes,
                               'cached_components': cached_components, 'component_select': component_select,
-                              'foss_patches': foss_patches, 'foss_patch_data': foss_patch_data, 'tab_input': True })
+                              'foss_patches': foss_patches, 
+                              'foss_patch_data': foss_patch_data, 'foss_patch_sizes': foss_patch_sizes, 
+                              'fqueue': fqueue, 'tab_input': True })
 
 ### these are all basically documentation support
 
@@ -811,6 +866,16 @@ def check_for_system_apps():
 
     return errmsg
 
+# cleanup the queued file cache for a session
+def clean_queued_files(sessionid):
+    import shutil
+    sessiondir = os.path.join(settings.STATIC_DOC_ROOT, "queued_uploads", sessionid)
+    if os.path.isdir(sessiondir):
+        try:
+            shutil.rmtree(sessiondir)
+        except IOError:
+            pass
+
 # to remove a record
 def delete_record(recid):
     errmsg = ''
@@ -840,7 +905,6 @@ def render_detail(id, revision=None):
     for f in foss_list:
         if revision:
             f.switch_revision(revision)
-        fossid = f.id
 
         if f.copyright_file != 0:
             copyright = media_root + str(id) + "/copyrights/" + f.copyright + '">' + f.copyright + "</a>"
@@ -869,6 +933,13 @@ def render_detail(id, revision=None):
                      'license': f.license, 'license_url': f.license_url, 
                      'url': f.url, 'spdx_file': spdx_file, 'patches': patches})
     return foss
+
+# the the file queue limits
+def get_queue_limits():
+    shigh = int(get_config_value('fqueue_size_high')) * 1024
+    slow = int(get_config_value('fqueue_size_low')) * 1024
+    tlimit = int(get_config_value('fqueue_total_limit')) * 1024
+    return {'size_high': shigh, 'size_low': slow, 'total_limit': tlimit } 
 
 # get a system configuration value
 def get_config_value(cname):
@@ -910,22 +981,35 @@ def spdx_input_file_add(pr, spdx):
     return errmsg
 
 # add a patch file, given the name and encoded data
-def patch_input_file_add(pr, fd, patches, patch_data):
+def patch_input_file_add(pr, fd, patches, patch_data, sessionid=None):
     errmsg = ''
-    patch_dest = os.path.join(pr.file_path(), "spdx_files")                        
+    patch_dest = os.path.join(pr.file_path(), "patches")
     if patches != "":
         pnames = patches.split("\r\n")
         pdata = patch_data.split("\r\n")
         for pindex, pname in enumerate(pnames):
             if pname != "" and pname not in fd.patch_files:
-                patch = decode_data_to_file(pname, pdata[pindex])
+                if pdata[pindex] == "queued" and sessionid != None:
+                        errmsg = queued_file_to_record(pr, pname, "patches", sessionid)
+                        if errmsg == '':
+                            fd.patch_files.append(pname)
+                else:
+                    patch = decode_data_to_file(pname, pdata[pindex])
+                    try:
+                        pr.new_file_from_submit(patch, "patches")
+                        fd.patch_files.append(pname)
+                    except:
+                        errmsg = msg_strings['copy_fail'] % (str(pname), patch_dest) + "<br>"
 
-                try:
-                    pr.new_file_from_submit(patch, "patches")
-                    fd.patch_files.append(pname)
-                except:
-                    errmsg = msg_strings['copy_fail'] % (str(pname), patch_dest) + "<br>"
+    return errmsg
 
+def queued_file_to_record(pr, fname, subdir, sessionid):
+    errmsg = ''
+    try:
+        sfile = os.path.join(settings.STATIC_DOC_ROOT, "queued_uploads", sessionid, subdir, str(fname))
+        pr.new_file_from_existing(sfile, subdir)
+    except:
+        errmsg = msg_strings['copy_fail'] % (sfile, os.path.join(pr.file_path(), subdir)) + "<br>"
     return errmsg
 
 # convert base64 encoded file data to a named File object
@@ -961,39 +1045,54 @@ def spdx_check_for_change(pr, old_spdx, new_spdx, spdx):
     return errmsg
 
 # decide if these are files or plain text and update Product_Record (pr) and Foss_Component (fc) accordingly
-def set_copyright_attribution(pr, fc, copyright, copyright_data, attribution, attribution_data):
+def set_copyright_attribution(pr, fc, copyright, copyright_data, attribution, attribution_data, sessionid=None):
     errmsg = ''
+    qerr = ''
     data_dest = pr.file_path()
     if copyright != '':
         if copyright_data != '':
-            # submit from a detail edit is already a File object
-            if hasattr(copyright_data, 'file'):
-                data_file = copyright_data               
+            if copyright_data == 'queued':
+                qerr = queued_file_to_record(pr, copyright, "copyrights", sessionid)
+                if qerr == '':
+                    fc.copyright_file = True
+                else:
+                    errmsg += qerr 
             else:
-                data_file = decode_data_to_file(copyright, copyright_data)
+                # submit from a detail edit is already a File object
+                if hasattr(copyright_data, 'file'):
+                    data_file = copyright_data               
+                else:
+                    data_file = decode_data_to_file(copyright, copyright_data)
 
-            try:
-                pr.new_file_from_submit(data_file, "copyrights")
-                fc.copyright_file = True
-            except:
-                errmsg += msg_strings['file_create_fail'] % (copyright, os.path.join(data_dest, "copyrights")) + "<br>"
+                try:
+                    pr.new_file_from_submit(data_file, "copyrights")
+                    fc.copyright_file = True
+                except:
+                    errmsg += msg_strings['file_create_fail'] % (copyright, os.path.join(data_dest, "copyrights")) + "<br>"
         else:
             if not os.path.exists(os.path.join(data_dest, "copyrights", copyright)):
                 fc.copyright_file = False
                         
     if attribution != '':
         if attribution_data != '':
-            # submit from a detail edit is already a File object
-            if hasattr(attribution_data, 'file'):
-                data_file = attribution_data               
+            if attribution_data == 'queued':
+                qerr = queued_file_to_record(pr, attribution, "attributions", sessionid)
+                if qerr == '':
+                    fc.attribution_file = True
+                else:
+                    errmsg += qerr
             else:
-                data_file = decode_data_to_file(attribution, attribution_data)
+                # submit from a detail edit is already a File object
+                if hasattr(attribution_data, 'file'):
+                    data_file = attribution_data               
+                else:
+                    data_file = decode_data_to_file(attribution, attribution_data)
 
-            try:
-                pr.new_file_from_submit(data_file, "attributions")
-                fc.attribution_file = True
-            except:
-                errmsg += msg_strings['file_create_fail'] % (attribution, os.path.join(data_dest, "attributions")) + "<br>"
+                try:
+                    pr.new_file_from_submit(data_file, "attributions")
+                    fc.attribution_file = True
+                except:
+                    errmsg += msg_strings['file_create_fail'] % (attribution, os.path.join(data_dest, "attributions")) + "<br>"
         else:
             if not os.path.exists(os.path.join(data_dest, "attributions", attribution)):
                 fc.attribution_file = False

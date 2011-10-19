@@ -630,6 +630,30 @@
     <field type="DateTimeField" name="last_updated">2011-08-29 11:35:01</field>
     <field type="BooleanField" name="user_updated">False</field>
   </object>
+  <object pk="9" model="barcode.system_settings">
+    <field type="CharField" name="name">fqueue_size_high</field>
+    <field type="CharField" name="ftype">n</field>
+    <field type="CharField" name="value">100</field>
+    <field type="CharField" name="descr">Maximum file size (kb) before uploaded files are queued</field>
+    <field type="DateTimeField" name="last_updated">2011-10-19 15:58:00</field>
+    <field type="BooleanField" name="user_updated">False</field>
+  </object>
+  <object pk="10" model="barcode.system_settings">
+    <field type="CharField" name="name">fqueue_size_low</field>
+    <field type="CharField" name="ftype">n</field>
+    <field type="CharField" name="value">20</field>
+    <field type="CharField" name="descr">Maximum file size (kb) before uploaded files are queued (once limit is reached)</field>
+    <field type="DateTimeField" name="last_updated">2011-10-19 15:58:00</field>
+    <field type="BooleanField" name="user_updated">False</field>
+  </object>
+  <object pk="11" model="barcode.system_settings">
+    <field type="CharField" name="name">fqueue_total_limit</field>
+    <field type="CharField" name="ftype">n</field>
+    <field type="CharField" name="value">1024</field>
+    <field type="CharField" name="descr">Total upload file limit (kb) when cutoff changes from high to low</field>
+    <field type="DateTimeField" name="last_updated">2011-10-19 15:58:00</field>
+    <field type="BooleanField" name="user_updated">False</field>
+  </object>
   <object pk="1" model="auth.user">
     <field type="CharField" name="username">compliance</field>
     <field type="CharField" name="first_name"/>

@@ -9,6 +9,8 @@
   <style type="text/css" media="screen">@import "/site_media/css/jquery-ui-1.8.16.custom.css";</style>
   <!-- CSS to add file icons for file attachments -->
   <style type="text/css" media="screen">@import "/site_media/css/iconize.css";</style>
+  <!-- progress bar for async file uploads -->
+  <style type="text/css" media="screen">@import "/site_media/css/progress.css";</style>
   <!-- used for modal dialog -->
   <script type="text/javascript" src="/site_media/js/jquery-1.4.2.min.js"></script>
   <script type="text/javascript" src="/site_media/js/jquery-ui-1.8.16.custom.min.js"></script>
@@ -17,7 +19,7 @@
   <script type='text/javascript' src='/site_media/js/history.js'></script>
   <script type="text/javascript" src="/site_media/js/record-check.js"></script>
   <script type="text/javascript" src="/site_media/js/date-picker.js"></script>
-  <script type="text/javascript" src="/site_media/js/file-select-ops.js"></script>
+  <script type="text/javascript" src="/site_media/js/file-select-ops.js"></script>  
   <script type="text/javascript" src="/site_media/js/visibility.js"></script>
   <script type="text/javascript" src="/site_media/js/licenses.js"></script>
   <script type="text/javascript" src="/site_media/js/component-select.js"></script>
@@ -181,6 +183,11 @@
 
 {% block scripts %}
 <script language="JavaScript">
+    // controls for file queueing, user configurable
+    var fqueue_size_high = {{ fqueue.size_high }};
+    var fqueue_size_low = {{ fqueue.size_low }};
+    var fqueue_total_limit = {{ fqueue.total_limit }}; 
+
     // populate the license drop-down on load, and set up its events
     $("#id_foss_license").ready(function() {
         populate_licenses("id_foss_license", "id_foss_license_url");

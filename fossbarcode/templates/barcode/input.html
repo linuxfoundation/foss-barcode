@@ -7,6 +7,8 @@
   <style type="text/css" media="screen">@import "/site_media/css/barcode-modals.css";</style>
   <!-- CSS file to customize file select layouts -->
   <style type="text/css" media="screen">@import "/site_media/css/fakefile.css";</style>
+  <!-- progress bar for async file uploads -->
+  <style type="text/css" media="screen">@import "/site_media/css/progress.css";</style>
   <script type="text/javascript" src="/site_media/js/jquery-1.4.2.min.js"></script>
   <script type="text/javascript" src="/site_media/js/jquery-ui-1.8.16.custom.min.js"></script>
   <script type='text/javascript' src='/site_media/js/jquery.simplemodal.1.4.1.min.js'></script>
@@ -123,7 +125,11 @@
   </tr>          
 </table>
 </div> <!-- entry_form -->
-
+<!-- this is where the async file uploads get displayed -->
+<div class="lprogressor">
+  <table id="progress" align="center">
+  </table>
+</div>
 <div class="foss_table">
 {% if component_error %}
     {% autoescape off %}
@@ -248,21 +254,25 @@
 <input type="hidden", name="foss_versions", id="foss_versions", value="{{ foss_versions }}">
 <input type="hidden", name="foss_copyrights", id="foss_copyrights", value="{{ foss_copyrights }}">
 <input type="hidden", name="foss_copyright_data", id="foss_copyright_data", value="{{ foss_copyright_data }}">
+<input type="hidden", name="foss_copyright_sizes", id="foss_copyright_sizes", value="{{ foss_copyright_sizes }}">
 <input type="hidden", name="foss_attributions", id="foss_attributions", value="{{ foss_attributions }}">
 <input type="hidden", name="foss_attribution_data", id="foss_attribution_data", value="{{ foss_attribution_data }}">
+<input type="hidden", name="foss_attribution_sizes", id="foss_attribution_sizes", value="{{ foss_attribution_sizes }}">
 <input type="hidden", name="foss_licenses", id="foss_licenses", value="{{ foss_licenses }}">
 <input type="hidden", name="foss_license_urls", id="foss_license_urls", value="{{ foss_license_urls }}">
 <input type="hidden", name="foss_urls", id="foss_urls", value="{{ foss_urls }}">
 <input type="hidden", name="foss_spdxs", id="foss_spdxs", value="{{ foss_spdxs }}">
 <input type="hidden", name="foss_spdx_data", id="foss_spdx_data", value="{{ foss_spdx_data }}"> 
+<input type="hidden", name="foss_spdx_sizes", id="foss_spdx_sizes", value="{{ foss_spdx_sizes }}">
 <input type="hidden", name="foss_patches", id="foss_patches", value="{{ foss_patches }}">
 <input type="hidden", name="foss_patch_data", id="foss_patch_data", value="{{ foss_patch_data }}">
+<input type="hidden", name="foss_patch_sizes", id="foss_patch_sizes", value="{{ foss_patch_sizes }}">
 
 <div class="cfooter">
 <hr>
 <table width="100%" id="submit_buttons">
   <tr>
-    <td align="center"><input style="width: 300px" type="submit" name="submit_code" 
+    <td align="center"><input style="width: 300px" type="submit" name="submit_record" id="submit_record" 
                               value="Add Compliance Record" onclick="return fill_hidden_and_submit();"/></td>
   </tr>
 </table>
@@ -279,6 +289,11 @@
 
 {% block scripts %}
 <script language="JavaScript">
+    // controls for file queueing, user configurable
+    var fqueue_size_high = {{ fqueue.size_high }};
+    var fqueue_size_low = {{ fqueue.size_low }};
+    var fqueue_total_limit = {{ fqueue.total_limit }}; 
+
     // this gets used by component-select.js
     {% if cached_components %}
     var ccache = {% autoescape off %}{{ cached_components }}{% endautoescape %};
@@ -335,7 +350,9 @@
         });
     });
 
-    // pfield, sfield, modal are defined in file-select-ops.js
+    // used in several places to differentiate which field we're selecting files for
+    var pfield = "foss_patches";
+    var sfield = "foss_spdx";
 
     var header_fields = { "company": "",
                           "website": "",
@@ -371,6 +388,7 @@
             var fossc = document.getElementById("foss_components").value.split(",");
             var fossp = document.getElementById(pfield).value.split(",");
             var fosspd = document.getElementById("foss_patch_data").value.split(",");
+            var fossps = document.getElementById("foss_patch_sizes").value.split(",");
             for (i = 0; i < fossc.length - 1; i++) {
                 for(var f in bom_fields){
                     var fh = f + "s";
@@ -382,8 +400,8 @@
                 var p = document.getElementsByName(patch_tag)[0];
                 if (typeof p != 'undefined') {
                     p.value = fossp[i];
-                    // p.attributes[] doesn't work here? 
                     p.setAttribute("encoded_data", fosspd[i]);
+                    p.setAttribute("data_sizes", fossps[i]);
                 }                
             }
             clear_hidden_inputs();
@@ -400,20 +418,20 @@
         // and the reverse is true
         document.getElementById("id_foss_spdx").setAttribute("onchange", "spdx_change('id_foss_spdx', 'top_spdx_select');");
         // if these are manually edited, blank out any file data
-        document.getElementById("id_foss_copyright").setAttribute("onchange", "clear_value_by_id('id_foss_copyright_input_file');clear_extra('id_foss_copyright', 'encoded_data');");
-        document.getElementById("id_foss_attribution").setAttribute("onchange", "clear_value_by_id('id_foss_attribution_input_file');clear_extra('id_foss_attribution', 'encoded_data');");
+        document.getElementById("id_foss_copyright").setAttribute("onchange", "clear_value_by_id('id_foss_copyright_input_file');clear_extras('id_foss_copyright', ['encoded_data', 'data_sizes']);");
+        document.getElementById("id_foss_attribution").setAttribute("onchange", "clear_value_by_id('id_foss_attribution_input_file');clear_extras('id_foss_attribution', ['encoded_data', 'data_sizes']);");
         // prefill some header values if defined
         document.getElementById("id_company").setAttribute("value", "{% autoescape off %}{{ company_prefills.name }}{% endautoescape %}");
         document.getElementById("id_website").setAttribute("value", "{% autoescape off %}{{ company_prefills.website }}{% endautoescape %}");
         document.getElementById("id_contact").setAttribute("value", "{% autoescape off %}{{ company_prefills.contact }}{% endautoescape %}");
         document.getElementById("id_email").setAttribute("value", "{% autoescape off %}{{ company_prefills.email }}{% endautoescape %}");
-        // add an attribute to these fields to store the encoded data in
+        // add attributes to these fields to store the encoded data/queue status in
         for (var f in file_fields) {
             var did = "id_" + file_fields[f];
-            document.getElementById(did).setAttribute("encoded_data", "");
+            clear_extras(did, ['encoded_data', 'data_sizes']);
             did = "id_m_" + file_fields[f];
-            document.getElementById(did).setAttribute("encoded_data", "");
-        }   
+            clear_extras(did, ['encoded_data', 'data_sizes']);
+        }
         // default to list select
         {% if products %}
         document.getElementById("id_product").disabled = true;
@@ -464,19 +482,19 @@
     function replace_bom_values(row) {
         // called from the modal line-item change dialog
         for(var f in bom_fields){
-            var did = f + "s";
             var sid = "id_m_" + f;
-            var dest = f + row;
+            var did = f + row;
             var content = document.getElementById(sid).value;
+            var src = document.getElementById(sid);
+            var dest = document.getElementById(did);
             if (f == "foss_license") {
                 var license_select = document.getElementById(sid);
                 content = license_select.options[license_select.selectedIndex].text;
             }
-            document.getElementById(dest).innerHTML = content;
+            dest.innerHTML = content;
             // file input fields get special treatment
-            if (file_fields.indexOf(f) != -1) {
-                 document.getElementById(dest).attributes["encoded_data"].value = document.getElementById(sid).attributes["encoded_data"].value;
-            }        
+            if (file_fields.indexOf(f) != -1)
+                set_extras(did, sid, ['encoded_data', 'data_sizes']);        
         }
         // and the patches
         var sid = "id_m_" + pfield;
@@ -484,7 +502,7 @@
         var src = document.getElementById(sid);
         var dest = document.getElementById(did);
         dest.value = src.value;
-        dest.attributes["encoded_data"].value = src.attributes["encoded_data"].value;
+        set_extras(did, sid, ['encoded_data', 'data_sizes']);
     }
     function delete_bom_components(id) {
         // nothing is in the database yet, so this is handled a little differently than the other forms
@@ -589,7 +607,7 @@
                 td.setAttribute("license_id", license_id);
             }
             td.appendChild(document.createTextNode(content));
-            // file input fields get special treatment, add an attribute to the table cell for the encoded data
+            // file input fields get special treatment, add attributes to the table cell for the encoded data, sizes
             if (file_fields.indexOf(f) != -1) {
                 // if there's no text (filename), we don't care about file data
                 if (bom_fields[f] != '') {
@@ -597,13 +615,18 @@
                     if (mode == "add") {
                         var sid = "id_" + f;
                         td.setAttribute("encoded_data", document.getElementById(sid).attributes["encoded_data"].value);
+                        td.setAttribute("data_sizes", document.getElementById(sid).attributes["data_sizes"].value);
                     } else {
                         var sid = f + "_data";
                         var fdata = document.getElementById(sid).value.split(",");
                         td.setAttribute("encoded_data", fdata[index]);
+                        sid = f + "_sizes";
+                        fdata = document.getElementById(sid).value.split(",");
+                        td.setAttribute("data_sizes", fdata[index]);
                     }
                 } else {
                     td.setAttribute("encoded_data", "");
+                    td.setAttribute("data_sizes", "");
                 }
             }
             row.appendChild(td);
@@ -618,7 +641,8 @@
         ch9.setAttribute("name", patch_tag);
         ch9.setAttribute("readonly", "true");
         // where we'll store the encoded patch data 
-        ch9.setAttribute("encoded_data", "");       
+        ch9.setAttribute("encoded_data", "");
+        ch9.setAttribute("data_sizes", "");
         td9.appendChild(ch9);   
         row.appendChild(td9);
 
@@ -629,7 +653,7 @@
         ch10.setAttribute("href", "#");
         ch10.setAttribute("class", "basic");
         ch10.setAttribute("name", "patch_clear" + cvalue);
-        ch10.setAttribute("onclick", onclick="clear_field('id_foss_patches" + cvalue + "');clear_extra('id_foss_patches" + cvalue + "', 'encoded_data');");
+        ch10.setAttribute("onclick", onclick="clear_field('id_foss_patches" + cvalue + "');clear_extra('id_foss_patches" + cvalue + "', 'encoded_data');clear_extra('id_foss_patches" + cvalue + "', 'data_sizes');");
         var tdi = document.createElement("img");
         tdi.setAttribute("src", "/site_media/images/edit-delete.png");
         tdi.setAttribute("title", "Clear Patches");
@@ -688,10 +712,10 @@
             for (i = 0; i < chk.length; i++) {
                 var row = chk[i].value;
                 for(var f in bom_fields){
-                    var dest_id = f + "s";
-                    var src_id = f + row;
-                    var dest = document.getElementById(dest_id);
-                    var src = document.getElementById(src_id);
+                    var did = f + "s";
+                    var sid = f + row;
+                    var dest = document.getElementById(did);
+                    var src = document.getElementById(sid);
                     // license handled differently
                     if (f == "foss_license") {
                         dest.value += src.attributes["license_id"].value + ",";
@@ -700,18 +724,23 @@
                     }
                     // file input fields get special treatment
                     if (file_fields.indexOf(f) != -1) {
-                        dest_id = f + "_data"
-                        dest = document.getElementById(dest_id);
+                        did = f + "_data"
+                        dest = document.getElementById(did);
                         dest.value += src.attributes["encoded_data"].value + ",";
+                        did = f + "_sizes"
+                        dest = document.getElementById(did);
+                        dest.value += src.attributes["data_sizes"].value + ",";
                     }
                 }
                 // and the patches
-                var src_id = "id_" + pfield + row;
-                var src = document.getElementById(src_id);
+                var sid = "id_" + pfield + row;
+                var src = document.getElementById(sid);
                 var dest = document.getElementById("foss_patches");
                 dest.value += src.value + ",";
                 dest = document.getElementById("foss_patch_data");
-                dest.value += src.attributes["encoded_data"].value + ",";                
+                dest.value += src.attributes["encoded_data"].value + ",";
+                dest = document.getElementById("foss_patch_sizes");
+                dest.value += src.attributes["data_sizes"].value + ",";                
             }
         }
     }
@@ -721,10 +750,10 @@
         document.getElementById('line_item_no').innerHTML = row;
         // walk through the table row and plug the values into the edit form, called when we click the icon, before the form appears
         for(var f in bom_fields){
-            var dest_id = "id_m_" + f;
-            var src_id = f + row;
-            var dest = document.getElementById(dest_id);
-            var src = document.getElementById(src_id);
+            var did = "id_m_" + f;
+            var sid = f + row;
+            var dest = document.getElementById(did);
+            var src = document.getElementById(sid);
             if (f == "foss_license") {
                 var license_text = src.innerHTML;
                 var options = dest.children;
@@ -738,7 +767,7 @@
                 }
             // file input fields get special treatment
             } else if (file_fields.indexOf(f) != -1) {
-                dest.attributes["encoded_data"].value = src.attributes["encoded_data"].value;
+                set_extras(did, sid, ['encoded_data', 'data_sizes']);
                 dest.value = src.innerHTML;
             } else {
                 dest.value = src.innerHTML;
@@ -749,13 +778,12 @@
             document.getElementById("old_m_license_id").innerHTML = old_license_id;
         }
         // and the patches
-        var dest_id = "id_m_" + pfield;
-        var src_id = "id_" + pfield + row;
-        var dest = document.getElementById(dest_id);
-        var src = document.getElementById(src_id); 
+        var did = "id_m_" + pfield;
+        var sid = "id_" + pfield + row;
+        var dest = document.getElementById(did);
+        var src = document.getElementById(sid); 
         dest.value = src.value;
-        // again dest.attributes[] fails here
-        dest.setAttribute("encoded_data", src.attributes["encoded_data"].value);
+        set_extras(did, sid, ['encoded_data', 'data_sizes']);
     }
 
     function line_edit_init(row) {
@@ -767,7 +795,7 @@
              containerCss:{
                  height:450,
                  padding:0,
-                 width:750
+                 width:680
              }
         });
     }

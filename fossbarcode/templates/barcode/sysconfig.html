@@ -50,7 +50,11 @@ Below are are list of user configurable settings. At a minumum you should set <i
         {% endfor %}        
         </td>
       {% else %}
-        <td><input type="input" name="{{ record.name }}" size="80" value="{{ record.value }}"></td>
+        {% if record.ftype == 'n' %}
+          <td><input type="input" name="{{ record.name }}" size="10" value="{{ record.value }}"></td>
+        {% else %}
+          <td><input type="input" name="{{ record.name }}" size="80" value="{{ record.value }}"></td>
+        {% endif %}
       {% endif %}
     {% endif %}
     <td>{{ record.descr }}</td>

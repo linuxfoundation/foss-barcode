@@ -129,7 +129,7 @@
         <td valign="top">
           <a href="#" id="clear_patches"><img src="/site_media/images/edit-delete.png" 
                       title="Clear Patches" 
-                      onClick="clear_field('id_foss_patches');clear_extra('id_foss_patches', 'encoded_data');clear_value_by_id('id_patches_input_file');"></a>
+                      onClick="clear_field('id_foss_patches');clear_extras('id_foss_patches', ['encoded_data', 'data_sizes']);clear_value_by_id('id_patches_input_file');"></a>
         </td>       
         <td valign="top">	
           <div class="fileinputs">
@@ -156,6 +156,15 @@
         <table width="100%">
           <tr>
             <td>{{ itemform.item_commit_message }}</td>
+          </tr>
+          <tr>
+            <td align="center">
+              <!-- this is where the async file uploads get displayed -->
+              <div class="progressor">
+                <table id="progress" align="center">
+                </table>
+              </div>
+            </td>
           </tr>
           <tr>
             <td align="center"><input type="submit" name="submit" id="submit_item" value="Update Item" onclick="return submit_line_validate();"></td>
