@@ -1,5 +1,10 @@
 {% extends "barcode/base.html" %}
-
+{% block header %}
+  <style type="text/css" media="screen">@import "/site_media/css/validate.css";</style>
+  <script type="text/javascript" src="/site_media/js/jquery-1.4.2.min.js"></script>
+  <script type='text/javascript' src='/site_media/js/jquery.validate.js'></script>
+</head>
+{% endblock %}
 {% block content %}
 
 <p>
@@ -11,7 +16,7 @@ Below are are list of user configurable settings. At a minumum you should set <i
 
 {% if info_message %}<p><strong>{{ info_message }}</strong></p>{% endif %}
  
-<form name="sysconfigform" method="post" action="" enctype="multipart/form-data">  
+<form name="sysconfigform" id="sysconfigform" method="post" action="" enctype="multipart/form-data">  
 <p>
 <input type="submit" name="change_search_paths", value="Save Settings" /> 
 </p>
@@ -51,9 +56,9 @@ Below are are list of user configurable settings. At a minumum you should set <i
         </td>
       {% else %}
         {% if record.ftype == 'n' %}
-          <td><input type="input" name="{{ record.name }}" size="10" value="{{ record.value }}"></td>
+          <td><input type="input" name="{{ record.name }}" size="10" value="{{ record.value }}" valtype="{{ record.ftype }}"></td>
         {% else %}
-          <td><input type="input" name="{{ record.name }}" size="80" value="{{ record.value }}"></td>
+          <td><input type="input" name="{{ record.name }}" id="id_{{ record.name }}" size="80" value="{{ record.value }}"></td>
         {% endif %}
       {% endif %}
     {% endif %}
@@ -77,6 +82,17 @@ custom licenses, can be edited
 {% block scripts %}
 <script language="JavaScript">
     function setdefaults() {
+        // set validation classes
+        $("#id_company_website")[0].setAttribute("class", "url");
+        $("#id_compliance_email")[0].setAttribute("class", "email");
+        $("#sysconfigform").find('*[valtype]').each(function(index) {
+            if (this.attributes['valtype'].value == 'n') {
+                this.setAttribute("class", "number");
+            }
+        });
     }
+    $(document).ready(function(){
+        $("#sysconfigform").validate();
+    });
 </script>
 {% endblock %}

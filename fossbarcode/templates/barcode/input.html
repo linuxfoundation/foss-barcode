@@ -1,6 +1,7 @@
 {% extends "barcode/base.html" %}
 {% block header %}
   <style type="text/css" media="screen">@import "/site_media/css/containers.css";</style>
+  <style type="text/css" media="screen">@import "/site_media/css/validate.css";</style>
   <!-- CSS file for the datepicker -->
   <style type="text/css" media="screen">@import "/site_media/css/jquery-ui-1.8.16.custom.css";</style>
   <!-- CSS file for modal dialog -->
@@ -12,6 +13,7 @@
   <script type="text/javascript" src="/site_media/js/jquery-1.4.2.min.js"></script>
   <script type="text/javascript" src="/site_media/js/jquery-ui-1.8.16.custom.min.js"></script>
   <script type='text/javascript' src='/site_media/js/jquery.simplemodal.1.4.1.min.js'></script>
+  <script type='text/javascript' src='/site_media/js/jquery.validate.js'></script>
   <script type='text/javascript' src='/site_media/js/barcode-modals.js'></script>
   <script type='text/javascript' src='/site_media/js/file-select-ops.js'></script>
   <script type="text/javascript" src="/site_media/js/visibility.js"></script>
@@ -34,7 +36,7 @@
 {% endif %}
 
 {% if not needs_setup %}
-<form name="entryform" method="post" action="" enctype="multipart/form-data">
+<form name="entryform" id="entryform" method="post" action="" enctype="multipart/form-data">
 <div class="container" id="entry_form">
 <table align="left" width="100%">
   <tr align="left">
@@ -294,6 +296,10 @@
     var fqueue_size_low = {{ fqueue.size_low }};
     var fqueue_total_limit = {{ fqueue.total_limit }}; 
 
+    // set client-side validation rules
+    $("id_website")[0].setAttribute("class", "required url");
+    $("id_email")[0].setAttribute("class", "required email");
+
     // this gets used by component-select.js
     {% if cached_components %}
     var ccache = {% autoescape off %}{{ cached_components }}{% endautoescape %};
@@ -462,9 +468,8 @@
     function clear_hidden_inputs() {
         var inputs = document.getElementsByTagName('input');
         for(var i=0; i<inputs.length; i++) {
-            if(inputs[i].type=="hidden") {
-                inputs[i].value = ""
-            }
+            if(inputs[i].type=="hidden")
+                inputs[i].value = "";
         }
     }
     function update_patch_list(src) {
@@ -824,14 +829,20 @@
 
     function search_dupes() {
         var filled = true;
+        var msg = '';
+        var valid = $("#entryform").valid();
+        if (valid == false)
+            msg += "Please correct highlighted fields\n";
         for(var f in header_fields){
             var src = "id_" + f;
             if (document.getElementById(src).value == "" && f != "contact")
                 filled = false;
         }
-        // refuse to continue unless all required fields are filled       
-        if (filled == false) {      
-            alert("Please fill all required header fields");
+        // refuse to continue unless all required fields are filled and valid      
+        if (filled == false)      
+            msg += "Please fill all required header fields";
+        if (filled == false || valid == false) {
+            alert(msg);
         } else {
             var record = check_for_record();
             if (record == "None") {

@@ -2,7 +2,7 @@
 {% block content %}
 <div id="header-modal-content">
   <!-- form needs to be inside the div -->
-  <form name="headerform" method="post" action="" enctype="multipart/form-data">
+  <form name="headerform" id="headerform" method="post" action="" enctype="multipart/form-data">
     <div class="titlem"><span id="header_title"></span></div>
     <!-- usual "container" stype wasn't working here, use containerm -->
     <div class="containerm" id="modal_entry_form">
@@ -115,8 +115,16 @@
 {% block scripts %}
 <script language="JavaScript">
     // no manual entry for spdx_files
-    document.getElementById('id_spdx_file').setAttribute('readonly', 'true');
+    $("#id_spdx_file")[0].setAttribute("readonly", "true");
     // in the input form we have to play games with top-level spdx vs line-item, here the backend handles the change
-    document.getElementById("id_spdx_file").setAttribute("onchange", "");
+    $("#id_spdx_file")[0].setAttribute("onchange", "");
+
+    // set client-side validation rules
+    $("#id_website")[0].setAttribute("class", "required url");
+    $("#id_email")[0].setAttribute("class", "required email");
+
+    $(document).ready(function(){
+        $("#headerform").validate();
+    });
 </script>
 {% endblock %}
