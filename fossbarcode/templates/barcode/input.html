@@ -147,7 +147,7 @@
     <col width=120>
     <col width=60>
     <col width=145>
-    <col width=145>
+    <col width=150>
     <col width=120>
     <col width=30>
     <col width=145>
@@ -297,8 +297,9 @@
     var fqueue_total_limit = {{ fqueue.total_limit }}; 
 
     // set client-side validation rules
-    $("id_website")[0].setAttribute("class", "required url");
-    $("id_email")[0].setAttribute("class", "required email");
+    $("#id_website")[0].setAttribute("class", "required url");
+    $("#id_email")[0].setAttribute("class", "required email");
+    $("#id_foss_url")[0].setAttribute("class", "required url");
 
     // this gets used by component-select.js
     {% if cached_components %}
@@ -541,12 +542,13 @@
             if ((bom_fields[f]) == "" && (f != sfield))
                 validated = false;
         }
-        if (document.getElementById("id_foss_license").value < 0) {
+        // check license as well as general validation rules
+        if ($("#id_foss_license")[0].value < 0 || $("#entryform").valid() == false) {
             validated = false;
         }
         // refuse to add unless all required fields are validated       
         if ((mode == "add") && (validated == false)) {       
-            alert("Please fill all required component fields.");
+            alert("Please fill/correct all required component fields.");
             return;
         }
 
