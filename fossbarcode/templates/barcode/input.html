@@ -42,56 +42,48 @@
   <tr align="left">
     <td align="right"><b>{{ recordform.required_flag }}{{ recordform.company.label }}:</b></td>
     <td>{{ recordform.company }}</td>
-    <td></td>
     <td>{{ recordform.company.errors }}</td>
   </tr>
   <tr align="left">
     <td align="right"><b>{{ recordform.required_flag }}{{ recordform.website.label }}:</b></td>
     <td>{{ recordform.website }}</td>
-    <td></td>
     <td>{{ recordform.website.errors }}</td>
   </tr>
   <tr align="left">
     <td align="right"><b>{{ recordform.required_flag }}{{ recordform.product.label }}:</b></td>
-    <td>{{ recordform.product }}</td>
-    {% if products %}
-      <td>
-        <select id="id_product_select" onchange="select_to_product();">
+    <td>
+      {{ recordform.product }}
+      {% if products %}
+        <select id="id_product_select" style="width: 120px;" onchange="select_to_product();">
           <option value="">Select...</option>
           <option value="manual_entry">New...</option>
           {% for p in products %}
             <option value="{{ p }}">{{ p }}</option>
           {% endfor %}
         </select>
-      </td>
-    {% endif %}
+      {% endif %}
+    </td>
     <td>{{ recordform.product.errors }}</td>
   </tr>
   <tr align="left">
     <td align="right"><b>{{ recordform.required_flag }}{{ recordform.version.label }}:</b></td>
     <td>{{ recordform.version }}</td>
-    <td></td>
     <td>{{ recordform.version.errors }}</td>
   </tr>
   <tr align="left">
     <td align="right"><b>{{ recordform.required_flag }}{{ recordform.release.label }}:</b></td>
     <td>{{ recordform.release }}</td>
-    <td></td>
     <td>{{ recordform.release.errors }}</td>
   </tr>
   <tr align="left">
     <td align="right"><b>{{ recordform.optional_flag }}{{ recordform.contact.label }}:</b></td>
     <td>{{ recordform.contact }}</td>
-    <td></td>
     <td></td>    
   </tr>
   <tr align="left">
     <td align="right"><b>{{ recordform.required_flag }}{{ recordform.email.label }}:</b></td>
     <td>{{ recordform.email }}</td>
-    <td>
-      {{ recordform.email.errors }}
-    </td>
-    <td></td>   
+    <td>{{ recordform.email.errors }}</td>
   </tr>
   <tr align="left">
     <td align="right"><b>{{ recordform.optional_flag }}{% autoescape off %}{{ recordform.spdx_file.label }}{% endautoescape %}:</b></td>
@@ -109,20 +101,18 @@
                     title="Clear SPDX" onClick="clear_spdx('id_spdx_file', 'foss_spdx_select');clear_value_by_id('id_spdx_input_file');"></a>
       </div>
     </td>
-    <td></td>    
+    <td></td>
   </tr>
   <tr align="left">
     <td align="right"><b>{{ recordform.optional_flag }}{{ recordform.release_date.label }}:</b></td>
     <td>{{ recordform.release_date }}</td>
     <td></td>
-    <td></td>    
   </tr>
   <tr align="left">
     <th>(Fields marked * are optional)</th>
     <td align="center">
       <input type="button" id="dupe_search" value="Continue..." onclick="search_dupes();">
     </td>    
-    <td></td>
     <td></td>
   </tr>          
 </table>
