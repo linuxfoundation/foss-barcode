@@ -97,11 +97,11 @@ function handle_file_data(sid, did) {
     // control to disable and subdir to queue to
     var scid = ""   // button to disable until uploads are done
     var subdir = "" // destination subdir by file type
-    if (sid == "id_patches_input_file")
+    if (sid == "id_patches_input_file") {
         scid = document.getElementById("submit_item");
-    if (["id_m_foss_patches", "id_m_foss_spdx", "id_m_foss_copyright", "id_m_foss_attribution", "id_foss_spdx", "id_foss_copyright", "id_foss_attribution"].indexOf(sid) || sid.search("id_foss_patches"))
+    } else if (["id_m_foss_patches", "id_m_foss_spdx", "id_m_foss_copyright", "id_m_foss_attribution", "id_foss_spdx", "id_foss_copyright", "id_foss_attribution"].indexOf(sid) || sid.search("id_foss_patches")) {
         scid = document.getElementById("submit_record");
-
+    }
     if (sid.search("patch") != -1)
         subdir = "patches";
     if (sid.search("spdx") != -1)
@@ -141,7 +141,7 @@ function handle_file_data(sid, did) {
         }        
     }
 }
-function queued_upload(file, index, ftotal, scid, subdir) {  
+function queued_upload(file, index, ftotal, scid, subdir) {
     var xhr = new XMLHttpRequest();
     // create progress bar - table layout to force things to spread horizontally
     var o = document.getElementById("progress");

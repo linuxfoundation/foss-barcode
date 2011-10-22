@@ -116,16 +116,18 @@
     overflow: scroll;
     padding: 5px;
 }			
+/* for the edit_line async upload progress */
 .progressor {
     width: 650px;
     height: 30px;
     overflow: auto;
     padding: 5px;
 }			
+/* for the input tab async upload progress */
 .lprogressor {
     float: left;
     width: 550px;
     height: 250px;
     overflow: auto;
     padding: 5px;
-}			
+}

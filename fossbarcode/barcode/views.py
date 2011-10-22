@@ -44,6 +44,8 @@ msg_strings = {
     'invalid_line_item': _('Invalid line item update data, see item dialog...'),
     'no_data': _('No data for record %s'),
     'no_file_data': _('No input file data for %s'),
+    'no_header_change': _('No header changes detected for record %s'),
+    'no_line_change': _('No line item changes detected for record %s'),
     'no_record': _('Record not found...'),
     'unknown_request': _('Unknown request made'),
     'unrelease_record': _('Unrelease record for edits'),
@@ -152,6 +154,7 @@ def sysconfig(request):
 def detail(request, record_id, revision=None):
     error_message = ''
     old_spdx = ''
+    pnames = []
     enable_edits = True
     foss = render_detail(record_id, revision)
     record_list = Product_Record.objects.filter(id = record_id)
@@ -197,19 +200,21 @@ def detail(request, record_id, revision=None):
                         spdx = request.FILES[input_field]
                     except:
                         error_message += msg_strings['no_file_data'] % input_field + "<br>"
+
+                new_company = request.POST.get('company', '')
+                new_product = request.POST.get('product', '')
+                new_version = request.POST.get('version', '')
+                new_release = request.POST.get('release', '')
+                new_website = request.POST.get('website', '')
+                new_contact = request.POST.get('contact', '')
+                new_email = request.POST.get('email', '')
             
         if (mode == "Clone Record"):
             if headerform.is_valid(): # All validation rules pass            
                 try:
-                    newpr = pr.clone( company = request.POST.get('company', ''),
-                                      product = request.POST.get('product', ''), 
-                                      version = request.POST.get('version', ''),
-                                      release = request.POST.get('release', ''),
-                                      website = request.POST.get('website', ''),
-                                      contact = request.POST.get('contact', ''),
-                                      email = request.POST.get('email', ''),
-                                      spdx_file = new_spdx )
-
+                    newpr = pr.clone(company = new_company, product = new_product, version = new_version,
+                                     release = new_release, webiste = new_website, contact = new_contact, 
+                                     email = new_email, spdx_file = new_spdx)                                     
                     record_id = str(newpr.id)
                 except:
                     error_message += msg_strings['clone_fail']
@@ -230,38 +235,42 @@ def detail(request, record_id, revision=None):
                 if new_release_date == '':
                     new_release_date = None
 
-                Product_Record.objects.filter(id = record_id).update(company = request.POST.get('company', ''),
-                                                                 website = request.POST.get('website', ''),
-                                                                 product = request.POST.get('product', ''),
-                                                                 version = request.POST.get('version', ''),
-                                                                 release = request.POST.get('release', ''),
-                                                                 contact = request.POST.get('contact', ''),
-                                                                 email = request.POST.get('email', ''),
-                                                                 release_date = new_release_date,
-                                                                 spdx_file = new_spdx,
-                                                                 record_date = str(datetime.datetime.now()))
+                # was anything changed?
+                if Product_Record.objects.filter(id = record_id, company = new_company, website = new_website,
+                                                 product = new_product, version = new_version, release = new_release,
+                                                 contact = new_contact, email = new_email, release_date = new_release_date,
+                                                 spdx_file = new_spdx).count() == 0:
 
-                # compute the new checksum, compare with the old and update if needed
-                pr = Product_Record.objects.get(id = record_id)
-                checksum = pr.checksum
-                new_checksum = pr.calc_checksum()
-                if checksum != new_checksum:
-                    pr.checksum = new_checksum
-                    pr.save()
+                    Product_Record.objects.filter(id = record_id).update(company = new_company, website = new_website,
+                                                                         product = new_product, version = new_version,
+                                                                         release = new_release, contact = new_contact,
+                                                                         email = new_email, release_date = new_release_date,
+                                                                         spdx_file = new_spdx, record_date = str(datetime.datetime.now()))
 
-                # top-level spdx_file
-                # save and/or delete SPDX file if there's a change
-                error_message += spdx_check_for_change(pr, old_spdx, new_spdx, spdx)
+                    # compute the new checksum, compare with the old and update if needed
+                    pr = Product_Record.objects.get(id = record_id)
+                    checksum = pr.checksum
+                    new_checksum = pr.calc_checksum()
+                    if checksum != new_checksum:
+                        pr.checksum = new_checksum
+                        pr.save()
 
-                # if we have an spdx file and didn't before, we need to purge the component entries
-                if new_spdx != '' and old_spdx == '':
-                    error_message += foss_spdx_purge(record_id, new_spdx)
+                    # top-level spdx_file
+                    # save and/or delete SPDX file if there's a change
+                    error_message += spdx_check_for_change(pr, old_spdx, new_spdx, spdx)
 
-                # now we generate all types, so regen always
-                result = pr.checksum_to_barcode()              
+                    # if we have an spdx file and didn't before, we need to purge the component entries
+                    if new_spdx != '' and old_spdx == '':
+                        error_message += foss_spdx_purge(record_id, new_spdx)
+
+                    # now we generate all types, so regen always
+                    result = pr.checksum_to_barcode()              
                   
-                # commit changes to version control
-                pr.commit(request.POST.get('header_commit_message', ''))
+                    # commit changes to version control
+                    pr.commit(request.POST.get('header_commit_message', ''))
+                
+                else:
+                    error_message += msg_strings['no_header_change'] % record_id + "<br>"
  
             else:
                 error_message += msg_strings['invalid_header']
@@ -309,16 +318,31 @@ def detail(request, record_id, revision=None):
                 else:
                     error_message += msg_strings['unknown_request'] + "<br>"
 
+                # need this now to check for changes
+                patch_files = request.POST.get('foss_patches', '')
+                patch_data = request.POST.get('foss_patch_data', '')
+                if patch_files != '':
+                    pnames = patch_files.split("\r\n")
+                    pnames = [i for i in pnames if i != '']
+
                 if (mode == "Update Item"):
-                    # line item data is in a file, so we alter/save rather than update
-                    fd.package = new_component
-                    fd.version = new_version
-                    fd.copyright = new_copyright
-                    fd.attribution = new_attribution
-                    fd.license = License.objects.get(id=new_license_id)
-                    fd.license_url = new_license_url
-                    fd.url = new_url
-                    fd.spdx_file = new_spdx
+                    # was anything changed?
+                    if (fd.package == new_component and fd.version == new_version and fd.copyright == new_copyright and
+                          fd.attribution == new_attribution and fd.license == License.objects.get(id=new_license_id) and 
+                          fd.license_url == new_license_url and fd.url == new_url and fd.spdx_file == new_spdx):
+                        # patches the same or empty?
+                        if len(set(fd.patch_files) ^ set(pnames)) == 0:
+                            error_message += msg_strings['no_line_change'] % record_id + "<br>"
+                    else:
+                        # line item data is in a file, so we alter/save rather than update
+                        fd.package = new_component
+                        fd.version = new_version
+                        fd.copyright = new_copyright
+                        fd.attribution = new_attribution
+                        fd.license = License.objects.get(id=new_license_id)
+                        fd.license_url = new_license_url
+                        fd.url = new_url
+                        fd.spdx_file = new_spdx
 
                 if (mode == "Delete Item"):
                     fd.delete()
@@ -343,11 +367,7 @@ def detail(request, record_id, revision=None):
                         error_message += spdx_file_delete(pr, top_spdx)
 
                 # update/save/del patches
-                patch_files = request.POST.get('foss_patches', '')
-                patch_data = request.POST.get('foss_patch_data', '')
                 if patch_files != '':
-                    pnames = patch_files.split("\r\n")
-
                     # remove patches no longer listed 
                     old_patches = [x for x in fd.patch_files if x not in pnames]
                     for p in old_patches:
@@ -387,26 +407,29 @@ def detail(request, record_id, revision=None):
                             attribution_data = file_data[input_field]
 
                     error_message += set_copyright_attribution(pr, fd, new_copyright, copyright_data, new_attribution, attribution_data)
-                    fd.save()
+                    if error_message == '':
+                        fd.save()
 
-                    cache_update_component(new_component, new_url, new_license_id, 
-                                           new_license_url, new_copyright, copyright_data, new_attribution, attribution_data)
+                        cache_update_component(new_component, new_url, new_license_id, 
+                                               new_license_url, new_copyright, copyright_data, new_attribution, attribution_data)
 
                 # QR+ code changes with any change (record_date, components)
                 # FIXME - doesn't pickup changes if we do this before commit
-                result = pr.checksum_to_barcode() 
-                if result:
-                    error_message += msg_strings['barcode_fail'] + "<br>"
-                    
-                # update the master record "last updated"         
-                pr.record_date = datetime.datetime.now()
-                pr.save()
+                if error_message == '':
+                    result = pr.checksum_to_barcode() 
+                    if result:
+                        error_message += msg_strings['barcode_fail'] + "<br>"
+ 
+                if error_message == '':                   
+                    # update the master record "last updated"         
+                    pr.record_date = datetime.datetime.now()
+                    pr.save()
 
-                # commit changes to version control
-                if (mode == "Delete Item"):
-                    pr.commit(msg_strings['delete_line_item'] % fd.package)
-                else:
-                    pr.commit(request.POST.get('item_commit_message', ''))
+                    # commit changes to version control
+                    if (mode == "Delete Item"):
+                        pr.commit(msg_strings['delete_line_item'] % fd.package)
+                    else:
+                        pr.commit(request.POST.get('item_commit_message', ''))
 
                 # cleanup any queued files
                 clean_queued_files(sessionid)

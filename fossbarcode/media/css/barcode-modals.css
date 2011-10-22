@@ -37,3 +37,11 @@
 #target.browser a {color:#333;}
 #targetm.browser a {color:#333;}
 #targeth.browser a {color:#333;}
+/* another div class to make the history view scrollable */
+.history {
+    float: left;
+    width: 650px;
+    height: 400px;
+    overflow: auto;
+    padding: 5px;
+}			
