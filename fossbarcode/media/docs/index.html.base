@@ -272,7 +272,7 @@ If a browser does not open by launching the menu item, you can access the GUI
 program:
 
 <ul>
-<li><a href="#Create Compliance Data"><b>Create Compliance Data</b></a> - Data entry form</li>
+<li><a href="#Create Compliance Record"><b>Create Compliance Record</b></a> - Data entry form</li>
 <li><a href="#Review Compliance Records"><b>Review Compliance Records</b></a> - Tabular list of existing records</li>
 <li><a href="#Search Compliance Records"><b>Search Compliance Records</b></a> - Search for records by checksum tab</li>
 <li><a href="#System Configuration"><b>System Configuration</b></a> - User configurable system settings</li>
@@ -283,8 +283,8 @@ The final page, which isn't visible in the tabs, is the record detail page,
 brought up by either generating a barcode, or clicking on the link in the results page.
 </p>
 
-<div id="Create Compliance Data">
-<b>Create Compliance Data:</b>
+<div id="Create Compliance Record">
+<b>Create Compliance Record:</b>
 
 <p>This tab is where you enter the information that defines the "product". This includes Company Name, 
 FOSS Website, Product Name, Product Version, Product Release, as well as the Compliance
@@ -385,8 +385,8 @@ via <i>brecord_id</i>.</li>
     <ul>
         <li>component - FOSS software component name</li>
         <li>version - FOSS component version</li>
-        <li>copyright - FOSS copyright information</li>
-        <li>attribution - FOSS attribution notices</li> 
+        <li>copyright - FOSS copyright information (text or a filename)</li>
+        <li>attribution - FOSS attribution notices (text or a filename)</li> 
         <li>license_id - link to the associated license record</li>
         <li>license_url - URL where FOSS license can be obtained</li>
         <li>url - upstream URL where FOSS component can be obtained</li>
