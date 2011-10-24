@@ -153,6 +153,7 @@ def sysconfig(request):
 # record detail page - this is a multiform too with the edit additions
 def detail(request, record_id, revision=None):
     error_message = ''
+    new_spdx = ''
     old_spdx = ''
     pnames = []
     enable_edits = True
