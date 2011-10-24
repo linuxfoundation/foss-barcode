@@ -327,13 +327,27 @@ search by Company Name, Product Name, Version, and Release. If there is more tha
 where can select a release and view the detail.</p>
 
 <div id="System Configuration">
-<b>System Configuation:</b>
+<b>System Configuration:</b>
 
 <p>The <b>System Configuration</b> tab lets you change the default settings for some variables used by the system. 
 In particular, <i>host_site</i> is used and captured in the QR code data, and should point to the site where you intend 
 to host the compliance data for public viewing. Default values for the top-level record entry can be defined here, for ease 
 of record entry/consistency. The default code generation displayed is also selectable here. All 3 types of codes are generated 
 for each record.</p>
+
+<p>For the public facing application mode, you can define a logo file, 190x60 pixels that will be displayed in the upper right hand corner of each tab.</p>
+
+<p>There is an additional set of variables that control the way files are uploaded during application use. The application has the potential of users wanting to attach several files (copyright, attribution, spdx, patches), some possibly large in size, to each record. To make uploads as transparent as possible and not clutter the application with a myriad of upload buttons for each line item, a hueristic is used to upload large files, or smaller files once the limit is reached, asynchronously to the back-end while the user is filling out the form. The "Submit" button will be disabled until all requested files are uploaded. Files not queued are encoded as part of the form data and submitted with the form. The default values should work for most setups. The upload behavior is determined by the following variables (all in kb):</p>
+
+<ul>
+<li><b>fqueue_size_high</b> - Size limit before files are pushed in asynchronous mode.</li>
+<li><b>fqueue_size_low</b> - Once <tt>fqueue_total_limit</tt> is reached, files above this size will pushed asynchronously.</li>
+<li><b>fqueue_total_limit</b> - Limit where the queuing behavior switches from <tt>size_high</tt> to <tt>size_low</tt>.</li>
+</ul>
+
+<p>Queued files are stored in <tt>media/queued_uploads/&lt;session_id&gt;</tt>, with the back-end sorting out whether to decode or retrieve the files from this location once the form is submitted.</p>
+
+<p>There is also a direct link from the <b>System Configuration</b> tab to the License table in the admin interface, to allow manual entry of license data.</p>
 
 </div>
 
