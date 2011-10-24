@@ -28,7 +28,7 @@ class BarCodeHarness(TestCase):
     def addComponent(self):
         component_license = License.objects.filter(license="GPL", version="3.0")[0]
         self.component = FOSS_Components(brecord=self.product,
-                                         package="Open Source Test",
+                                         component="Open Source Test",
                                          version="3.0",
                                          copyright="Copyright 2010 Test Foundation",
                                          attribution="",
@@ -163,7 +163,7 @@ class TestProductRecord(BarCodeHarness):
                         "(Open Source Library 1.0 GPL 3.0);"]
         self.addComponent()
         second_component = FOSS_Components(brecord=self.product,
-                                           package="Open Source Library",
+                                           component="Open Source Library",
                                            version="1.0",
                                            copyright="Copyright 2010 Test Foundation",
                                            attribution="",
@@ -214,7 +214,7 @@ class TestProductRecord(BarCodeHarness):
                          self.product.foss_components_set.count())
 
         clone_component = clone_product.foss_components_set.all()[0]
-        self.assertEqual(clone_component.package, self.component.package)
+        self.assertEqual(clone_component.component, self.component.component)
 
         old_repo = self.product.get_repo()
         clone_repo = clone_product.get_repo()
@@ -294,7 +294,7 @@ class TestFOSSComponents(BarCodeHarness):
 
         self.assertEqual(loaded_component.id, self.component.id)
         self.assertEqual(loaded_component.brecord.id, self.component.brecord.id)
-        self.assertEqual(loaded_component.package, self.component.package)
+        self.assertEqual(loaded_component.component, self.component.component)
         self.assertEqual(loaded_component.license, self.component.license)
         self.assertEqual(loaded_component.url, self.component.url)
 

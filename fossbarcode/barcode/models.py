@@ -402,7 +402,7 @@ class Product_Record(models.Model, FileDataDirMixin):
                 mecard += ", BoM: "
                 foss_list = FOSS_Components.objects.filter(brecord = self)
                 for f in foss_list:
-                    mecard += "(" + f.package + " " + f.version + " " + str(f.license) + "), "
+                    mecard += "(" + f.component + " " + f.version + " " + str(f.license) + "), "
                 mecard = mecard[:-2] + ";"
 
         # url to central site
@@ -417,7 +417,7 @@ class FOSS_Components(models.Model, FileDataMixin):
 
     _master_class_path = ["brecord"]
     _file_fields = {
-        "package": (str, ""),
+        "component": (str, ""),
         "version": (str, ""),
         "copyright": (str, ""),
         "copyright_file": (int, 0),
@@ -444,7 +444,7 @@ class FOSS_Components(models.Model, FileDataMixin):
             self.data_file_name = self._file_name
 
     def __unicode__(self):
-        return self.package
+        return self.component
 
     def load_from_fn(self, revision=None):
         super(FOSS_Components, self).load_from_fn(revision)
@@ -536,13 +536,13 @@ class RecordForm(ModelForm):
     # header level spdx client-side file input, the rest are handled in a special "encoded_data" embedded attribute (many-to-one submit)
     spdx_input_file = forms.FileField(required=False)
 
-    foss_component = forms.CharField(label="Software Component Name", max_length=200, required=False)
-    foss_version = forms.CharField(label="Version", max_length=20, required=False)
-    foss_copyright = forms.CharField(label="Copyright Information", max_length=100, required=False)
-    foss_attribution = forms.CharField(label="Attribution Notices", max_length=100, required=False)
-    foss_license = forms.ChoiceField(label="License Name and Version", required=False, choices=[])
+    foss_component = forms.CharField(label="Software Component Name", max_length=200, required=False, widget=forms.TextInput(attrs={'tabindex': 1}))
+    foss_version = forms.CharField(label="Version", max_length=20, required=False, widget=forms.TextInput(attrs={'tabindex': 2}))
+    foss_copyright = forms.CharField(label="Copyright Information", max_length=100, required=False, widget=forms.TextInput(attrs={'tabindex': 3}))
+    foss_attribution = forms.CharField(label="Attribution Notices", max_length=100, required=False, widget=forms.TextInput(attrs={'tabindex': 4}))
+    foss_license = forms.ChoiceField(label="License Name and Version", required=False, choices=[], widget=forms.Select(attrs={'tabindex': 5}))
     foss_license_url = forms.URLField(label="License URL", max_length=200, required=False, verify_exists=False)
-    foss_url = forms.URLField(label="Mint Version Download URL", max_length=200, required=False, verify_exists=False)
+    foss_url = forms.URLField(label="Mint Version Download URL", max_length=200, required=False, verify_exists=False, widget=forms.TextInput(attrs={'tabindex': 6}))
     foss_spdx = forms.CharField(label="SPDX<sup>TM</sup> File", max_length=100, required=False)
     foss_patches = forms.CharField(label="Patch Files", max_length=200, required=False, widget=forms.Textarea(attrs={'cols': 20, 'rows': 4}))
 

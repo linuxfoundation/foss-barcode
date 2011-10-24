@@ -383,7 +383,7 @@ via <i>brecord_id</i>.</li>
     <li>brecord_id - link to the top-level record entry</li>
     <li>data_file_name - each component's data is stored on the filesystem in a python "pickle" file, under version control. These files have the rest of the line item detail:</li>
     <ul>
-        <li>package - FOSS software component name</li>
+        <li>component - FOSS software component name</li>
         <li>version - FOSS component version</li>
         <li>copyright - FOSS copyright information</li>
         <li>attribution - FOSS attribution notices</li> 

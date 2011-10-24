@@ -454,6 +454,8 @@
         fill_hidden_fields();
         // backend doesn't see the entered values for disabled fields on submit, enable them before submit
         header_disabled(false);
+        // now our client-side validation rules block submit, disable
+        $("#id_foss_url")[0].setAttribute("class", "");       
         return true;
     }
     function clear_hidden_inputs() {

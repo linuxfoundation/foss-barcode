@@ -307,7 +307,7 @@ def detail(request, record_id, revision=None):
                     old_spdx = fd.spdx_file
 
                 elif (mode == "Add Item"):
-                    fd = FOSS_Components(brecord_id = record_id, package = new_component, 
+                    fd = FOSS_Components(brecord_id = record_id, component = new_component, 
                                          version = new_version, copyright = new_copyright, 
                                          attribution = new_attribution, license_id = new_license_id, 
                                          license_url = new_license_url, url = new_url, 
@@ -327,7 +327,7 @@ def detail(request, record_id, revision=None):
 
                 if (mode == "Update Item"):
                     # was anything changed?
-                    if (fd.package == new_component and fd.version == new_version and fd.copyright == new_copyright and
+                    if (fd.component == new_component and fd.version == new_version and fd.copyright == new_copyright and
                           fd.attribution == new_attribution and fd.license == License.objects.get(id=new_license_id) and 
                           fd.license_url == new_license_url and fd.url == new_url and fd.spdx_file == new_spdx):
                         # patches the same or empty?
@@ -335,7 +335,7 @@ def detail(request, record_id, revision=None):
                             error_message += msg_strings['no_line_change'] % record_id + "<br>"
                     else:
                         # line item data is in a file, so we alter/save rather than update
-                        fd.package = new_component
+                        fd.component = new_component
                         fd.version = new_version
                         fd.copyright = new_copyright
                         fd.attribution = new_attribution
@@ -427,7 +427,7 @@ def detail(request, record_id, revision=None):
 
                     # commit changes to version control
                     if (mode == "Delete Item"):
-                        pr.commit(msg_strings['delete_line_item'] % fd.package)
+                        pr.commit(msg_strings['delete_line_item'] % fd.component)
                     else:
                         pr.commit(request.POST.get('item_commit_message', ''))
 
@@ -741,7 +741,7 @@ def input(request):
                 for foss in components:
                     if foss != "":
                         fossdata = FOSS_Components(brecord_id = recordid, 
-                                                   package = foss, version = versions[i],
+                                                   component = foss, version = versions[i],
                                                    copyright = copyrights[i], attribution = attributions[i],
                                                    license_id = licenses[i], license_url = license_urls[i], 
                                                    url = urls[i], spdx_file = spdxs[i], patch_files = [])
@@ -951,7 +951,7 @@ def render_detail(id, revision=None):
         else:
             for p in f.patch_files:
                 patches += media_root + str(id) + "/patches/" + p + '">' + p + "</a><br>"
-        foss.append({'id': f.id, 'component': f.package, 'version': f.version, 
+        foss.append({'id': f.id, 'component': f.component, 'version': f.version, 
                      'copyright': copyright, 'attribution': attribution, 
                      'license': f.license, 'license_url': f.license_url, 
                      'url': f.url, 'spdx_file': spdx_file, 'patches': patches})
