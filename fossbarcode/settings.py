@@ -90,6 +90,10 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
 )
 
+# we need the sessionid cookie for async uploads, seemed to be 
+# suppressed on some systems without setting this
+SESSION_SAVE_EVERY_REQUEST = True
+
 ROOT_URLCONF = 'fossbarcode.urls'
 
 TEMPLATE_DIRS = (

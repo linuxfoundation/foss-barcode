@@ -126,7 +126,7 @@
 /* for the input tab async upload progress */
 .lprogressor {
     float: left;
-    width: 550px;
+    width: 450px;
     height: 250px;
     overflow: auto;
     padding: 5px;
