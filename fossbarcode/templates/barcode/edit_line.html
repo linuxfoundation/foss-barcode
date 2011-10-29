@@ -170,6 +170,8 @@
             <td align="center"><input type="submit" name="submit" id="submit_item" value="Update Item" onclick="return submit_line_validate();"></td>
           </tr>
         </table>
+        <!-- session_id for queued uploads -->
+        <input type="hidden", name="session_id", id="session_id", value="{{ session_id }}">
         <!-- so the back end knows which record to update -->
         <input type="hidden" name="foss_record_id" id="foss_record_id" value="">
         <!-- place to store the encoded patch data -->

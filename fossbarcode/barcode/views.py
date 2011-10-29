@@ -175,6 +175,9 @@ def detail(request, record_id, revision=None):
     # and the cached component list
     cached_components, component_select = cache_get_components()
 
+    # set the sessionid
+    session_id = set_session_id()
+
     # Create the history.
     record_history = []
     if record:
@@ -182,7 +185,7 @@ def detail(request, record_id, revision=None):
             record_history.append((commit, datetime.date.fromtimestamp(commit_time), msg))
 
     if request.method == 'POST': # If the form has been submitted...
-        sessionid = request.COOKIES['sessionid']
+        sessionid = request.POST.get('session_id', '')
         mode = urllib.unquote(request.POST.get('submit'))
         file_data = request.FILES
 
@@ -449,7 +452,7 @@ def detail(request, record_id, revision=None):
     return render_to_response('barcode/detail.html', {'record': record, 'foss': foss, 'history': record_history,
                                                       'host_site': host_site, 'tab_results': True, 'revision': revision,
                                                       'error_message': error_message, 'enable_edits': enable_edits,
-                                                      'display_code': display_code_type,
+                                                      'display_code': display_code_type, 'session_id': session_id,
                                                       'cached_components': cached_components, 'component_select': component_select,
                                                       'public_facing':  public_facing, 'public_logo': public_logo,
                                                       'headerform': headerform, 'itemform': itemform,
@@ -524,7 +527,7 @@ def queued_upload(request):
     if request.method == 'POST':
         filename = request.META['HTTP_X_FILENAME']
         subdir = request.META['HTTP_X_SUBDIR']
-        sessionid = request.COOKIES['sessionid']
+        sessionid = request.META['HTTP_X_SESSIONID']
 
         file_data = request.raw_post_data
 
@@ -622,6 +625,9 @@ def input(request):
         return HttpResponseRedirect('/barcode/records/')
 
     error_message = check_for_system_apps()
+    # used for queued uploads
+    session_id = set_session_id()
+
     # hidden fields in input form, need to save/restore on a form error
     foss_components = ''
     foss_versions = ''
@@ -662,8 +668,8 @@ def input(request):
     itemform = ItemForm(auto_id='id_m_%s') # An unbound form
 
     if request.method == 'POST': # If the form has been submitted...
-        recordform = RecordForm(request.POST) # A form bound to the POST data      
-        sessionid = request.COOKIES['sessionid']
+        recordform = RecordForm(request.POST) # A form bound to the POST data
+        sessionid = request.POST.get('session_id', '')
 
         # we need these whether it's valid or not to repopulate on a bad submit        
         foss_components = request.POST.get('foss_components', '')
@@ -820,7 +826,7 @@ def input(request):
                               'cached_components': cached_components, 'component_select': component_select,
                               'foss_patches': foss_patches, 
                               'foss_patch_data': foss_patch_data, 'foss_patch_sizes': foss_patch_sizes, 
-                              'fqueue': fqueue, 'tab_input': True })
+                              'fqueue': fqueue, 'session_id': session_id, 'tab_input': True })
 
 ### these are all basically documentation support
 
@@ -890,6 +896,20 @@ def check_for_system_apps():
 
     return errmsg
 
+def set_session_id():
+    from django.contrib.sessions.backends.db import SessionStore
+    s = SessionStore()
+    s.save()
+    return s.session_key
+
+def del_session_id(sessionid):
+    from django.contrib.sessions.backends.db import Session
+    s = Session.objects.get(pk = sessionid)
+    try:
+        s.delete()
+    except:
+        pass
+
 # cleanup the queued file cache for a session
 def clean_queued_files(sessionid):
     import shutil
@@ -897,6 +917,7 @@ def clean_queued_files(sessionid):
     if os.path.isdir(sessiondir):
         try:
             shutil.rmtree(sessiondir)
+            del_session_id(sessionid)
         except IOError:
             pass
 

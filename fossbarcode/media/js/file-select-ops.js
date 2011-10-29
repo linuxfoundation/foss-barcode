@@ -173,6 +173,7 @@ function queued_upload(file, index, ftotal, scid, subdir) {
     xhr.setRequestHeader("Content-Type", "application/octet-stream");
     xhr.setRequestHeader("X_FILENAME", file.name);
     xhr.setRequestHeader("X_SUBDIR", subdir); 
+    xhr.setRequestHeader("X_SESSIONID", document.getElementById("session_id").value);
     xhr.send(file);
 }
 
