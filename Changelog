@@ -34,3 +34,15 @@
     Arrange the records tab into a tree list
     Add a setup for a public-facing mode, and document
 
+0.0.7:
+    Use configurable default values for company, website, contact
+	Provide a pre-populated list of common licenses, urls
+	Add field validation for urls, emails
+	Add released date to "lock" a record, gui calendar selector
+	Uploaded files are all client-side selections now, add code to 
+	  async upload and encode/decode file data as part of form submission
+	Copyright, Attribution can be text or a file now
+	Maintain a cache table of submitted components for re-use
+	Various GUI layout changes, add css for filetype icons
+
+	
