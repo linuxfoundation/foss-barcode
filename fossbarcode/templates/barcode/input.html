@@ -90,15 +90,15 @@
     <td colspan="2" valign="center">
       <!-- crafted css to mask the file input field with a text field/button, use the same name/id as the django FileField -->
       <div class="fileinputs">
-	    <input type="file" class="file" id="id_spdx_input_file" name="spdx_input_file" 
-               onchange="file_input_to_field('id_spdx_input_file', 'id_spdx_file', false);"/>
+	    <input type="file" class="file" id="id_spdx_file_input_file" name="spdx_input_file" 
+               onchange="file_input_to_field('id_spdx_file_input_file', 'id_spdx_file', false);spdx_change('id_spdx_file', 'id_foss_spdx');"/>
 	    <div class="fakefile">
 		  {{ recordform.spdx_file }}
           <!-- this is just for looks, we really activate the invisible one above -->
-		  <input type="button" name="spdx_h_filename" value="Select"/>
+		  <input type="button" name="spdx_h_filename" id="id_spdx_file_b" value="Select"/>
 	    </div>
-        <a href="#" id="clear_foss_spdx"><img src="/site_media/images/edit-delete.png" 
-                    title="Clear SPDX" onClick="clear_spdx('id_spdx_file', 'foss_spdx_select');clear_value_by_id('id_spdx_input_file');"></a>
+        <a href="#" id="clear_header_spdx"><img src="/site_media/images/edit-delete.png" 
+                    title="Clear SPDX" onClick="clear_spdx('id_spdx_file', 'id_foss_spdx');clear_value_by_id('id_spdx_file_input_file');"></a>
       </div>
     </td>
     <td></td>
@@ -198,16 +198,17 @@
       {{ recordform.foss_spdx }}
       <div class="fileinputs">
 	    <input type="file" class="file" id="id_foss_spdx_input_file" name="foss_spdx_input_file" 
-               onchange="file_input_to_field('id_foss_spdx_input_file', 'id_foss_spdx', true);"/>
+               onchange="file_input_to_field('id_foss_spdx_input_file', 'id_foss_spdx', true);spdx_change('id_foss_spdx', 'id_spdx_file');"/>
 	    <div class="fakefile">
           <!-- this is just for looks, we really activate the invisible one above -->
-	      <input type="button" class="bbutton" name="spdx_filename" value="Select"/>
+	      <input type="button" class="bbutton" name="spdx_filename" id="id_foss_spdx_b" value="Select"/>
 	    </div>
       </div>
     </td>
     <td>
       <a href="#" id="clear_foss_spdx"><img src="/site_media/images/edit-delete.png" 
-                  title="Clear SPDX" onclick="clear_field('id_foss_spdx');clear_value_by_id('id_foss_spdx_input_file');"></a>
+                  title="Clear SPDX" 
+                  onClick="clear_spdx('id_foss_spdx', 'id_spdx_file');clear_value_by_id('id_foss_spdx_input_file');"></a>
     </td>
     <td align="center" colspan="3">
       <input type="button" name="addfoss" value="Add Component" onclick="get_bom_values();add_bom_row('foss_list', 'add', 0)"/>
@@ -411,10 +412,6 @@
         // disable manual input for the spdx_file field
         document.getElementById("id_spdx_file").setAttribute("readonly", "true");
         document.getElementById("id_foss_spdx").setAttribute("readonly", "true");
-        // content of this field determines what we can do with the line items
-        document.getElementById("id_spdx_file").setAttribute("onchange", "spdx_change('id_spdx_file', 'foss_spdx_select');");
-        // and the reverse is true
-        document.getElementById("id_foss_spdx").setAttribute("onchange", "spdx_change('id_foss_spdx', 'top_spdx_select');");
         // if these are manually edited, blank out any file data
         document.getElementById("id_foss_copyright").setAttribute("onchange", "clear_value_by_id('id_foss_copyright_input_file');clear_extras('id_foss_copyright', ['encoded_data', 'data_sizes']);");
         document.getElementById("id_foss_attribution").setAttribute("onchange", "clear_value_by_id('id_foss_attribution_input_file');clear_extras('id_foss_attribution', ['encoded_data', 'data_sizes']);");
@@ -861,19 +858,26 @@
             }
         }
     }
-    function spdx_change(tid, sid) {
-        // tid = input field changed, sid = other file select button to disable
-        var e = document.getElementById(sid);  
+    function spdx_change(sid, did) {
+        // sid = input field changed, did = other file select button to disable
+        var e = document.getElementById(did);
+        // the associated button and file input need to be disabled too, or clicks in the general area still get picked up
+        var bid = did + "_b";
+        var b = document.getElementById(bid);
+        var fid = did + "_input_file";
+        var f = document.getElementById(fid);
         if (typeof e != 'undefined') {
-            if (document.getElementById(tid).value == '') {
-                // disable the "other" spdx selector
+            // enable/disable the "other" spdx selector
+            if (document.getElementById(sid).value == '') {
                 e.disabled = false;
-                // hide the file selector if it's open
-                hide_element("target_select");
+                b.disabled = false;
+                f.disabled = false;
             } else {
                 e.disabled = true;
+                b.disabled = true;
+                f.disabled = true;
                 // if we set the top-level one, clear all the line item entries
-                if (sid.search("foss") != -1) {
+                if (did.search("foss") != -1) {
                     var rowcount = document.getElementById("foss_list").getElementsByTagName("TR").length;
                     // there aren't any if there's no checkboxes
                     var chk = document.getElementsByName("bomcheck");
@@ -888,9 +892,10 @@
             }
         }
     }
-    function clear_spdx(tid, sid) {
-        clear_value_by_id(tid);
-        spdx_change(tid, sid);
+    function clear_spdx(did, sid) {
+        clear_value_by_id(did);
+        // cleared what we wanted, reverse the order to enable/disable the complementing inputs
+        spdx_change(did, sid);
     }
 
     function new_license() {
