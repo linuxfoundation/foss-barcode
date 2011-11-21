@@ -3,7 +3,7 @@
 .record_table_header table {
     table-layout: fixed;
     margin-left: 140px;
-    width: 900px;
+    width: 850px;
     overflow: hidden;
     word-break: break-all;
     word-wrap: break-word;
@@ -13,7 +13,7 @@
 }
 .record_table table {
     table-layout: fixed;
-    width: 900px;
+    width: 850px;
     overflow: hidden;
     word-break: break-all;
     word-wrap: break-word;

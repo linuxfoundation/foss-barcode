@@ -97,7 +97,8 @@
           <!-- this is just for looks, we really activate the invisible one above -->
 		  <input type="button" name="spdx_h_filename" id="id_spdx_file_b" value="Select"/>
 	    </div>
-        <a href="#" id="clear_header_spdx"><img src="/site_media/images/edit-delete.png" 
+        <a href="#" id="clear_header_spdx"><img src="/site_media/images/edit-delete.png"
+                    width="16" height="16" alt="edit-delete.png" 
                     title="Clear SPDX" onClick="clear_spdx('id_spdx_file', 'id_foss_spdx');clear_value_by_id('id_spdx_file_input_file');"></a>
       </div>
     </td>
@@ -206,7 +207,8 @@
       </div>
     </td>
     <td>
-      <a href="#" id="clear_foss_spdx"><img src="/site_media/images/edit-delete.png" 
+      <a href="#" id="clear_foss_spdx"><img src="/site_media/images/edit-delete.png"
+                  width="16" height="16" alt="edit-delete.png" 
                   title="Clear SPDX" 
                   onClick="clear_spdx('id_foss_spdx', 'id_spdx_file');clear_value_by_id('id_foss_spdx_input_file');"></a>
     </td>
@@ -270,8 +272,8 @@
                               value="Add Compliance Record" onclick="return fill_hidden_and_submit();"/></td>
   </tr>
 </table>
+</div> <!-- end cfooter -->
 </form> <!-- overall form ends here to include the submit buttons -->
-</div>
 
 <!-- place to store the "old" license ID, for managing license URL changes -->
 <div id="old_license_id" style="display: none;">-2</div>
@@ -653,6 +655,9 @@
         ch10.setAttribute("onclick", onclick="clear_field('id_foss_patches" + cvalue + "');clear_extra('id_foss_patches" + cvalue + "', 'encoded_data');clear_extra('id_foss_patches" + cvalue + "', 'data_sizes');");
         var tdi = document.createElement("img");
         tdi.setAttribute("src", "/site_media/images/edit-delete.png");
+        tdi.setAttribute("width", "16");
+        tdi.setAttribute("height", "16");
+        tdi.setAttribute("alt", "edit-delete.png");
         tdi.setAttribute("title", "Clear Patches");
         ch10.appendChild(tdi);
         td10.appendChild(ch10);

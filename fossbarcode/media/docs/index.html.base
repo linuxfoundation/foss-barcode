@@ -193,7 +193,7 @@ Run the server and the gui should show up in a browser window:
 To kill the django server, you can run:
 <pre>
 ./bin/foss-barcode.py stop
-</pre></p>
+</pre>
 
 </div>
 
@@ -325,6 +325,7 @@ page, and a history of changes made will be created, with the ability to view th
 <p>The <b>Search Compliance Records</b> tab lets you enter a checksum and lookup the data detail for that value. You can also 
 search by Company Name, Product Name, Version, and Release. If there is more than one match, you will be presented with a list 
 where can select a release and view the detail.</p>
+</div>
 
 <div id="System Configuration">
 <b>System Configuration:</b>

@@ -35,7 +35,7 @@ Below are are list of user configurable settings. At a minumum you should set <i
     {% if record.ftype == 'b' %}
     <td>
         <input type="radio" name="{{ record.name }}" value="True" {% if record.value == "True" %} checked {% endif %}> True
-        <input type="radio" name="{{ record.name }}" value="False" {% if record.value == "False" %} checked {% endif %}> False</td>
+        <input type="radio" name="{{ record.name }}" value="False" {% if record.value == "False" %} checked {% endif %}> False
     </td>
     {% else %}
       {% if record.ftype == 'c' %}
@@ -58,7 +58,7 @@ Below are are list of user configurable settings. At a minumum you should set <i
         {% if record.ftype == 'n' %}
           <td><input type="input" name="{{ record.name }}" size="10" value="{{ record.value }}" valtype="{{ record.ftype }}"></td>
         {% else %}
-          <td><input type="input" name="{{ record.name }}" id="id_{{ record.name }}" size="80" value="{{ record.value }}"></td>
+          <td><input type="input" name="{{ record.name }}" id="id_{{ record.name }}" size="60" value="{{ record.value }}"></td>
         {% endif %}
       {% endif %}
     {% endif %}

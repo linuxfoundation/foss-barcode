@@ -109,7 +109,8 @@
         <td><b>{{ itemform.optional_flag }}{% autoescape off %}{{ itemform.foss_spdx.label }}{% endautoescape %}:</b></td>
         <td>{{ itemform.foss_spdx }}</td>
         <td valign="center">  
-          <a href="#" id="clear_spdx"><img src="/site_media/images/edit-delete.png" 
+          <a href="#" id="clear_spdx"><img src="/site_media/images/edit-delete.png"
+                      width="16" height="16" alt="edit-delete.png"
                       title="Clear SPDX" onClick="clear_field('id_foss_spdx');clear_value_by_id('id_f_spdx_input_file');"></a>
         </td>
         <td valign="center">
@@ -127,7 +128,8 @@
         <td valign="top"><b>{{ itemform.optional_flag }}{{ itemform.foss_patches.label }}:</b></td>
         <td rowspan="2">{{ itemform.foss_patches }}</td>
         <td valign="top">
-          <a href="#" id="clear_patches"><img src="/site_media/images/edit-delete.png" 
+          <a href="#" id="clear_patches"><img src="/site_media/images/edit-delete.png"
+                      width="16" height="16" alt="edit-delete.png"
                       title="Clear Patches" 
                       onClick="clear_field('id_foss_patches');clear_extras('id_foss_patches', ['encoded_data', 'data_sizes']);clear_value_by_id('id_patches_input_file');"></a>
         </td>       

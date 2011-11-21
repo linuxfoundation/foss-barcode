@@ -561,7 +561,7 @@ def records(request):
                     error_message = delete_record(record)
 
     rendered = []
-    himage = '<img src="/site_media/images/code.png" title="Change History">'
+    himage = '<img src="/site_media/images/code.png" width="16" height="16" alt="code.png" title="Change History">'
     liclose = '</ul></li>'
     liopen = '<li>'
     # use <li class="liOpen"> to force open state if there aren't many records
@@ -591,7 +591,7 @@ def records(request):
                     if releases.count() != 0:
                         rendered.append('<table border="1">')
                         # these colums widths are used by both the header and the content of the outline tables - defined once here and passed to template
-                        colwidths = '<col width=40><col width=60><col width=150><col width=150><col width=150><col width=100>'
+                        colwidths = '<col width=40><col width=60><col width=150><col width=150><col width=100><col width=100>'
                         rendered.append(colwidths)
                         for r in releases:
                             recid = str(r.id)
@@ -991,7 +991,7 @@ def get_config_value(cname):
     from re import escape
     settings_list = System_Settings.objects.filter(name = cname)
     if settings_list:
-        if cname != 'display_code_type':
+        if cname != 'display_code_type' and cname != 'host_site':
             return escape(settings_list[0].value)
         else:
             return settings_list[0].value
