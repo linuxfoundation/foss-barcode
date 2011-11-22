@@ -2,7 +2,7 @@
 /* offset header by 140px so things line up with the outline */
 .record_table_header table {
     table-layout: fixed;
-    margin-left: 140px;
+    margin-left: 70px;
     width: 850px;
     overflow: hidden;
     word-break: break-all;

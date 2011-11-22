@@ -38,7 +38,7 @@
 {% if not needs_setup %}
 <form name="entryform" id="entryform" method="post" action="" enctype="multipart/form-data">
 <div class="container" id="entry_form">
-<table align="left" width="100%">
+<table align="left" width="100%" border=1>
   <tr align="left">
     <td align="right"><b>{{ recordform.required_flag }}{{ recordform.company.label }}:</b></td>
     <td>{{ recordform.company }}</td>
@@ -110,10 +110,10 @@
     <td></td>
   </tr>
   <tr align="left">
-    <th>(Fields marked * are optional)</th>
-    <td align="center">
+    <td colspan="2">
+      <b>(Fields marked * are optional)</b>
       <input type="button" id="dupe_search" value="Continue..." onclick="search_dupes();">
-    </td>    
+    </td>
     <td></td>
   </tr>          
 </table>
@@ -160,7 +160,11 @@
   </tr>
   <tr>
     <td colspan="2"></td>
-    <td colspan="7">{% autoescape off %}{{ component_select }}{% endautoescape %}</td>
+    <td colspan="4">{% autoescape off %}{{ component_select }}{% endautoescape %}</td>
+    <td></td>
+    <td align="center" colspan="2">
+      <input type="button" name="addfoss" value="Add Component" onclick="get_bom_values();add_bom_row('foss_list', 'add', 0)"/>
+    </td>
     <td colspan="5"></td>
   </tr>
   <tr>
@@ -212,9 +216,7 @@
                   title="Clear SPDX" 
                   onClick="clear_spdx('id_foss_spdx', 'id_spdx_file');clear_value_by_id('id_foss_spdx_input_file');"></a>
     </td>
-    <td align="center" colspan="3">
-      <input type="button" name="addfoss" value="Add Component" onclick="get_bom_values();add_bom_row('foss_list', 'add', 0)"/>
-    </td>
+    <td colspan="3"></td>
   </tr>
   <tr id="bom_new_license" style="display: none;">
     <td colspan="6"></td>
@@ -233,13 +235,14 @@
   </tr>
   <tr id="bom_editor">
     <td align="left" colspan="2"><input type="checkbox" name="selectall"
-                    title="Select/Deselect All Records" 
-                    onclick="toggleall(this.form,'bomcheck','selectall')" />
+                     title="Select/Deselect All Records" 
+                     onclick="toggleall(this.form,'bomcheck','selectall')" />
     </td>
-    <td colspan="9"></td>
-    <td align="center" colspan="3"><input type="button" name="delete_rows" value="Delete Selected Components"
-                onclick="delete_bom_components('foss_list')" />
+    <td align="center" colspan="9" style="padding:0px 300px 0px 300px;">
+      <input type="button" name="delete_rows" value="Delete Selected Components"
+             onclick="delete_bom_components('foss_list')" />
     </td>
+    <td colspan="3"></td>
   </tr> <!-- editor -->
 <!-- TODO - loop and fill this from SPDX? -->
 </table>
