@@ -191,6 +191,11 @@
     document.getElementById('id_foss_patches').setAttribute('readonly', 'true');
     // in the input form we have to play games with top-level spdx vs line-item, here the backend handles the change
     document.getElementById("id_foss_spdx").setAttribute("onchange", "");
+    // set client-side validation rules
+    $("#id_foss_url")[0].setAttribute("class", "required url");
+    $(document).ready(function(){
+        $("#itemform").validate();
+    });
 </script>
 {% endblock %}
 
