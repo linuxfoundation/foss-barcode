@@ -167,6 +167,8 @@
     // if these are manually edited, blank out any file data
     document.getElementById("id_m_foss_copyright").setAttribute("onchange", "clear_value_by_id('id_m_copyright_input_file');clear_extras('id_m_foss_copyright', ['encoded_data'. 'data_sizes']);");
     document.getElementById("id_m_foss_attribution").setAttribute("onchange", "clear_value_by_id('id_m_attribution_input_file');clear_extras('id_m_foss_attribution', 'encoded_data', 'data_sizes']);");
+    // set client-side validation rules
+    $("#id_m_foss_url")[0].setAttribute("class", "required url");
 </script>
 {% endblock %}
 

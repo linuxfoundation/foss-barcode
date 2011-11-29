@@ -350,19 +350,19 @@
     }
 
     function submit_line_validate() {
-        var filled = true;
+        var validated = true;
         for(var f in bom_fields){
             var src = "id_" + f;
             if (document.getElementById(src).value == "" && f != "foss_spdx" && f != "foss_patches")
-                filled = false;
+                validated = false;
         }
         if (document.getElementById('id_item_commit_message').value == "")
-            filled = false;
-        if (document.getElementById('id_foss_license').value < 0)
-            filled = false;
+            validated = false;
+        if (document.getElementById('id_foss_license').value < 0 || $("#itemform").valid() == false)
+            validated = false;
         // refuse to submit unless all required fields are filled       
-        if (filled == false) {      
-            alert("Please fill all required component fields, including the commit message");
+        if (validated == false) {      
+            alert("Please fill/correct all required component fields, including the commit message");
             return false;
         } else {
             // fill the hidden input with any patch data

@@ -812,12 +812,11 @@
             if (document.getElementById(src).value == "" && f != "foss_spdx" && f != "foss_patches")
                 validated = false;
         }
-        if (document.getElementById("id_m_foss_license").value < 0) {
+        if (document.getElementById("id_m_foss_license").value < 0 || $("#itemform").valid() == false)
             validated = false;
-        }
         // refuse to submit unless all required fields are validated       
         if (validated == false) {      
-            alert("Please fill all required component fields, including the commit message");
+            alert("Please fill/correct all required component fields, including the commit message");
         } else {
             // plug the values back into the table row and the hidden field
             var row = document.getElementById('line_item_no').innerHTML;
