@@ -50,8 +50,6 @@ RPM_TMP_BUILD_DIR=/var/tmp/rpm-build
 # noarch package
 RPM_BUILD_ARCH=noarch
 RPM_BINARY_DIR=$(RPM_TMP_BUILD_DIR)/RPMS/noarch
-#RPM_BUILD_ARCH=$(shell rpm --rcfile ${RCFILELIST} --eval=%{_target_cpu})
-#RPM_BINARY_DIR=$(RPM_TMP_BUILD_DIR)/RPMS/$(RPM_BUILD_ARCH)
 RPM_SRPM_DIR=$(RPM_TMP_BUILD_DIR)/SRPMS
 
 # Default target
@@ -107,4 +105,4 @@ $(SOURCE1):
 	(cd .. && git archive --format=tar --prefix=$(PACKAGE)-$(VERSION)/ $(EXPORT_TAG)) \
 	  | gzip -9 > $@
 
-.PHONY : tarball rpm_package
+.PHONY: tarball rpm_package

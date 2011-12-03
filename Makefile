@@ -1,7 +1,75 @@
 # Top-level Makefile for foss-barcode.
 # Copyright 2010 The Linux Foundation.  See LICENSE file for licensing.
 
+NAME = foss-barcode
+DESTDIR ?=
+BASEDIR ?= /opt/linuxfoundation
+ifndef BUILD_FOR_RPM
+INSTALL = install -o compliance -g compliance
+else
+INSTALL = install
+endif
+
 default: fossbarcode/barcode.sqlite fossbarcode/media/docs/index.html README.txt
+
+install: default
+ifndef BUILD_FOR_RPM
+	# create compliance account
+	groupadd compliance
+	id compliance >/dev/null 2>&1; \
+	if [ $$? -ne 0 ]; then \
+	useradd -d /home/compliance -s /bin/sh -p "" -c "compliance tester login" compliance -m -g compliance; \
+	fi;	
+endif
+
+	$(INSTALL) -d $(DESTDIR)$(BASEDIR)
+	$(INSTALL) -d $(DESTDIR)$(BASEDIR)/bin
+	$(INSTALL) -m 755 foss-barcode.py $(DESTDIR)$(BASEDIR)/bin
+	cp -ar fossbarcode $(DESTDIR)$(BASEDIR)
+ifndef BUILD_FOR_RPM
+	chown -R compliance.compliance $(DESTDIR)$(BASEDIR)
+endif
+	find $(DESTDIR)$(BASEDIR) -name '*.pyc' | xargs rm -f
+	$(INSTALL) -m 644 fossbarcode/media/docs/*.html $(DESTDIR)$(BASEDIR)/fossbarcode/media/docs
+	$(INSTALL) -d $(DESTDIR)$(BASEDIR)/share/icons/hicolor/16x16/apps
+	$(INSTALL) -m 644 desktop/lf_small.png $(DESTDIR)$(BASEDIR)/share/icons/hicolor/16x16/apps
+	$(INSTALL) -d $(DESTDIR)$(BASEDIR)/share/applications
+	$(INSTALL) -m 644 desktop/$(NAME).desktop $(DESTDIR)$(BASEDIR)/share/applications
+	$(INSTALL) -d $(DESTDIR)$(BASEDIR)/doc/$(NAME)
+	$(INSTALL) -m 644 doc/LICENSE doc/Contributing $(DESTDIR)$(BASEDIR)/doc/$(NAME)
+	$(INSTALL) -m 644 AUTHORS Changelog README.txt README.apache-mod_wsgi $(DESTDIR)$(BASEDIR)/doc/$(NAME)
+	$(INSTALL) -d $(DESTDIR)/var$(BASEDIR)/log/fossbarcode
+
+	# install the init script
+	install -d $(DESTDIR)/etc/init.d
+	install -d $(DESTDIR)/etc/sysconfig
+	sed -i "s|###BASEDIR###|$(BASEDIR)|g" fossbarcode/scripts/fossbarcode
+	install -m 755 fossbarcode/scripts/fossbarcode $(DESTDIR)/etc/init.d
+	install -m 644 fossbarcode/etc/sysconfig/fossbarcode $(DESTDIR)/etc/sysconfig
+
+ifndef BUILD_FOR_RPM
+	# make the menu entry visible
+	-xdg-desktop-menu install $(DESTDIR)$(BASEDIR)/share/applications/$(NAME).desktop
+endif
+
+uninstall:
+	-rm -fr $(DESTDIR)$(BASEDIR)/$(NAME)
+	-rm -fr $(DESTDIR)$(BASEDIR)/bin/foss-barcode.py
+	-rm -fr $(DESTDIR)$(BASEDIR)/doc/$(NAME)
+	-xdg-desktop-menu uninstall $(DESTDIR)$(BASEDIR)/share/applications/$(NAME).desktop
+	-rm -fr $(DESTDIR)$(BASEDIR)/share/applications/$(NAME).desktop
+	-rm -fr 
+	-rm -fr /etc/init.d/fossbarcode
+	-rm -fr /etc/sysconfig/fossbarcode
+	-rm -fr /var$(DESTDIR)$(BASEDIR)/log/fossbarcode
+	id compliance >/dev/null 2>&1; \
+	if [ $$? -eq 0 ]; then \
+	userdel compliance; \
+	fi;
+	grep -q '^compliance:' /etc/group; \
+	if [ $$? -eq 0 ]; then \
+	groupdel compliance; \
+	fi;	
 
 package:
 	cd package && $(MAKE)

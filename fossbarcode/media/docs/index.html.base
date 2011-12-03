@@ -30,6 +30,7 @@
     <li><a href="#admin">Admin Interface</a></li>
     <li><a href="#database">Database Schema</a></li>
     <li><a href="#dbserver">Using a Database Server</a></li>
+    <li><a href="#usecases">Usage Scenarios</a></li>
     <li><a href="#pfacing">Public-Facing Configuration</a></li>
     <li><a href="#backend">How it Works</a></li>
     <li><a href="#limitations">Limitations</a></li>
@@ -190,11 +191,15 @@ Run the server and the gui should show up in a browser window:
 ./bin/foss-barcode.py start
 </pre>
 
-To kill the django server, you can run:
+To stop the django server, you can run:
 <pre>
 ./bin/foss-barcode.py stop
 </pre>
 
+To install as a system application, you can do <tt>"make install"</tt> (as root).
+The default location is /opt/linuxfoundation, same as the rpm package. An init 
+script is provided in fossbarcode/scripts and installed to /etc/init.d to
+allow you to enable the backend as a system service.
 </div>
 
 <div id="layout">
@@ -459,6 +464,32 @@ via <i>brecord_id</i>.</li>
 
 </div>
 
+<div id="usecases">
+<b>User/Usage Scenarios</b>
+<ul>
+<li><b>One User, One Machine</b> - For this usage case, one can either run
+in place from the tarball or git pull. All user data will reside under 
+<tt>media/user_data</tt>. One can also use the packaged install.</li>
+<li><b>Multiple Users, One Machine</b> - There are two possible ways to use the
+application for this scenario. In either case, you want to use the packaged version
+or the installation via <tt>"make install"</tt>.
+<li><i>Private Data</i> - If each user wants to have their own private data, they 
+can each run the server via the GUI menu entry or via <tt>foss-barcode.py start</tt>.
+The server will not start if another user already has an instance running.</i>
+<li><i>Shared Data</i> - If users want to share the same dataset, the service should
+be started via the included init script, as root (uid passes to the <tt>"compliance"</tt> 
+user). Then the shared data will reside under the install directory, 
+accessible to all users (default is /opt/linuxfoundation/fossbarcode/media/user_data).
+The init script is installed, but disabled by default. Enabling and starting the init
+script will vary depending on your Linux distribution.</li>
+<li><b>Multiple Users, Multiple Machines</b> - In this case, the best configuration
+would be to designate a machine as the <tt>"server"</tt> and access either the
+integrated django server or mod_wsgi via apache or another web server over the 
+network. Shared data will reside on the server machine.</li>
+</ul>
+
+</div>
+  
 <div id="pfacing">
 <b>Public-Facing Configuration</b>
 

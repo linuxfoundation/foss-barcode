@@ -1,0 +1,115 @@
+#!/bin/sh
+########################################################################
+#
+# Description : Initscript for fossbarcode
+#
+# Authors     : Stew Benedict <stewb@linux-foundation.org>
+#
+########################################################################
+
+# chkconfig: 345 20 80
+
+### BEGIN INIT INFO
+# Provides: fossbarcode
+# Required-Start: $network
+# Required-Stop: $network
+# Default-Start: 
+# Short-Description: FOSS Barcode Tool.
+# Description: Tool to track the BOM of a FOSS project and generate a barcode
+### END INIT INFO
+
+ARGV="$@"
+FBC='/opt/linuxfoundation/bin/foss-barcode.py'
+NAME='fossbarcode'
+PIDFILE="/opt/linuxfoundation/$NAME/server.pid"
+
+. /lib/lsb/init-functions
+. /etc/sysconfig/fossbarcode
+
+case "${1}" in
+    start)
+        FBCPID=`pidofproc $FBC`
+        if [ -z "$FBCPID" ];then
+            echo -n "Starting $NAME: "
+            start_daemon $FBC $FBOPTIONS start
+            if [ $? -eq 0 ];then
+                FBCPID=`pidofproc $FBC`
+                echo $FBCPID > $PIDFILE
+                log_success_msg
+            else
+                log_failure_msg
+            fi
+        else
+            log_failure_msg "$NAME already running"
+        fi
+        ;;
+
+    stop)
+        FBCPID=`pidofproc $FBC`
+        if [ -z "$FBCPID" ];then
+            log_failure_msg "$NAME not running"
+        else
+            echo -n "Stopping $NAME: "
+            $FBC stop 
+            if [ $? -eq 0 ];then
+                if [ -f "$PIDFILE" ];then 
+                    rm -f $PIDFILE
+                fi
+                log_success_msg
+            else
+                log_failure_msg
+            fi
+        fi
+        ;;
+
+    restart)
+        ${0} stop
+        sleep 1
+        ${0} start
+        ;;
+
+    force-reload)
+        ${0} restart
+        ;;
+
+    reload)
+        ${0} restart
+        ;;
+
+    status)
+        FBCSTATUS="$NAME (pid) status:\n"
+        if [ -f "$PIDFILE" ];then
+            for FBCPID in `cat $PIDFILE`;do
+                ps -p $FBCPID > /dev/null
+	        if [ $? -eq 0 ];then
+                    FBCSTATUS="$FBCSTATUS \t$FBCPID:running\n"
+                else	
+                    FBCSTATUS="$FBCSTATUS \t$FBCPID:not running\n"
+                    NOTRUNNING=1
+                fi
+            done
+	else
+            FBCPID=`pidofproc $FBC`
+	    if [ -z "$FBCPID" ];then
+	        FBCSTATUS="$PIDFILE is not present, $NAME is not running"
+	        echo "$FBCSTATUS"
+		exit 3
+	    else
+                FBCSTATUS="$PIDFILE is not present, $NAME is running"
+	        echo "$FBCSTATUS"
+		exit 4
+            fi
+        fi
+        if [ -n "$NOTRUNNING" ];then
+            echo -e "$FBCSTATUS"
+	    exit 1
+        else
+	    echo -e "$FBCSTATUS"
+        fi
+        ;;
+
+    *)
+        echo "Usage: ${0} {start|stop|restart|force-reload|reload|status}"
+        exit 1
+        ;;
+esac

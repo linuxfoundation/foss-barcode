@@ -1,0 +1,7 @@
+# options for the foss-barcode backend
+# default:
+FBOPTIONS="--server-only"
+
+# other options of interest:
+# --interface=INTERFACE
+# listen on network interface (port or ip:port)

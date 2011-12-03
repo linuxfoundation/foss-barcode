@@ -51,23 +51,9 @@ make
   
 #==================================================
 %install
-
 rm -rf ${RPM_BUILD_ROOT}
-install -d ${RPM_BUILD_ROOT}%{basedir}
-install -d ${RPM_BUILD_ROOT}%{basedir}/bin
-install -m 755 foss-barcode.py ${RPM_BUILD_ROOT}%{basedir}/bin
-cp -ar fossbarcode ${RPM_BUILD_ROOT}%{basedir}
-find ${RPM_BUILD_ROOT}%{basedir} -name '*.pyc' | xargs rm -f
-rm -f ${RPM_BUILD_ROOT}%{basedir}/fossbarcode/media/docs/*
-install -m 644 fossbarcode/media/docs/*.html ${RPM_BUILD_ROOT}%{basedir}/fossbarcode/media/docs
-install -d ${RPM_BUILD_ROOT}%{basedir}/share/icons/hicolor/16x16/apps
-install -m 644 desktop/lf_small.png ${RPM_BUILD_ROOT}%{basedir}/share/icons/hicolor/16x16/apps
-install -d ${RPM_BUILD_ROOT}%{basedir}/share/applications
-install -m 644 desktop/%{name}.desktop ${RPM_BUILD_ROOT}%{basedir}/share/applications
-install -d ${RPM_BUILD_ROOT}%{basedir}/doc/%{name}
-install -m 644 doc/LICENSE doc/Contributing ${RPM_BUILD_ROOT}%{basedir}/doc/%{name}
-install -m 644 AUTHORS Changelog README.txt README.apache-mod_wsgi ${RPM_BUILD_ROOT}%{basedir}/doc/%{name}
-install -d ${RPM_BUILD_ROOT}/var%{basedir}/log/fossbarcode
+BUILD_FOR_RPM=true DESTDIR=${RPM_BUILD_ROOT} make install
+
 %if %bundle_django
   tar -xf %{SOURCE1}
   cp -ar Django-%{django_ver}/django ${RPM_BUILD_ROOT}%{basedir}/fossbarcode
@@ -163,7 +149,15 @@ fi
 %{basedir}/share/applications/*
 %doc %{basedir}/doc/%{name}/*
 
+%defattr(-,compliance,compliance)
+/etc/init.d/fossbarcode
+/etc/sysconfig/fossbarcode
+
 %changelog
+* Mon Dec 05 2011 Stew Benedict <stewb@linux-foundation.org>
+- move the install from the spec file to the Makefile
+- add an init script to run the backend as a service
+
 * Tue Feb 08 2011 Stew Benedict <stewb@linux-foundation.org>
 - re-arrange the layout so the rpm can co-exist with dep-checker
 

@@ -1,18 +1,26 @@
 Layout/Concept
 
-Relies on system commands "barcode", "cat", "find", "md5sum", "pstopnm", "pnmtopng"
+Relies on system commands "barcode", "qrencode", "pstopnm", "pnmtopng"
 
 If your distribution does not provide "barcode", you can download source from:
 
 ftp://mirrors.kernel.org/gnu/barcode/
+
+If your distribution does not provide qrencode, it can be built from source:
+
+http://fukuchi.org/works/qrencode
 
 If your distribution does not provide netpbm for "pstopnm" and "pnmtopng", you
 can download source from:
 
 http://netpbm.sourceforge.net/
 
-gui all lives under "fossbarcode", uses django so you need python-django or
+Gui all lives under "fossbarcode", uses django so you need python-django or
   equivalent
+
+Revision history uses dulwich for the python bindings, available from:
+
+http://www.samba.org/~jelmer/dulwich
 
 By default, typing "make" in the top-level will create the SQLite
   database the app needs, and the documentation.
@@ -27,7 +35,8 @@ templates: html pages using django's "template" language for data/form
 	   handling (these also have some javascript glue)
 
 The web app can be run "in-place"; otherwise, it expects to be run
-from /opt/linuxfoundation/fossbarcode.
+from /opt/linuxfoundation/fossbarcode. Typing "make install" (as root) will 
+install the application to this location for system use.
 
 To run the gui/server (as user compliance for installed package):
    /opt/linuxfoundation/bin/foss-barcode.py start (for running installed)
