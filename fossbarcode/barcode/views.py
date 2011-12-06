@@ -217,7 +217,7 @@ def detail(request, record_id, revision=None):
             if headerform.is_valid(): # All validation rules pass            
                 try:
                     newpr = pr.clone(company = new_company, product = new_product, version = new_version,
-                                     release = new_release, webiste = new_website, contact = new_contact, 
+                                     release = new_release, website = new_website, contact = new_contact, 
                                      email = new_email, spdx_file = new_spdx)                                     
                     record_id = str(newpr.id)
                 except:
