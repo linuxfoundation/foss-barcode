@@ -16,7 +16,7 @@ default: checkreq fossbarcode/barcode.sqlite fossbarcode/media/docs/index.html R
 checkreq:
 ifndef BUILD_FOR_RPM
 	# check for needed binaries
-	@for binary in python barcode qrencode pstopnm pnmtopng sam2p; do \
+	@for binary in python barcode qrencode sam2p; do \
 		type $$binary > /dev/null 2>&1; \
 		if [ $$? -ne 0 ]; then \
 			echo "$$binary $(ISREQ)"; \
@@ -24,16 +24,13 @@ ifndef BUILD_FOR_RPM
 		fi; \
 	done;
 	# check for needed python support
-	@python -c 'from django.core.management import execute_manager' > /dev/null 2>&1; \
-	if [ $$? -ne 0 ]; then \
-		echo "Django support in python $(ISREQ)"; \
-		exit 1; \
-	fi;	
-	@python -c 'from dulwich.repo import Repo' > /dev/null 2>&1; \
-	if [ $$? -ne 0 ]; then \
-		echo "Dulwich support in python $(ISREQ)"; \
-		exit 1; \
-	fi;	
+	@for module in django dulwich Image; do \
+		python -c "import $$module" > /dev/null 2>&1; \
+		if [ $$? -ne 0 ]; then \
+			echo "$$module support in python $(ISREQ)"; \
+			exit 1; \
+		fi; \
+	done;
 endif
 
 install: default

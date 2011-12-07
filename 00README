@@ -1,6 +1,6 @@
 Layout/Concept
 
-Relies on system commands "barcode", "qrencode", "pstopnm", "pnmtopng"
+Relies on system commands "barcode", "qrencode", "sam2p"
 
 If your distribution does not provide "barcode", you can download source from:
 
@@ -9,11 +9,6 @@ ftp://mirrors.kernel.org/gnu/barcode/
 If your distribution does not provide qrencode, it can be built from source:
 
 http://fukuchi.org/works/qrencode
-
-If your distribution does not provide netpbm for "pstopnm" and "pnmtopng", you
-can download source from:
-
-http://netpbm.sourceforge.net/
 
 Gui all lives under "fossbarcode", uses django so you need python-django or
   equivalent

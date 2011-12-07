@@ -882,7 +882,7 @@ def documentation(request):
 # FIXME - what if "which" isn't present?
 def check_for_system_apps():
     errmsg = ''
-    apps_needed = ['barcode', 'qrencode' , 'pstopnm', 'pnmtopng', 'sam2p']
+    apps_needed = ['barcode', 'qrencode', 'sam2p']
     for app in apps_needed:
         result = os.system("which " + app + "> /dev/null")
         if result:

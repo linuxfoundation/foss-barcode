@@ -371,7 +371,14 @@ class Product_Record(models.Model, FileDataDirMixin):
                 os.putenv('TMP', '/tmp')
                 os.putenv('TMPDIR', '/tmp')
                 if t == "128":
-                    result = os.system("pstopnm -xsize 500 -portrait -stdout " + ps_file + " 2>/dev/null | pnmtopng 2>/dev/null > " + png_file)
+                    try:
+                        img_in = Image.open(ps_file)
+                        # size/resize here approximates old setup with pstopnm, could drop it
+                        img_out = Image.new("L", (500, 128), 255) # greyscale, size, white
+                        img_out.paste(img_in.resize((410,106)),(45,11))
+                        img_out.save(png_file)
+                    except:
+                        result = 1
                 else:
                     result = os.system("sam2p -j:quiet " + png_file + " PS: " + ps_file)
 

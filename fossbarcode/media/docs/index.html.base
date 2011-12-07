@@ -74,7 +74,7 @@ for discussion of the tool.</p>
 <b>System Requirements:</b>
 
 <p>The GUI requires python. It also runs the OS commands: 
-<i>barcode, qrencode, pstopnm, pnmtopng, and sam2p</i>, so these should be present on your system.
+<i>barcode, qrencode, and sam2p</i>, so these should be present on your system.
 The GUI requires <a href="http://www.djangoproject.com">Django</a>, along with sqlite 
 support for the results database. A web browser is also needed to interact with the GUI.
 If your distribution does not provide Django, you can follow these 
@@ -114,11 +114,6 @@ cd qrencode-3.1.1
 make
 make install (using sudo or as root)
 </pre>
-</p>
-
-<p>
-If your distribution does not provide netpbm for "pstopnm" and "pnmtopng", you
-can download source <a href="http://netpbm.sourceforge.net">here</a>
 </p>
 
 </div>
@@ -519,13 +514,9 @@ a checksum. This checksum is then used to generate the barcode, using either of 
 barcode -b &lt;checksum&gt; -e 128 -m '0,0' -E &gt; &lt;checksum&gt;.ps
 </pre>
 
-and converted to a bitmap for display on the detail page:
+and converted internally with the python image library to a bitmap for display on the detail page.
 
-<pre>
-pstopnm -xsize 500 -portrait -stdout &lt;checksum&gt;.ps | pnmtopng &gt; &lt;checksum&gt;.png
-</pre>
-
-For the case of qrencode, not only is the checksum used, but additional data is gathered in MECARD format for scanning by devices capable of using this data. qrencode creates the bitmap .png file native, and post processing creates the .ps file using sam2p.
+<p>For the case of qrencode, not only is the checksum used, but additional data is gathered in MECARD format for scanning by devices capable of using this data. qrencode creates the bitmap .png file native, and post processing creates the .ps file using sam2p.</p>
 
 <pre>
 qrencode -v 6 -l Q -m 0 -o checksum.png [mecard data]
