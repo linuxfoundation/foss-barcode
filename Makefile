@@ -9,8 +9,32 @@ INSTALL = install -o compliance -g compliance
 else
 INSTALL = install
 endif
+ISREQ = is required for this application, please install either with your package manager or from source before proceeding. See 00README or README.txt for source locations.
 
-default: fossbarcode/barcode.sqlite fossbarcode/media/docs/index.html README.txt
+default: checkreq fossbarcode/barcode.sqlite fossbarcode/media/docs/index.html README.txt
+
+checkreq:
+ifndef BUILD_FOR_RPM
+	# check for needed binaries
+	@for binary in python barcode qrencode pstopnm pnmtopng sam2p; do \
+		type $$binary > /dev/null 2>&1; \
+		if [ $$? -ne 0 ]; then \
+			echo "$$binary $(ISREQ)"; \
+			exit 1; \
+		fi; \
+	done;
+	# check for needed python support
+	@python -c 'from django.core.management import execute_manager' > /dev/null 2>&1; \
+	if [ $$? -ne 0 ]; then \
+		echo "Django support in python $(ISREQ)"; \
+		exit 1; \
+	fi;	
+	@python -c 'from dulwich.repo import Repo' > /dev/null 2>&1; \
+	if [ $$? -ne 0 ]; then \
+		echo "Dulwich support in python $(ISREQ)"; \
+		exit 1; \
+	fi;	
+endif
 
 install: default
 ifndef BUILD_FOR_RPM
@@ -99,4 +123,4 @@ clean:
 	rm -f README.txt
 	rm -f fossbarcode/barcode.sqlite
 
-.PHONY: default clean package fixture_regen test
+.PHONY: default clean package fixture_regen test checkreq install uninstall
