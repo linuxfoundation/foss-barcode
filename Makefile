@@ -16,10 +16,11 @@ default: checkreq fossbarcode/barcode.sqlite fossbarcode/media/docs/index.html R
 checkreq:
 ifndef BUILD_FOR_RPM
 	# check for needed binaries
-	@for binary in python barcode qrencode sam2p; do \
+	@for binary in python barcode qrencode sam2p w3m; do \
 		type $$binary > /dev/null 2>&1; \
 		if [ $$? -ne 0 ]; then \
 			echo "$$binary $(ISREQ)"; \
+			cat README.distribution_packages; \
 			exit 1; \
 		fi; \
 	done;
@@ -28,6 +29,7 @@ ifndef BUILD_FOR_RPM
 		python -c "import $$module" > /dev/null 2>&1; \
 		if [ $$? -ne 0 ]; then \
 			echo "$$module support in python $(ISREQ)"; \
+			cat README.distribution_packages; \
 			exit 1; \
 		fi; \
 	done;

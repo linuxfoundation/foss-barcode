@@ -1,0 +1,22 @@
+
+Possible hints for installing the requirements for various distributions:
+
+Debian and Debian derivatives:
+apt-get install python-django python-dulwich barcode qrencode sam2p w3m
+
+Fedora:
+yum install Django python-dulwich barcode qrencode w3m python-imaging
+
+Opensuse:
+zypper in python-django barcode qrencode w3m python-imaging python-dulwich
+
+Fedora/Opensuse users will also need to download the sam2p binary for Linux 
+from http://code.google.com/p/sam2p/downloads/list, extract the file, and 
+place it manually in /usr/local/bin.
+
+Mandriva/Mageia:
+urpmi python-django barcode qrencode w3m python-imaging sam2p
+
+Mandriva/Mageia users will need to install python-dulwich from source, as 
+outlined in 00README.
+
