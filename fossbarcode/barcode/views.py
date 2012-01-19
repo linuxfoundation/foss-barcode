@@ -155,6 +155,7 @@ def detail(request, record_id, revision=None):
     error_message = ''
     new_spdx = ''
     old_spdx = ''
+    image_data = ''
     pnames = []
     enable_edits = True
     foss = render_detail(record_id, revision)
@@ -171,6 +172,10 @@ def detail(request, record_id, revision=None):
     display_code_type = get_config_value('display_code_type')
     # file queue limits
     fqueue = get_queue_limits()
+
+    # if it's an old revision, get the raw data for the barcode image
+    if revision:
+        image_data = get_history_image(record_id, display_code_type, revision)
 
     # and the cached component list
     cached_components, component_select = cache_get_components()
@@ -456,6 +461,7 @@ def detail(request, record_id, revision=None):
                                                       'cached_components': cached_components, 'component_select': component_select,
                                                       'public_facing':  public_facing, 'public_logo': public_logo,
                                                       'headerform': headerform, 'itemform': itemform,
+                                                      'image_data': image_data,
                                                       'fqueue': fqueue, 'reload_trigger': str(time.time()) })
 
 # record search page
@@ -940,6 +946,20 @@ def delete_records(table, rlist):
         if record != '':
             q = table.objects.filter(id = record)
             q.delete()
+
+# get a historical barcode image and return it in base64 for inline display
+def get_history_image(recid, display_code_type, revision):
+    import base64
+
+    base64_data = ''
+    pr = Product_Record.objects.get(id = recid)
+    checksum = pr.checksum
+    png_file = checksum + "-" + display_code_type + ".png"
+    if revision:
+        bin_data = pr.get_file_content(png_file, revision)
+        base64_data = base64.b64encode(bin_data)
+
+    return base64_data
 
 # pre-render some of the record detail
 def render_detail(id, revision=None):

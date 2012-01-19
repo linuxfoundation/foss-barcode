@@ -111,10 +111,14 @@
     </tr>    
     <tr>
       <td align = "center">
+{% if revision %}
+        <img src="data:image/png;base64,{{ image_data }}" alt="{{ display_code }}.png"><br>
+{% else %}
         <img src="/site_media/user_data/{{ record.id }}/{{ record.checksum }}-{{ display_code }}.png?time={{ reload_trigger }}" alt="{{ display_code }}.png"><br>
         <span id="noprint">
         <a href="/site_media/user_data/{{ record.id }}/{{ record.checksum }}-{{ display_code }}.ps">Download Postscript</a>
         </span>
+{% endif %}
       </td>
     </tr>
     <tr>
