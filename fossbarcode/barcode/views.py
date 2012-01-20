@@ -956,8 +956,12 @@ def get_history_image(recid, display_code_type, revision):
     checksum = pr.checksum
     png_file = checksum + "-" + display_code_type + ".png"
     if revision:
-        bin_data = pr.get_file_content(png_file, revision)
-        base64_data = base64.b64encode(bin_data)
+        # FIXME - may not be an image with this checksum/rev if they changed the fields that drive the checksum
+        try:
+            bin_data = pr.get_file_content(png_file, revision)
+            base64_data = base64.b64encode(bin_data)
+        except:
+            pass
 
     return base64_data
 

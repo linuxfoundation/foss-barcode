@@ -112,7 +112,12 @@
     <tr>
       <td align = "center">
 {% if revision %}
+  {% if image_data %}
         <img src="data:image/png;base64,{{ image_data }}" alt="{{ display_code }}.png"><br>
+  {% else %}
+        <b>Image not found for checksum:</b> {{ record.checksum }}<br>
+        <b>For revision:</b> {{ revision }}.
+  {% endif %}
 {% else %}
         <img src="/site_media/user_data/{{ record.id }}/{{ record.checksum }}-{{ display_code }}.png?time={{ reload_trigger }}" alt="{{ display_code }}.png"><br>
         <span id="noprint">
